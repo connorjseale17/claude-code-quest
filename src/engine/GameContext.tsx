@@ -7,7 +7,7 @@ import {
 } from './roomConfigs';
 
 export type Direction = 'left' | 'right' | 'up' | 'down';
-export type PanelType = 'challenge' | 'lore' | 'npc';
+export type PanelType = 'challenge' | 'lore' | 'npc' | 'practice';
 export type GamePhase = 'boot' | 'splash' | 'instructions' | 'customize' | 'playing' | 'loading' | 'gameOver';
 
 export type PendingLevelTransition = {
@@ -46,6 +46,7 @@ export type GameState = {
   paused: boolean;
   pendingLevelTransition: PendingLevelTransition | null;
   player: { name: string; botColor: string };
+  prizesUnlocked: string[];
 };
 
 const initialChamberState: ChamberState = {
@@ -103,6 +104,16 @@ export const initialState: GameState = {
     } catch {}
     return { name: '', botColor: '#E8633D' };
   })(),
+  prizesUnlocked: (() => {
+    try {
+      const saved = localStorage.getItem('ccq-prizes');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  })(),
 };
 
 export type GameAction =
@@ -122,7 +133,8 @@ export type GameAction =
   | { type: 'TOGGLE_PAUSE' }
   | { type: 'START_LEVEL_TRANSITION'; transition: PendingLevelTransition }
   | { type: 'COMPLETE_LEVEL_TRANSITION' }
-  | { type: 'SET_PLAYER'; name: string; botColor: string };
+  | { type: 'SET_PLAYER'; name: string; botColor: string }
+  | { type: 'UNLOCK_PRIZE'; prizeId: string };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -250,6 +262,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const player = { name: action.name, botColor: action.botColor };
       try { localStorage.setItem('ccq-player', JSON.stringify(player)); } catch {}
       return { ...state, player };
+    }
+    case 'UNLOCK_PRIZE': {
+      if (state.prizesUnlocked.includes(action.prizeId)) return state;
+      const prizesUnlocked = [...state.prizesUnlocked, action.prizeId];
+      try { localStorage.setItem('ccq-prizes', JSON.stringify(prizesUnlocked)); } catch {}
+      return { ...state, prizesUnlocked };
     }
     case 'ADVANCE_PHASE': {
       // Customize → loading screen first, then Level 01 via COMPLETE_LEVEL_TRANSITION

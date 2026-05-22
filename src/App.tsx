@@ -7,6 +7,7 @@ import { Room } from './components/Room';
 import { ChallengePanel } from './components/ChallengePanel';
 import { LorePanel } from './components/LorePanel';
 import { NPCDialog } from './components/NPCDialog';
+import { PracticePanel } from './components/PracticePanel';
 import { PauseMenu } from './components/PauseMenu';
 import { IntroOverlay } from './components/IntroOverlay';
 import { EndScreen } from './components/EndScreen';
@@ -50,6 +51,7 @@ function GameScreen() {
           {state.activePanel?.type === 'challenge' && <ChallengePanel />}
           {state.activePanel?.type === 'lore' && <LorePanel />}
           {state.activePanel?.type === 'npc' && <NPCDialog />}
+          {state.activePanel?.type === 'practice' && <PracticePanel />}
           <IntroOverlay />
           <PauseMenu />
         </div>

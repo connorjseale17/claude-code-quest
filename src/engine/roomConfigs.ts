@@ -71,12 +71,10 @@ export type DecorationConfig = {
 
 export type ItemConfig = {
   id: string;
-  type: 'challenge' | 'lore';
+  type: 'challenge' | 'lore' | 'practice';
   x: number;
   y: number;
   sprite: string;
-  /** For lore items: the text shown when interacted with */
-  loreText?: string;
 };
 
 export type KeySpawnConfig = {
@@ -213,22 +211,9 @@ function buildWelcomeLevel(): LevelConfig {
     spawnX: 2,
     spawnY: 6,
     items: [
-      {
-        id: 'manual',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'book',
-        loreText: '[PLACEHOLDER LORE] The manual reads: "If you\'re reading this, you\'ve already started. Good."',
-      },
-      {
-        id: 'sticky-note',
-        type: 'lore',
-        x: 14,
-        y: 4,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] A sticky note pinned to the wall: "Read first. Ask second. Edit third."',
-      },
+      { id: 'manual', type: 'lore', x: 6, y: 3, sprite: 'book' },
+      { id: 'sticky-note', type: 'lore', x: 14, y: 4, sprite: 'paper' },
+      { id: 'proposal-architect-practice', type: 'practice', x: 3, y: 9, sprite: 'hint_token' },
     ],
     doors: [
       {
@@ -249,10 +234,10 @@ function buildWelcomeLevel(): LevelConfig {
         color: '#3FB950',
         name: 'Guide-bot',
         dialog: [
-          'Hey. New here?',
-          'This is the antechamber. Just orientation.',
-          'Through the east door is the sanctum. Glowing terminal in there has your first challenge.',
-          'Read the lore on the way. Some of it actually matters.',
+          "Hey, operator. Fresh session? Good. Let's set you up before you wreck something.",
+          'Four permission modes. PLAN — read-only, drafts an approach. ACCEPT-EDITS — writes for you, review by diff. AUTO — runs free, a classifier watches. ASK — confirms each step.',
+          "Shift+Tab cycles them. Default to PLAN when you're walking into unfamiliar code. ACCEPT-EDITS when you're iterating. AUTO for long boring loops you trust the direction on.",
+          "Building a one-pager for a client? Describe what you want in English. Review the plan. Approve. Vercel hosts it for free. Same as briefing a junior consultant — except this one types.",
         ],
       },
     ],
@@ -282,14 +267,7 @@ function buildWelcomeLevel(): LevelConfig {
     spawnY: 6,
     items: [
       { id: 'terminal', type: 'challenge', x: 14, y: 3, sprite: 'crt_monitor' },
-      {
-        id: 'side-note',
-        type: 'lore',
-        x: 14,
-        y: 9,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Pinned beneath the terminal: "When in doubt, just ask the bot. Out loud helps."',
-      },
+      { id: 'side-note', type: 'lore', x: 14, y: 9, sprite: 'paper' },
     ],
     doors: [
       {
@@ -354,22 +332,8 @@ function buildClaudemdLevel(): LevelConfig {
     spawnX: 2,
     spawnY: 6,
     items: [
-      {
-        id: 'old-note',
-        type: 'lore',
-        x: 5,
-        y: 3,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Scrawled on the note: "I once shipped without a CLAUDE.md. Never again."',
-      },
-      {
-        id: 'log',
-        type: 'lore',
-        x: 17,
-        y: 4,
-        sprite: 'scroll',
-        loreText: '[PLACEHOLDER LORE] Audit log: "Project context lives in CLAUDE.md. Treat it like a treaty."',
-      },
+      { id: 'old-note', type: 'lore', x: 5, y: 3, sprite: 'paper' },
+      { id: 'log', type: 'lore', x: 17, y: 4, sprite: 'scroll' },
     ],
     doors: [
       {
@@ -391,10 +355,10 @@ function buildClaudemdLevel(): LevelConfig {
         color: '#D94DFF',
         name: 'Archivist Owl',
         dialog: [
-          'Hoo. The Archives. Everything we know lives here.',
-          'A CLAUDE.md is a contract. You tell Claude how to behave in your repo; it reads it before every task.',
-          'Through the north door — the Stacks. Mind the maze.',
-          'The Vault holds today\'s challenge. Bring the key when you find it.',
+          'Hoo. The Archives. Every engagement lives or dies by the contract in here.',
+          'CLAUDE.md is the contract. Build commands. Test commands. Naming. Repository etiquette. The non-obvious things a new consultant on the project would need on day one.',
+          "Keep it tight. Bloated CLAUDE.md gets ignored — important rules get lost in the noise. Prune like it's your billable hours.",
+          '/compact when the window fills. /clear between unrelated tasks. /rewind if Claude wandered. Tools are sharp, operator. Use them.',
         ],
       },
     ],
@@ -426,30 +390,10 @@ function buildClaudemdLevel(): LevelConfig {
     spawnX: 7,
     spawnY: 12,
     items: [
-      {
-        id: 'fragment-a',
-        type: 'lore',
-        x: 1,
-        y: 1,
-        sprite: 'book',
-        loreText: '[PLACEHOLDER LORE] Fragment: "Good CLAUDE.md describes intent, not implementation."',
-      },
-      {
-        id: 'fragment-b',
-        type: 'lore',
-        x: 14,
-        y: 1,
-        sprite: 'book',
-        loreText: '[PLACEHOLDER LORE] Fragment: "List the commands you actually use. Skip the ones you don\'t."',
-      },
-      {
-        id: 'fragment-c',
-        type: 'lore',
-        x: 1,
-        y: 12,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Fragment: "If your README is the front porch, CLAUDE.md is the kitchen."',
-      },
+      { id: 'fragment-a', type: 'lore', x: 1, y: 1, sprite: 'book' },
+      { id: 'fragment-b', type: 'lore', x: 14, y: 1, sprite: 'book' },
+      { id: 'fragment-c', type: 'lore', x: 1, y: 12, sprite: 'paper' },
+      { id: 'contract-auditor-practice', type: 'practice', x: 14, y: 12, sprite: 'hint_token' },
     ],
     doors: [
       {
@@ -557,22 +501,8 @@ function buildSlashLevel(): LevelConfig {
     spawnX: 2,
     spawnY: 5,
     items: [
-      {
-        id: 'command-sheet',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] A slash command is a custom prompt. Write once, summon many times.',
-      },
-      {
-        id: 'index',
-        type: 'lore',
-        x: 12,
-        y: 7,
-        sprite: 'scroll',
-        loreText: '[PLACEHOLDER LORE] Commands live in `.claude/commands/*.md`. Markdown is the spec.',
-      },
+      { id: 'command-sheet', type: 'lore', x: 6, y: 3, sprite: 'paper' },
+      { id: 'index', type: 'lore', x: 12, y: 7, sprite: 'scroll' },
     ],
     doors: [
       {
@@ -594,10 +524,10 @@ function buildSlashLevel(): LevelConfig {
         color: '#3FB950',
         name: 'Clerk Cat',
         dialog: [
-          'Mrrow. Slash command country. Welcome.',
-          'These let you bottle a prompt. You type `/review` and it expands into your full review brief.',
-          'Registry next door if you want to see them filed.',
-          'Execution chamber past that. Boss terminal lives there.',
+          'Mrrow. Welcome to the Registry. Three drawers: commands, skills, hooks.',
+          "Type a slash, get a recipe. /review-pr expands into your full review brief. No more 'remind me what we check for race conditions?'",
+          'Hooks fire automatically. Format on save. Lint before commit. Block writes to /client-data. Set once. Trust always.',
+          'Most useful for a firm? Bottle the deliverables. One skill per: /draft-proposal, /summarize-call, /qbr-deck. Your library of moves, executable on demand.',
         ],
       },
     ],
@@ -627,30 +557,10 @@ function buildSlashLevel(): LevelConfig {
     spawnX: 1,
     spawnY: 6,
     items: [
-      {
-        id: 'card-a',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'database',
-        loreText: '[PLACEHOLDER LORE] Card #001: /review — runs a full code review pass on the staged diff.',
-      },
-      {
-        id: 'card-b',
-        type: 'lore',
-        x: 10,
-        y: 11,
-        sprite: 'database',
-        loreText: '[PLACEHOLDER LORE] Card #027: /commit — writes a conventional-commit message from the diff.',
-      },
-      {
-        id: 'card-c',
-        type: 'lore',
-        x: 14,
-        y: 3,
-        sprite: 'database',
-        loreText: '[PLACEHOLDER LORE] Card #054: /ship — runs checks, opens PR, and pings the reviewer.',
-      },
+      { id: 'card-a', type: 'lore', x: 6, y: 3, sprite: 'database' },
+      { id: 'card-b', type: 'lore', x: 10, y: 11, sprite: 'database' },
+      { id: 'card-c', type: 'lore', x: 14, y: 3, sprite: 'database' },
+      { id: 'command-architect-practice', type: 'practice', x: 2, y: 11, sprite: 'hint_token' },
     ],
     doors: [
       {
@@ -756,22 +666,8 @@ function buildMcpLevel(): LevelConfig {
     spawnX: 2,
     spawnY: 6,
     items: [
-      {
-        id: 'broadcast',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'database',
-        loreText: '[PLACEHOLDER LORE] Broadcast log: "An MCP server exposes tools, resources, and prompts over a standard protocol."',
-      },
-      {
-        id: 'connection-log',
-        type: 'lore',
-        x: 16,
-        y: 8,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Connection log: "stdio transport for local; HTTP for remote. Pick your shape."',
-      },
+      { id: 'broadcast', type: 'lore', x: 6, y: 3, sprite: 'database' },
+      { id: 'connection-log', type: 'lore', x: 16, y: 8, sprite: 'paper' },
     ],
     doors: [
       {
@@ -794,10 +690,10 @@ function buildMcpLevel(): LevelConfig {
         name: 'Connector Duck',
         dialog: [
           'Quack. Welcome to the Hub. We trade in connections.',
-          'MCP — Model Context Protocol — is how Claude reaches anywhere outside its own walls.',
-          'Filesystem, GitHub, your custom API, your database. Any of them. All of them.',
-          'Yes, I\'m a debugging duck. Why do you ask?',
-          'Through the racks, into Integration. The terminal awaits.',
+          'MCP — Model Context Protocol — is how Claude reaches anything outside its own walls.',
+          'Slack. GitHub. Google Drive. Your CRM. Your warehouse. Any of them. All of them.',
+          "Add with `claude mcp add <name>`. Authorize once. Use forever. Yes — I'm a debugging duck. Why do you ask?",
+          "But — every server is a new attack surface. Default-deny. Audit the source. Don't ship the kingdom keys to a server you found in someone's gist.",
         ],
       },
     ],
@@ -827,30 +723,10 @@ function buildMcpLevel(): LevelConfig {
     spawnX: 1,
     spawnY: 7,
     items: [
-      {
-        id: 'rack-a',
-        type: 'lore',
-        x: 1,
-        y: 1,
-        sprite: 'hint_token',
-        loreText: '[PLACEHOLDER LORE] Token A: "Tools are functions Claude can call. Each one returns structured data."',
-      },
-      {
-        id: 'rack-b',
-        type: 'lore',
-        x: 14,
-        y: 1,
-        sprite: 'hint_token',
-        loreText: '[PLACEHOLDER LORE] Token B: "Resources are read-only. Prompts are reusable templates."',
-      },
-      {
-        id: 'rack-c',
-        type: 'lore',
-        x: 14,
-        y: 12,
-        sprite: 'hint_token',
-        loreText: '[PLACEHOLDER LORE] Token C: "Auth via OAuth. Permissions per resource. Default-deny."',
-      },
+      { id: 'rack-a', type: 'lore', x: 1, y: 1, sprite: 'hint_token' },
+      { id: 'rack-b', type: 'lore', x: 14, y: 1, sprite: 'hint_token' },
+      { id: 'rack-c', type: 'lore', x: 14, y: 12, sprite: 'hint_token' },
+      { id: 'integrations-engineer-practice', type: 'practice', x: 8, y: 12, sprite: 'database' },
     ],
     doors: [
       {
@@ -956,22 +832,8 @@ function buildSubagentsLevel(): LevelConfig {
     spawnX: 2,
     spawnY: 6,
     items: [
-      {
-        id: 'roster',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Roster: "Spawn a subagent when you can hand off the whole task with a self-contained prompt."',
-      },
-      {
-        id: 'mission-brief',
-        type: 'lore',
-        x: 14,
-        y: 8,
-        sprite: 'scroll',
-        loreText: '[PLACEHOLDER LORE] Briefing: "Independent work in parallel. The orchestrator keeps the plot."',
-      },
+      { id: 'roster', type: 'lore', x: 6, y: 3, sprite: 'paper' },
+      { id: 'mission-brief', type: 'lore', x: 14, y: 8, sprite: 'scroll' },
     ],
     doors: [
       {
@@ -992,8 +854,8 @@ function buildSubagentsLevel(): LevelConfig {
         color: '#3FB950',
         name: 'Scout-bot',
         dialog: [
-          'I run the explore lane. Big repos, fuzzy questions. Read-only.',
-          'When the parent agent doesn\'t know where something is — they spawn me.',
+          'I run the Explore lane. Read-only — I never touch anything.',
+          "Send me into a 500-file repo with 'find every place we touch client billing'. I come back with paths and line numbers.",
         ],
       },
       {
@@ -1003,19 +865,8 @@ function buildSubagentsLevel(): LevelConfig {
         color: '#6BA8DD',
         name: 'Planner-bot',
         dialog: [
-          'I plan. Architecture, file structure, the boring part.',
-          'Send me ahead with a goal and constraints. I come back with steps.',
-        ],
-      },
-      {
-        id: 'reviewer-bot',
-        x: 12,
-        y: 5,
-        color: '#F0C040',
-        name: 'Reviewer-bot',
-        dialog: [
-          'Code reviewer. Independent second-opinion energy.',
-          'Hand me a diff and I\'ll tell you what\'s shaky. No conversation context — fresh eyes.',
+          'I plan. Architecture, file structure, deliverable outlines. The boring-but-load-bearing part.',
+          'Hand me a goal and the constraints. I come back with steps. Use me before any big build — saves you the rewrite.',
         ],
       },
     ],
@@ -1038,22 +889,9 @@ function buildSubagentsLevel(): LevelConfig {
     spawnX: 1,
     spawnY: 7,
     items: [
-      {
-        id: 'fragment-x',
-        type: 'lore',
-        x: 4,
-        y: 2,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] "Subagents start fresh. No memory of the parent conversation. Brief them like a stranger."',
-      },
-      {
-        id: 'fragment-y',
-        type: 'lore',
-        x: 14,
-        y: 11,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] "Parallelism is real. Spawn N agents in one message; they run concurrently."',
-      },
+      { id: 'fragment-x', type: 'lore', x: 4, y: 2, sprite: 'paper' },
+      { id: 'fragment-y', type: 'lore', x: 14, y: 11, sprite: 'paper' },
+      { id: 'orchestrator-practice', type: 'practice', x: 8, y: 11, sprite: 'hint_token' },
     ],
     doors: [
       {
@@ -1077,14 +915,14 @@ function buildSubagentsLevel(): LevelConfig {
     ],
     npcs: [
       {
-        id: 'doc-bot',
+        id: 'reviewer-bot',
         x: 6,
         y: 4,
-        color: '#D94DFF',
-        name: 'Doc-bot',
+        color: '#F0C040',
+        name: 'Reviewer-bot',
         dialog: [
-          'I write docs and walkthroughs. Long-form is my specialty.',
-          'Hand me a feature, I come back with the README.',
+          'Code reviewer. Independent second-opinion energy. Fresh eyes — no conversation context.',
+          "Hand me a diff. I'll tell you what's shaky. I see what your main agent missed.",
         ],
       },
       {
@@ -1094,30 +932,8 @@ function buildSubagentsLevel(): LevelConfig {
         color: '#FF6B8A',
         name: 'Debugger-bot',
         dialog: [
-          'I chase bugs through stack traces. Scientific method only.',
-          'Hand me a repro, I bring back the root cause.',
-        ],
-      },
-      {
-        id: 'security-bot',
-        x: 6,
-        y: 10,
-        color: '#00D4AA',
-        name: 'Security-bot',
-        dialog: [
-          'Threat models. Vulnerability sweeps. Default suspicious.',
-          'I scan diffs for secrets, injection, and footguns.',
-        ],
-      },
-      {
-        id: 'tester-bot',
-        x: 11,
-        y: 10,
-        color: '#FFE066',
-        name: 'Tester-bot',
-        dialog: [
-          'I write tests. Edge cases especially.',
-          'If it can break, I will find the input that breaks it.',
+          'I chase bugs through stack traces. Scientific method only — hypothesize, instrument, verify.',
+          'Hand me a repro, I bring back the root cause. No band-aids.',
         ],
       },
     ],

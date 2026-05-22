@@ -155,7 +155,7 @@ export function Room() {
               type={item.type}
               sprite={item.sprite}
               tileSize={TILE_SIZE}
-              tint={item.type === 'lore' ? theme.accentColor : undefined}
+              tint={item.type === 'lore' || item.type === 'practice' ? theme.accentColor : undefined}
             />
           </div>
         );

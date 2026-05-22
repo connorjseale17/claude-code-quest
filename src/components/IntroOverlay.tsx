@@ -1,21 +1,7 @@
 import { useGame } from '../engine/GameContext';
 import { LEVEL_CONFIGS } from '../engine/roomConfigs';
-import { welcomeContent } from '../content/welcome';
-import { claudemdContent } from '../content/claudemd';
-import { slashContent } from '../content/slash';
-import { mcpContent } from '../content/mcp';
-import { subagentsContent } from '../content/subagents';
+import { CONTENT } from '../content';
 import { Cursor } from './TerminalFrame';
-import type { LessonContent } from '../content/types';
-import type { LevelId } from '../engine/roomConfigs';
-
-const CONTENT: Record<LevelId, LessonContent> = {
-  welcome: welcomeContent,
-  claudemd: claudemdContent,
-  slash: slashContent,
-  mcp: mcpContent,
-  subagents: subagentsContent,
-};
 
 export function IntroOverlay() {
   const state = useGame();

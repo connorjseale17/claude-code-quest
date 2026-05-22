@@ -2,20 +2,47 @@ import type { LessonContent } from './types';
 
 export const slashContent: LessonContent = {
   roomId: 'slash',
-  intro: '[PLACEHOLDER] Welcome to the Registry, operator. Custom slash commands sleep in this archive — find the active terminal and prove you understand them.',
-  prompt: '[PLACEHOLDER PROMPT] What is a custom slash command in Claude Code?',
+  intro: 'Operator. The Registry archives every command the firm wrote once and now runs forever. Slash commands. Skills. Hooks. Each one buys back time. Find them. Read them. Then prove you know which is which.',
+  prompt: "Your firm has a hard rule: `pnpm lint` must run before any commit, no exceptions, no matter who's at the keyboard. Which Claude Code mechanic GUARANTEES it happens — even if Claude or the operator forgets?",
   choices: [
-    { id: 'a', label: 'A keyboard shortcut for navigation', correct: false },
-    { id: 'b', label: 'A reusable, named prompt template you can summon by typing /name', correct: true },
-    { id: 'c', label: 'A shell command that runs in the IDE terminal', correct: false },
-    { id: 'd', label: 'A way to change Claude\'s system prompt globally', correct: false },
+    { id: 'a', label: "Add 'always lint before commit' to CLAUDE.md", correct: false },
+    { id: 'b', label: 'A custom /commit slash command that includes the lint step', correct: false },
+    { id: 'c', label: 'A PreToolUse hook that runs lint before any Bash(git commit *)', correct: true },
+    { id: 'd', label: 'A subagent that reviews every commit after the fact', correct: false },
   ],
-  passFeedback: '[PASS] Templates that earn their keep.',
-  failFeedback: '[FAIL] Think reusable prompts, not shortcuts.',
+  passFeedback: '[PASS] CLAUDE.md is advice. Skills are recipes. Hooks are laws. Deterministic enforcement = hooks.',
+  failFeedback: '[FAIL] Advisory rules can be ignored. Slash commands only fire when invoked. Need a guarantee? Hook.',
   lore: [
     {
       id: 'command-sheet',
-      text: '[PLACEHOLDER LORE] A slash command is a custom prompt. Write once, summon many times.',
+      text: 'A custom slash command is a `.md` file in `.claude/commands/`. The body is the prompt. Type `/name` and Claude expands it. Write once, summon many times. Use `$ARGUMENTS` to pipe in args.',
+    },
+    {
+      id: 'index',
+      text: 'Skills evolved past commands. `.claude/skills/<name>/SKILL.md` with frontmatter (`name`, `description`). Claude auto-invokes when the description matches. Still works as `/name` for manual fire. Skills can bundle helper files too.',
+    },
+    {
+      id: 'card-a',
+      text: 'Bottle the deliverables. /draft-proposal — pulls discovery notes, firm positioning, methodology library, outputs in your proposal template. /summarize-call. /qbr-deck. Each one is your library of moves.',
+    },
+    {
+      id: 'card-b',
+      text: 'Hooks fire on events (PreToolUse, PostToolUse, etc.) and run shell commands or HTTP calls. Different from CLAUDE.md (advisory) — hooks GUARANTEE the action happens. Format on save. Lint before commit. Block writes to /migrations.',
+    },
+    {
+      id: 'card-c',
+      text: 'Permission rules pin specific tools as allow/ask/deny. `Bash(npm test)` allowed without nagging. `Bash(git push *)` ask every time. `Bash(rm -rf *)` denied. Layered with whichever mode you are in.',
     },
   ],
+  practice: {
+    id: 'command-architect-practice',
+    template: '# .claude/commands/draft-proposal.md\n\nDraft a ____ for $ARGUMENTS.\nPull discovery notes from ____.\nUse the firm ____ methodology as the structural backbone.\nOutput in the ____ template under ./templates/.\n\nAsk me to review before any external send.',
+    blanks: [
+      { id: 'deliverable', suggestions: ['proposal', 'engagement letter', 'statement of work'] },
+      { id: 'source', suggestions: ['./notes/', 'Notion MCP', 'Drive MCP'] },
+      { id: 'methodology', suggestions: ['Pyramid Principle', 'MECE', 'firm-specific'] },
+      { id: 'format', suggestions: ['Word', 'Google Docs', 'PDF'] },
+    ],
+    prize: { id: 'command-architect', label: 'COMMAND ARCHITECT' },
+  },
 };

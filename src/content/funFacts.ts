@@ -23,6 +23,14 @@ export const FUN_FACTS: string[] = [
   'Plan mode lets Claude design the implementation before touching a single line — and refuse to edit until you approve.',
   'Engineers have used Claude to rewrite legacy COBOL banking code that humans were afraid to touch.',
   'A user wired Claude into their smart home and now the lights flicker red whenever a deploy fails.',
+
+  // Consulting-flavored additions
+  'A boutique strategy firm bottled their proposal-writing playbook into a single /draft-proposal skill — what used to take three consultants and a weekend now takes one Claude session and a half-hour review.',
+  'Claude Code can run truly in parallel: five subagents researching five competitors at once, one orchestrator stitching the brief.',
+  'Routines on Anthropic infrastructure run while your laptop is closed — every Friday at 5pm, a weekly digest lands in Slack with no one at the keyboard.',
+  'Permission modes go: PLAN, ACCEPT-EDITS, AUTO, ASK. Shift+Tab to cycle. Plan first, ship last.',
+  "A CLAUDE.md file at the root of your firm's project template is the cheapest leverage in the industry — one hour writing it pays back in every session forever.",
+  'MCP servers let Claude post Slack updates, read Drive folders, and pull GitHub PRs — all from the same prompt, all with scoped auth.',
 ];
 
 /** Returns a random fun fact. */

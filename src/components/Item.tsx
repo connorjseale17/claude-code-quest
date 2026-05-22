@@ -3,7 +3,7 @@ import { PixelSprite } from './PixelSprite';
 interface ItemProps {
   x: number;
   y: number;
-  type: 'challenge' | 'lore';
+  type: 'challenge' | 'lore' | 'practice';
   sprite: string;
   tileSize: number;
   /** Optional tint applied to palette '1' for theming */
