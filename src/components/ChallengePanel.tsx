@@ -3,6 +3,7 @@ import { useGame, useGameDispatch } from '../engine/GameContext';
 import { LEVEL_CONFIGS } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
 import { Cursor } from './TerminalFrame';
+import { ChoicePicker } from './ChoicePicker';
 
 export function ChallengePanel() {
   const state = useGame();
@@ -11,7 +12,6 @@ export function ChallengePanel() {
   const [textDone, setTextDone] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [result, setResult] = useState<'pass' | 'fail' | null>(null);
-  const [hoveredIdx, setHoveredIdx] = useState<number>(-1);
 
   const level = LEVEL_CONFIGS[state.currentLevel];
   const content = CONTENT[state.currentLevel];
@@ -24,7 +24,6 @@ export function ChallengePanel() {
     setTextDone(false);
     setSelected(null);
     setResult(null);
-    setHoveredIdx(-1);
 
     let i = 0;
     const id = setInterval(() => {
@@ -41,7 +40,6 @@ export function ChallengePanel() {
     return () => clearInterval(id);
   }, [fullText]);
 
-  // Skip typewriter on click/space
   const skipTypewriter = useCallback(() => {
     if (!textDone) {
       setDisplayedText(fullText);
@@ -59,18 +57,10 @@ export function ChallengePanel() {
           skipTypewriter();
         }
       }
-
-      // Number keys for choice selection
-      if (textDone && !result && content) {
-        const num = parseInt(e.key);
-        if (num >= 1 && num <= content.choices.length) {
-          handleChoice(content.choices[num - 1].id);
-        }
-      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [textDone, result, dispatch, skipTypewriter, content]);
+  }, [textDone, result, dispatch, skipTypewriter]);
 
   if (!content) return null;
 
@@ -107,59 +97,28 @@ export function ChallengePanel() {
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div style={{ color: '#7D7D7D', fontSize: 13, marginBottom: 8 }}>
           LEVEL {numLabel} · {level.title}
         </div>
 
-        {/* Prompt text with typewriter */}
         <div style={{ fontSize: 16, lineHeight: 1.5, marginTop: 18, color: '#E8E8E8' }}>
           {displayedText}
           {!textDone && <Cursor />}
         </div>
 
-        {/* Choices */}
         {textDone && (
-          <div style={{ marginTop: 28, fontSize: 15, lineHeight: 2.0 }}>
-            {content.choices.map((choice, i) => {
-              let color = '#7D7D7D';
-              let marker = ' ';
-              let tail = '';
-
-              if (selected === choice.id && result === 'pass') {
-                color = '#3FB950';
-                marker = '>';
-                tail = ' ✓';
-              } else if (selected === choice.id && result === 'fail') {
-                color = '#F85149';
-                marker = '>';
-                tail = ' ✗';
-              } else if (hoveredIdx === i && !selected) {
-                color = accent;
-                marker = '>';
-              } else if (selected && selected !== choice.id) {
-                color = '#3A3A3A';
-              }
-
-              return (
-                <div
-                  key={choice.id}
-                  className="flex gap-3 cursor-pointer"
-                  style={{ color }}
-                  onClick={() => !selected && handleChoice(choice.id)}
-                  onMouseEnter={() => !selected && setHoveredIdx(i)}
-                  onMouseLeave={() => setHoveredIdx(-1)}
-                >
-                  <span style={{ width: 14, color }}>{marker}</span>
-                  <span style={{ width: 22 }}>{i + 1}.</span>
-                  <span className="flex-1">{choice.label}{tail}</span>
-                </div>
-              );
-            })}
+          <div style={{ marginTop: 28 }}>
+            <ChoicePicker
+              choices={content.choices.map(c => ({ id: c.id, label: c.label }))}
+              accent={accent}
+              selectedId={selected}
+              result={result}
+              onSelect={handleChoice}
+              enableNumberKeys={textDone && !result}
+            />
           </div>
         )}
 
-        {/* Feedback */}
         {result === 'pass' && (
           <div
             style={{
@@ -193,7 +152,6 @@ export function ChallengePanel() {
 
         <div className="flex-1" />
 
-        {/* Footer prompt */}
         <div style={{ borderTop: '1px solid #2A2A2A', paddingTop: 14, color: '#7D7D7D', fontSize: 13 }}>
           {result === 'pass' && (
             <>

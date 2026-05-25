@@ -47,6 +47,7 @@ export type GameState = {
   pendingLevelTransition: PendingLevelTransition | null;
   player: { name: string; botColor: string };
   prizesUnlocked: string[];
+  lessonsCompleted: string[];
 };
 
 const initialChamberState: ChamberState = {
@@ -114,6 +115,16 @@ export const initialState: GameState = {
     } catch {}
     return [];
   })(),
+  lessonsCompleted: (() => {
+    try {
+      const saved = localStorage.getItem('ccq-lessons');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  })(),
 };
 
 export type GameAction =
@@ -134,7 +145,8 @@ export type GameAction =
   | { type: 'START_LEVEL_TRANSITION'; transition: PendingLevelTransition }
   | { type: 'COMPLETE_LEVEL_TRANSITION' }
   | { type: 'SET_PLAYER'; name: string; botColor: string }
-  | { type: 'UNLOCK_PRIZE'; prizeId: string };
+  | { type: 'UNLOCK_PRIZE'; prizeId: string }
+  | { type: 'MARK_LESSON_COMPLETED'; npcId: string };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -268,6 +280,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const prizesUnlocked = [...state.prizesUnlocked, action.prizeId];
       try { localStorage.setItem('ccq-prizes', JSON.stringify(prizesUnlocked)); } catch {}
       return { ...state, prizesUnlocked };
+    }
+    case 'MARK_LESSON_COMPLETED': {
+      if (state.lessonsCompleted.includes(action.npcId)) return state;
+      const lessonsCompleted = [...state.lessonsCompleted, action.npcId];
+      try { localStorage.setItem('ccq-lessons', JSON.stringify(lessonsCompleted)); } catch {}
+      return { ...state, lessonsCompleted };
     }
     case 'ADVANCE_PHASE': {
       // Customize → loading screen first, then Level 01 via COMPLETE_LEVEL_TRANSITION

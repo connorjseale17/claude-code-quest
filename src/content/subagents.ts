@@ -15,19 +15,19 @@ export const subagentsContent: LessonContent = {
   lore: [
     {
       id: 'roster',
-      text: 'A subagent is a fresh Claude instance. New context window. No memory of your conversation. Brief it like a stranger walking in cold. Self-contained or it fails. Returns one summary, not its working notes.',
+      text: 'Tip: a subagent gets a fresh context window — brief it like a stranger walking in cold.',
     },
     {
       id: 'mission-brief',
-      text: 'Foreground subagent blocks until done — fastest for one-shots. Background subagent runs concurrent — survives terminal closure. Agent view (/agents) shows every running session: what is blocked, what needs input, what is done.',
+      text: 'Tip: /agents shows every running subagent at a glance — blocked, waiting, done.',
     },
     {
       id: 'fragment-x',
-      text: 'Spawn N agents in a single message and they run truly concurrent. 5 client research briefs in parallel = 5× throughput. The orchestrator agent keeps the plot together. Each subagent returns one focused result.',
+      text: 'Tip: spawn N subagents in one message — they run truly concurrent. 5× throughput on parallel briefs.',
     },
     {
       id: 'fragment-y',
-      text: "Routines = scheduled agents on Anthropic's infra. Set it once, walk away — your laptop can be off. The /loop skill is the front door: `/loop 1h /summarize-pipeline` runs every hour. Cron under the hood. Friday-EOW summaries. Monday-morning prep.",
+      text: 'Tip: routines (/loop) schedule agents on Anthropic infra. Your laptop can be off.',
     },
   ],
   practice: {

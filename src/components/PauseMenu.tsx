@@ -1,5 +1,6 @@
 import { useGame, useGameDispatch } from '../engine/GameContext';
 import { LEVEL_CONFIGS, type LevelConfig } from '../engine/roomConfigs';
+import { CONTENT } from '../content';
 import { Cursor } from './TerminalFrame';
 
 function getObjective(
@@ -51,6 +52,13 @@ export function PauseMenu() {
     (sum, c) => sum + (state.chambers[c.id]?.npcSeen.length ?? 0),
     0,
   );
+
+  // Lessons: NPCs in this level that have authored conversations.
+  const conversationsForLevel = CONTENT[state.currentLevel].conversations ?? {};
+  const lessonNpcIds = Object.keys(conversationsForLevel);
+  const lessonsCompleted = lessonNpcIds.filter(id =>
+    state.lessonsCompleted.includes(id),
+  ).length;
 
   const numLabel = String(level.number).padStart(2, '0');
 
@@ -104,6 +112,14 @@ export function PauseMenu() {
               <span style={{ color: '#7D7D7D' }}>characters met: </span>
               <span style={{ color: seenNPCs === totalNPCs ? '#3FB950' : accent }}>
                 {seenNPCs}/{totalNPCs}
+              </span>
+            </div>
+          )}
+          {lessonNpcIds.length > 0 && (
+            <div>
+              <span style={{ color: '#7D7D7D' }}>lessons completed: </span>
+              <span style={{ color: lessonsCompleted === lessonNpcIds.length ? '#3FB950' : accent }}>
+                {lessonsCompleted}/{lessonNpcIds.length}
               </span>
             </div>
           )}

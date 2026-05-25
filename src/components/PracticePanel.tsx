@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGame, useGameDispatch } from '../engine/GameContext';
 import { LEVEL_CONFIGS } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
 import { Cursor } from './TerminalFrame';
-
-const BLANK_TOKEN = '____';
+import { BlankFiller, isAllFilled } from './BlankFiller';
 
 export function PracticePanel() {
   const state = useGame();
@@ -22,15 +21,7 @@ export function PracticePanel() {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
-  // Split template into segments separated by blanks
-  const segments = useMemo(() => {
-    if (!practice) return [];
-    return practice.template.split(BLANK_TOKEN);
-  }, [practice]);
-
-  const allFilled = practice
-    ? practice.blanks.every(b => selections[b.id])
-    : false;
+  const allFilled = practice ? isAllFilled(practice.blanks, selections) : false;
 
   const handleSubmit = useCallback(() => {
     if (!practice || !allFilled) return;
@@ -98,84 +89,16 @@ export function PracticePanel() {
           PRACTICE TERMINAL
         </div>
 
-        {/* Template with inline blanks */}
-        <pre
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 14,
-            lineHeight: 1.7,
-            color: '#E8E8E8',
-            margin: 0,
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-          }}
-        >
-          {segments.map((seg, i) => {
-            const blank = practice.blanks[i];
-            return (
-              <Fragment key={i}>
-                {seg}
-                {blank && (
-                  <span
-                    style={{
-                      color: selections[blank.id] ? accent : '#7D7D7D',
-                      fontWeight: 700,
-                      background: '#0F0F0F',
-                      padding: '0 6px',
-                      borderBottom: `1px solid ${selections[blank.id] ? accent : '#3A3A3A'}`,
-                    }}
-                  >
-                    {selections[blank.id] ?? `____${i + 1}____`}
-                  </span>
-                )}
-              </Fragment>
-            );
-          })}
-        </pre>
-
-        {/* Chip suggestions per blank */}
         {!showCompletion && (
-          <div style={{ marginTop: 24 }}>
-            {practice.blanks.map((blank, i) => (
-              <div key={blank.id} style={{ marginBottom: 14 }}>
-                <div style={{ color: '#7D7D7D', fontSize: 12, marginBottom: 6 }}>
-                  <span style={{ color: accent }}>{i + 1}.</span> {blank.id}
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {blank.suggestions.map(s => {
-                    const isSelected = selections[blank.id] === s;
-                    return (
-                      <button
-                        key={s}
-                        onClick={() =>
-                          setSelections(prev => ({
-                            ...prev,
-                            [blank.id]: isSelected ? '' : s,
-                          }))
-                        }
-                        style={{
-                          fontFamily: "'JetBrains Mono', monospace",
-                          fontSize: 12,
-                          padding: '4px 10px',
-                          background: isSelected ? accent : '#0F0F0F',
-                          color: isSelected ? '#0F0F0F' : '#E8E8E8',
-                          border: `1px solid ${isSelected ? accent : '#3A3A3A'}`,
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          textAlign: 'left',
-                        }}
-                      >
-                        {s}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+          <BlankFiller
+            template={practice.template}
+            blanks={practice.blanks}
+            selections={selections}
+            onChange={setSelections}
+            accent={accent}
+          />
         )}
 
-        {/* Completion banner */}
         {showCompletion && (
           <div
             className="cc-active-objective"
@@ -198,7 +121,6 @@ export function PracticePanel() {
 
         <div className="flex-1" />
 
-        {/* Footer */}
         <div style={{ borderTop: '1px solid #2A2A2A', paddingTop: 14, marginTop: 16, color: '#7D7D7D', fontSize: 13 }}>
           {showCompletion ? (
             <>

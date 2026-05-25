@@ -34,6 +34,22 @@ export const FRAMES: Record<string, string[]> = {};
 FRAMES.idle_a = fixWidths([BLANK, BLANK, BLANK, BLANK, BLANK, ...baseBody, LEGS, LEGS, BLANK]);
 FRAMES.idle_b = fixWidths([BLANK, BLANK, BLANK, BLANK, BLANK, BLANK, ...baseBody, LEGS, LEGS]);
 
+// Back view of the bot — used in the NPC encounter scene.
+// Same silhouette as idle_a but with no eyes/face, plus a subtle shadow
+// row to suggest the back of the head. Body palette '1' tints with botColor.
+FRAMES.bot_back = fixWidths([
+  BLANK, BLANK, BLANK, BLANK, BLANK,
+  BODY_TOP,
+  '....11111111....',  // back of head, no eyes
+  '....12222221....',  // shadow row hinting hair/neck
+  ARM_ROW,
+  ARM_ROW,
+  BODY_BOT,
+  LEGS,
+  LEGS,
+  BLANK,
+]);
+
 FRAMES.walk_1 = fixWidths([BLANK, BLANK, BLANK, BLANK, BLANK, ...baseBody, STAND_TOP, STAND_BOT, BLANK]);
 FRAMES.walk_2 = fixWidths([BLANK, BLANK, BLANK, BLANK, BLANK, ...baseBody, WALK_LIFT_A_TOP, WALK_LIFT_A_BOT, BLANK]);
 FRAMES.walk_3 = fixWidths([BLANK, BLANK, BLANK, BLANK, BLANK, ...baseBody, STAND_TOP, STAND_BOT, BLANK]);

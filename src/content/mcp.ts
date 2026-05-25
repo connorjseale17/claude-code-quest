@@ -15,23 +15,23 @@ export const mcpContent: LessonContent = {
   lore: [
     {
       id: 'broadcast',
-      text: 'MCP — Model Context Protocol. Open standard. Lets any AI client talk to any tool through one shape. Anthropic ships it. So does OpenAI now. Write the integration once, every client speaks to it.',
+      text: 'Tip: MCP is an open standard. Write the integration once, every AI client speaks to it.',
     },
     {
       id: 'connection-log',
-      text: 'Two transports. `stdio` — runs as a subprocess of Claude, good for local stuff (filesystem, your shell tools). `http`/`sse` — runs as a server you connect to, good for SaaS (Slack, GitHub, your CRM).',
+      text: 'Tip: `stdio` transport for local tools, `http`/`sse` for remote SaaS. Pick by where it lives.',
     },
     {
       id: 'rack-a',
-      text: 'Three primitives per MCP server. TOOLS — functions Claude can call (post-to-slack, search-github). RESOURCES — read-only data Claude can pull (a file, a doc). PROMPTS — named templates the server hands Claude.',
+      text: 'Tip: MCP servers expose TOOLS (callable), RESOURCES (readable), PROMPTS (templated).',
     },
     {
       id: 'rack-b',
-      text: 'Pattern for a firm: GitHub MCP (search past work, reuse code). Slack MCP (post client status updates). Drive/Workspace MCP (read deliverable folders). Notion MCP (internal wikis). One `claude mcp add` per connection, scope it tight.',
+      text: 'Tip: typical firm stack — GitHub MCP + Slack MCP + Drive MCP + Notion MCP. Scope each tight.',
     },
     {
       id: 'rack-c',
-      text: 'Every MCP tool call returns what the auth token can see — PII, contracts, secrets, all of it. Default-deny in /permissions. Audit the server source before adding. Treat MCP servers like vendors, not features. No keys to a server you found in a gist.',
+      text: 'Tip: every MCP tool call sees what the auth token sees. Default-deny, scope narrow.',
     },
   ],
   practice: {

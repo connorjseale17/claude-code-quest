@@ -15,23 +15,23 @@ export const slashContent: LessonContent = {
   lore: [
     {
       id: 'command-sheet',
-      text: 'A custom slash command is a `.md` file in `.claude/commands/`. The body is the prompt. Type `/name` and Claude expands it. Write once, summon many times. Use `$ARGUMENTS` to pipe in args.',
+      text: 'Tip: a slash command is just a markdown file in `.claude/commands/`. The body IS the prompt.',
     },
     {
       id: 'index',
-      text: 'Skills evolved past commands. `.claude/skills/<name>/SKILL.md` with frontmatter (`name`, `description`). Claude auto-invokes when the description matches. Still works as `/name` for manual fire. Skills can bundle helper files too.',
+      text: 'Tip: skills auto-invoke when their description matches. Slash commands fire on demand.',
     },
     {
       id: 'card-a',
-      text: 'Bottle the deliverables. /draft-proposal — pulls discovery notes, firm positioning, methodology library, outputs in your proposal template. /summarize-call. /qbr-deck. Each one is your library of moves.',
+      text: "Tip: bottle your firm's deliverables — /draft-proposal, /summarize-call, /qbr-deck.",
     },
     {
       id: 'card-b',
-      text: 'Hooks fire on events (PreToolUse, PostToolUse, etc.) and run shell commands or HTTP calls. Different from CLAUDE.md (advisory) — hooks GUARANTEE the action happens. Format on save. Lint before commit. Block writes to /migrations.',
+      text: 'Tip: hooks GUARANTEE actions. Format on save, lint before commit, block writes to /client-data.',
     },
     {
       id: 'card-c',
-      text: 'Permission rules pin specific tools as allow/ask/deny. `Bash(npm test)` allowed without nagging. `Bash(git push *)` ask every time. `Bash(rm -rf *)` denied. Layered with whichever mode you are in.',
+      text: "Tip: permission rules are tool-specific allow/ask/deny. Layer with whichever mode you're in.",
     },
   ],
   practice: {
