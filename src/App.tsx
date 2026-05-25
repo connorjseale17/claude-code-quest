@@ -4,10 +4,10 @@ import { useMovement } from './engine/useMovement';
 import { LEVEL_CONFIGS } from './engine/roomConfigs';
 import { TerminalFrame } from './components/TerminalFrame';
 import { Room } from './components/Room';
-import { ChallengePanel } from './components/ChallengePanel';
+import { ChallengeTerminal } from './components/ChallengeTerminal';
 import { LorePanel } from './components/LorePanel';
 import { NPCEncounter } from './components/NPCEncounter';
-import { PracticePanel } from './components/PracticePanel';
+import { PracticeTerminal } from './components/PracticeTerminal';
 import { PauseMenu } from './components/PauseMenu';
 import { IntroOverlay } from './components/IntroOverlay';
 import { EndScreen } from './components/EndScreen';
@@ -48,10 +48,10 @@ function GameScreen() {
       <div className="flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
           <Room />
-          {state.activePanel?.type === 'challenge' && <ChallengePanel />}
+          {state.activePanel?.type === 'challenge' && <ChallengeTerminal />}
           {state.activePanel?.type === 'lore' && <LorePanel />}
           {state.activePanel?.type === 'npc' && <NPCEncounter />}
-          {state.activePanel?.type === 'practice' && <PracticePanel />}
+          {state.activePanel?.type === 'practice' && <PracticeTerminal />}
           <IntroOverlay />
           <PauseMenu />
         </div>

@@ -4,8 +4,9 @@ import { LEVEL_CONFIGS } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
 import { Cursor } from './TerminalFrame';
 import { BlankFiller, isAllFilled } from './BlankFiller';
+import { RetroChassis } from './RetroChassis';
 
-export function PracticePanel() {
+export function PracticeTerminal() {
   const state = useGame();
   const dispatch = useGameDispatch();
 
@@ -35,12 +36,6 @@ export function PracticePanel() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        closePanel();
-        return;
-      }
       if (alreadyEarned || submitted) {
         if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
@@ -66,99 +61,101 @@ export function PracticePanel() {
   const completionTag = submitted ? '[PRIZE UNLOCKED]' : '[ALREADY EARNED]';
 
   return (
-    <div
-      className="absolute inset-0 z-20 flex items-center justify-end"
-      style={{ background: 'rgba(0,0,0,0.4)' }}
-      onClick={closePanel}
+    <RetroChassis
+      variant="lab"
+      accent={accent}
+      diskLabel="PRACTICE"
+      chassisName="CLAUDY-LAB"
+      topbarText={`LVL ${numLabel} · ${level.title}`}
+      topbarSub="PRACTICE.DISK"
+      onClose={closePanel}
     >
-      <div
-        className="flex flex-col h-full overflow-y-auto"
-        style={{
-          width: '55%',
-          background: '#1A1A1A',
-          borderLeft: `1px solid ${accent}`,
-          padding: 32,
-          fontFamily: "'JetBrains Mono', monospace",
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div style={{ color: '#7D7D7D', fontSize: 13, marginBottom: 4 }}>
-          LEVEL {numLabel} · {level.title}
-        </div>
-        <div style={{ color: accent, fontSize: 11, letterSpacing: '0.12em', marginBottom: 18 }}>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ color: accent, fontSize: 10, letterSpacing: '0.14em', marginBottom: 10 }}>
           PRACTICE TERMINAL
         </div>
 
-        {!showCompletion && (
-          <BlankFiller
-            template={practice.template}
-            blanks={practice.blanks}
-            selections={selections}
-            onChange={setSelections}
-            accent={accent}
-          />
-        )}
+        <div style={{ flex: 1, overflowY: 'auto', color: '#E8E8E8' }}>
+          {!showCompletion && (
+            <BlankFiller
+              template={practice.template}
+              blanks={practice.blanks}
+              selections={selections}
+              onChange={setSelections}
+              accent={accent}
+            />
+          )}
 
-        {showCompletion && (
-          <div
-            className="cc-active-objective"
-            style={{
-              marginTop: 28,
-              padding: '18px 20px',
-              border: `1px solid ${accent}`,
-              background: '#0F0F0F',
-              ['--glow-color' as string]: accent,
-            } as React.CSSProperties}
-          >
-            <div style={{ fontSize: 16, color: accent, fontWeight: 700, letterSpacing: '0.05em' }}>
-              {completionTag} {practice.prize.label}
+          {showCompletion && (
+            <div
+              className="cc-active-objective"
+              style={{
+                padding: '14px 16px',
+                border: `1px solid ${accent}`,
+                background: '#0F0F0F',
+                ['--glow-color' as string]: accent,
+              } as React.CSSProperties}
+            >
+              <div style={{ fontSize: 14, color: accent, fontWeight: 700, letterSpacing: '0.06em' }}>
+                {completionTag} {practice.prize.label}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 11, color: '#7D7D7D' }}>
+                Logged to your trophy case. Check the end screen.
+              </div>
             </div>
-            <div style={{ marginTop: 8, fontSize: 12, color: '#7D7D7D' }}>
-              Logged to your trophy case. Check the end screen.
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="flex-1" />
-
-        <div style={{ borderTop: '1px solid #2A2A2A', paddingTop: 14, marginTop: 16, color: '#7D7D7D', fontSize: 13 }}>
+        <div
+          style={{
+            borderTop: '1px solid #1F2F25',
+            paddingTop: 8,
+            marginTop: 8,
+            color: '#7D7D7D',
+            fontSize: 11,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
           {showCompletion ? (
-            <>
-              <span style={{ color: accent }}>{'>'}</span> Press{' '}
+            <span>
+              <span style={{ color: accent }}>{'>'}</span>{' '}
               <span style={{ color: '#E8E8E8' }}>SPACE</span> to close
-              <Cursor />
-            </>
+              <Cursor color={accent} />
+            </span>
           ) : allFilled ? (
-            <div className="flex items-center justify-between">
+            <>
               <span>
                 <span style={{ color: accent }}>{'>'}</span> all blanks filled
-                <Cursor />
+                <Cursor color={accent} />
               </span>
               <button
                 onClick={handleSubmit}
                 style={{
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 13,
-                  padding: '6px 16px',
+                  fontSize: 12,
+                  padding: '4px 14px',
                   background: accent,
                   color: '#0F0F0F',
                   border: 'none',
                   cursor: 'pointer',
                   fontWeight: 700,
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.06em',
                 }}
               >
                 [SUBMIT]
               </button>
-            </div>
-          ) : (
-            <>
-              <span style={{ color: accent }}>{'>'}</span> click a chip for each blank
-              <Cursor />
             </>
+          ) : (
+            <span>
+              <span style={{ color: accent }}>{'>'}</span> click a chip for each blank
+              <Cursor color={accent} />
+            </span>
           )}
         </div>
       </div>
-    </div>
+    </RetroChassis>
   );
 }
