@@ -5,6 +5,7 @@ import { claudemdContent } from './claudemd';
 import { slashContent } from './slash';
 import { mcpContent } from './mcp';
 import { subagentsContent } from './subagents';
+import { finalBossContent } from './final-boss';
 
 export const CONTENT: Record<LevelId, LessonContent> = {
   welcome: welcomeContent,
@@ -12,4 +13,5 @@ export const CONTENT: Record<LevelId, LessonContent> = {
   slash: slashContent,
   mcp: mcpContent,
   subagents: subagentsContent,
+  'final-boss': finalBossContent,
 };

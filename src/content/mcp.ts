@@ -157,9 +157,81 @@ export const mcpContent: LessonContent = {
         },
         {
           kind: 'say',
-          text: "Through the rack, into Integration. Boss terminal there. The lore on the way has bonus tips. Quack.",
+          text: "Through the rack, into Integration. VORTHEX THE DRAGON nests there — winged, scaled, breathes plasma at anyone who can't connect anything. Quack. Bring the key when his fire is out.",
         },
       ],
     },
+  },
+  battle: {
+    name: 'VORTHEX',
+    spriteKey: 'vorthex',
+    maxHP: 4,
+    playerHP: 5,
+    phases: 2,
+    introLine: "*wings flare* ALONE. WALLED. NEEDING NOTHING. you bring connections to my chamber, meatbag? *roars plasma*",
+    tauntLines: [
+      "*spits plasma* your wires shall MELT!",
+      "*flaps* none shall reach the outside!",
+      "VENDORS bring rot! be CONSUMED!",
+      "*screech* every server is an INVASION!",
+    ],
+    victoryLine: "*folds wings* … perhaps… the protocol… is not the enemy… *fades*",
+    questions: [
+      {
+        prompt: "You want Claude to read/write files in a folder on the consultant's laptop. Which MCP transport?",
+        choices: [
+          { id: 'a', label: 'stdio — runs the filesystem MCP as a subprocess', correct: true },
+          { id: 'b', label: 'http — hit a remote MCP server', correct: false },
+          { id: 'c', label: 'sse — stream over server-sent events', correct: false },
+          { id: 'd', label: 'WebFetch on the file URL', correct: false },
+        ],
+        passFeedback: 'STRIKE! Local file = local subprocess. No network, no token, no overhead.',
+        failFeedback: 'MISS! stdio for local, http/sse for remote. The filesystem is right there.',
+      },
+      {
+        prompt: "MCP is an open standard. What does that mean in practice?",
+        choices: [
+          { id: 'a', label: "It's an Anthropic-only protocol", correct: false },
+          { id: 'b', label: 'Write the integration once; every AI client speaks to it', correct: true },
+          { id: 'c', label: 'Only works with stdio transport', correct: false },
+          { id: 'd', label: 'It requires a paid Anthropic plan', correct: false },
+        ],
+        passFeedback: 'STRIKE! Anthropic ships it; so does OpenAI. One integration, many clients.',
+        failFeedback: 'MISS! Open standard = portable. Write once, every AI client connects.',
+      },
+      {
+        prompt: "Every MCP server exposes three primitives. Which is the right set?",
+        choices: [
+          { id: 'a', label: 'Tools, Resources, Prompts', correct: true },
+          { id: 'b', label: 'Functions, Variables, Constants', correct: false },
+          { id: 'c', label: 'Read, Write, Execute', correct: false },
+          { id: 'd', label: 'Tokens, Keys, Secrets', correct: false },
+        ],
+        passFeedback: 'STRIKE! TOOLS (callable), RESOURCES (readable), PROMPTS (templated). Three shapes, every server.',
+        failFeedback: 'MISS! The MCP primitives are Tools, Resources, Prompts. Memorize that triplet.',
+      },
+      {
+        prompt: "Team wants Claude to read client notes from Drive AND post status to a private Slack channel. Safe shape?",
+        choices: [
+          { id: 'a', label: 'Two MCP servers (Drive + Slack), scoped OAuth + narrow permission rules', correct: true },
+          { id: 'b', label: "Custom REST API wrapping both with shared admin credentials", correct: false },
+          { id: 'c', label: 'Subagent using WebFetch on the Drive and Slack web UIs', correct: false },
+          { id: 'd', label: "CLAUDE.md entry saying 'use Drive and Slack politely'", correct: false },
+        ],
+        passFeedback: 'STRIKE! Two servers, scoped auth, narrow rules. The safe pattern.',
+        failFeedback: 'MISS! MCP solves this. Two scoped servers >> one wide-open custom wrapper.',
+      },
+      {
+        prompt: "What's the security default for new MCP tools in `/permissions`?",
+        choices: [
+          { id: 'a', label: 'Allow everything by default', correct: false },
+          { id: 'b', label: 'Default-deny; allow narrow patterns explicitly', correct: true },
+          { id: 'c', label: 'Ask every time, no exceptions', correct: false },
+          { id: 'd', label: "Whatever the server's manifest says", correct: false },
+        ],
+        passFeedback: 'STRIKE! Every tool call sees what the token sees. Default-deny, scope narrow.',
+        failFeedback: 'MISS! Treat MCP servers like vendors. Default-deny is the only safe posture.',
+      },
+    ],
   },
 };

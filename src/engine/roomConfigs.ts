@@ -12,7 +12,8 @@ export type LevelId =
   | 'claudemd'
   | 'slash'
   | 'mcp'
-  | 'subagents';
+  | 'subagents'
+  | 'final-boss';
 
 export type ChamberId = string;
 
@@ -188,6 +189,14 @@ const THEME_PINK: Theme = {
   floorColor: '#2A1218',
   floorDot: '#00D4AA',
   accentColor: '#00D4AA',
+};
+
+const THEME_CRIMSON: Theme = {
+  wallColor: '#A0142F',
+  wallShadow: '#5A0A1A',
+  floorColor: '#1A0A0F',
+  floorDot: '#F85149',
+  accentColor: '#F85149',
 };
 
 // ============================================================================
@@ -972,9 +981,9 @@ function buildSubagentsLevel(): LevelConfig {
         id: 'exit',
         x: bW - 1,
         y: 5,
-        target: { kind: 'end' },
-        spawnX: 0,
-        spawnY: 0,
+        target: { kind: 'level', level: 'final-boss', chamber: 'final-boss-throne' },
+        spawnX: 1,
+        spawnY: 6,
         locked: true,
         requiresLevelKey: true,
       },
@@ -1001,6 +1010,76 @@ function buildSubagentsLevel(): LevelConfig {
 }
 
 // ============================================================================
+// Level 06: Final Boss — single walkable throne room
+// ============================================================================
+
+function buildFinalBossLevel(): LevelConfig {
+  const tW = 22, tH = 13;
+  const tTiles = blankTileMap(tW, tH);
+  // West door (entry from subagents-briefing)
+  tTiles[6][0] = 2;
+  // East door (game end, locked until boss falls)
+  tTiles[6][tW - 1] = 2;
+  // Throne platform — two columns of "pillar" walls flanking center
+  fillRect(tTiles, 5, 2, 5, 3, 1);
+  fillRect(tTiles, tW - 6, 2, tW - 6, 3, 1);
+  fillRect(tTiles, 5, tH - 4, 5, tH - 3, 1);
+  fillRect(tTiles, tW - 6, tH - 4, tW - 6, tH - 3, 1);
+
+  const throne: ChamberConfig = {
+    id: 'final-boss-throne',
+    level: 'final-boss',
+    name: 'Throne Room',
+    width: tW,
+    height: tH,
+    tiles: tTiles,
+    spawnX: 1,
+    spawnY: 6,
+    items: [
+      // The "challenge" item triggers the final battle.
+      { id: 'overlord-altar', type: 'challenge', x: tW - 5, y: 6, sprite: 'crt_monitor' },
+    ],
+    doors: [
+      {
+        id: 'back',
+        x: 0,
+        y: 6,
+        target: { kind: 'chamber', chamber: 'subagents-briefing' },
+        spawnX: 1,
+        spawnY: 5,
+        locked: false,
+      },
+      {
+        id: 'exit',
+        x: tW - 1,
+        y: 6,
+        target: { kind: 'end' },
+        spawnX: 0,
+        spawnY: 0,
+        locked: true,
+        requiresLevelKey: true,
+      },
+    ],
+    npcs: [],
+    decorations: [],
+    keySpawn: { x: tW - 5, y: 9 },
+  };
+
+  return {
+    id: 'final-boss',
+    number: 6,
+    title: 'THE THRONE',
+    subtitle: 'final confrontation',
+    theme: THEME_CRIMSON,
+    chambers: {
+      [throne.id]: throne,
+    },
+    startingChamber: throne.id,
+    challengeChamber: throne.id,
+  };
+}
+
+// ============================================================================
 // Export
 // ============================================================================
 
@@ -1010,6 +1089,7 @@ export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   slash: buildSlashLevel(),
   mcp: buildMcpLevel(),
   subagents: buildSubagentsLevel(),
+  'final-boss': buildFinalBossLevel(),
 };
 
 /** Convenience: lookup a chamber by ID across all levels. */

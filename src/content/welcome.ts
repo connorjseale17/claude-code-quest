@@ -137,9 +137,58 @@ export const welcomeContent: LessonContent = {
         },
         {
           kind: 'say',
-          text: "Through the east door is the sanctum. Boss terminal in there checks what you learned. Lore on the way has bonus tips — read 'em or skip 'em. Up to you. Good luck, operator.",
+          text: "Through the east door is the sanctum. An EMBERLING guards the key in there — small but twitchy, throws sparks when it's wrong-footed. Answer well and you'll dodge the flames. Good luck, operator.",
         },
       ],
     },
+  },
+  battle: {
+    name: 'EMBERLING',
+    spriteKey: 'emberling',
+    maxHP: 3,
+    playerHP: 5,
+    phases: 1,
+    introLine: "*shrieks* a meatbag enters my chamber! you will burn for waking me!",
+    tauntLines: [
+      "*spits sparks* pathetic!",
+      "*cackles* burn, slow one, burn!",
+      "is that all you've got, meatbag?",
+    ],
+    victoryLine: "*hisses* … the flames… going out… you win this, operator…",
+    questions: [
+      {
+        prompt: "You just opened a brand-new client repo. Never touched the codebase. Which permission mode do you start in?",
+        choices: [
+          { id: 'a', label: 'auto — fastest, classifier handles the rest', correct: false },
+          { id: 'b', label: 'bypassPermissions — skip the friction entirely', correct: false },
+          { id: 'c', label: 'plan — read and propose before touching anything', correct: true },
+          { id: 'd', label: 'acceptEdits — let Claude write, review by diff later', correct: false },
+        ],
+        passFeedback: 'STRIKE! Read first, write second. The plan is the first draft of the deliverable.',
+        failFeedback: 'MISS! Auto and acceptEdits both edit. New repo + unknown stakes = plan mode first.',
+      },
+      {
+        prompt: "Which keyboard shortcut cycles through the four permission modes?",
+        choices: [
+          { id: 'a', label: 'Ctrl+P', correct: false },
+          { id: 'b', label: 'Shift+Tab', correct: true },
+          { id: 'c', label: 'Cmd+M', correct: false },
+          { id: 'd', label: 'Esc twice', correct: false },
+        ],
+        passFeedback: 'STRIKE! Shift+Tab. PLAN → ACCEPT-EDITS → AUTO → ASK, repeat.',
+        failFeedback: 'MISS! Shift+Tab is the cycle. Muscle-memorize it.',
+      },
+      {
+        prompt: "Client wants to poke around your proposal microsite by EOW. Where does it live?",
+        choices: [
+          { id: 'a', label: 'localhost — screenshots for the client', correct: false },
+          { id: 'b', label: 'email them the source code', correct: false },
+          { id: 'c', label: 'push to GitHub, import to Vercel, send them the preview URL', correct: true },
+          { id: 'd', label: 'a USB stick by courier', correct: false },
+        ],
+        passFeedback: 'STRIKE! Vercel auto-deploys on every push. Each PR = its own preview URL. The client clicks; the client reviews.',
+        failFeedback: 'MISS! Strategy partners want a URL they can click. Source code is YOUR problem, not theirs.',
+      },
+    ],
   },
 };

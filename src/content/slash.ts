@@ -156,9 +156,69 @@ export const slashContent: LessonContent = {
         },
         {
           kind: 'say',
-          text: "Through the registry, into Execution. Boss terminal in there. Lore on the way has bonus tips. Off you go.",
+          text: "Through the registry, into Execution. GRIST THE GOLEM waits there — a slab of bedrock with poor inscriptions, smashes anyone who can't bottle their commands. Mrrow.",
         },
       ],
     },
+  },
+  battle: {
+    name: 'GRIST',
+    spriteKey: 'grist',
+    maxHP: 4,
+    playerHP: 5,
+    phases: 1,
+    introLine: "*RUMBLE* nothing automated. nothing bottled. *grist swings stone fists* prove you know the difference.",
+    tauntLines: [
+      "*slams ground* manual labor for the unworthy!",
+      "*roars* you re-type EVERY time?",
+      "your scripts are PEBBLES!",
+    ],
+    victoryLine: "*cracks splinter through stone* … the patterns hold… the firm endures…",
+    questions: [
+      {
+        prompt: "Firm rule: `pnpm lint` MUST run before any commit, no exceptions. Which mechanic GUARANTEES it?",
+        choices: [
+          { id: 'a', label: "Add 'always lint before commit' to CLAUDE.md", correct: false },
+          { id: 'b', label: 'A custom /commit slash command with the lint step', correct: false },
+          { id: 'c', label: 'A PreToolUse hook that runs lint before any Bash(git commit *)', correct: true },
+          { id: 'd', label: 'A subagent that reviews every commit after the fact', correct: false },
+        ],
+        passFeedback: 'STRIKE! Hooks fire on EVENTS. The lint runs or the commit is blocked. THAT is a guarantee.',
+        failFeedback: 'MISS! Advisory rules can be skipped. Slash commands only fire when invoked. Need certainty? Hook.',
+      },
+      {
+        prompt: "Where does a custom slash command live?",
+        choices: [
+          { id: 'a', label: 'In CLAUDE.md as a rule', correct: false },
+          { id: 'b', label: 'In ~/.claude/skills/ only', correct: false },
+          { id: 'c', label: 'In `.claude/commands/<name>.md` — the body IS the prompt', correct: true },
+          { id: 'd', label: 'Hardcoded in the Claude binary', correct: false },
+        ],
+        passFeedback: 'STRIKE! Markdown file in `.claude/commands/`. Versioned in git. Pipe args with $ARGUMENTS.',
+        failFeedback: 'MISS! Slash commands are markdown files in `.claude/commands/`. The body is the prompt.',
+      },
+      {
+        prompt: "You want Claude to auto-pick up 'draft a proposal for Acme' WITHOUT typing a slash command. Best shape?",
+        choices: [
+          { id: 'a', label: 'A skill with a description matching "draft proposal"', correct: true },
+          { id: 'b', label: 'A slash command — type /draft-proposal every time', correct: false },
+          { id: 'c', label: 'A long passage in CLAUDE.md', correct: false },
+          { id: 'd', label: 'A hook that watches your prompts', correct: false },
+        ],
+        passFeedback: 'STRIKE! Skills auto-invoke when their description matches. No incantation needed.',
+        failFeedback: 'MISS! Skills auto-invoke; commands need typing. You wanted automatic — that\'s skills.',
+      },
+      {
+        prompt: "Permission rule `Bash(rm -rf *)` set to 'deny' — what happens when Claude tries it?",
+        choices: [
+          { id: 'a', label: 'Runs normally', correct: false },
+          { id: 'b', label: 'Claude is blocked from running it, full stop', correct: true },
+          { id: 'c', label: 'Asks for confirmation each time', correct: false },
+          { id: 'd', label: 'Runs but logs a warning', correct: false },
+        ],
+        passFeedback: 'STRIKE! Deny rules = full stop. Layered on top of whatever permission mode you\'re in.',
+        failFeedback: 'MISS! Deny = blocked, no override. Ask = confirms. Allow = runs without nag. Three states.',
+      },
+    ],
   },
 };

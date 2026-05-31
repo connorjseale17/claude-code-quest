@@ -140,9 +140,69 @@ export const claudemdContent: LessonContent = {
         },
         {
           kind: 'say',
-          text: "Through the north door — the Stacks. Bonus lore in there. The Vault past that holds today's challenge. Bring the key when you find it. Hoo.",
+          text: "Through the north door — the Stacks. Bonus lore in there. The Vault past that holds MORDRANG THE SORCERER, an old wraith who remembers nothing and casts memory-rot. Hoo. Bring the key when you take him down.",
         },
       ],
     },
+  },
+  battle: {
+    name: 'MORDRANG',
+    spriteKey: 'mordrang',
+    maxHP: 3,
+    playerHP: 5,
+    phases: 1,
+    introLine: "…another one? remind me… who… who are you again? *the sorcerer's staff trembles* no matter. i shall forget you too.",
+    tauntLines: [
+      "*incants* who… who are you again?",
+      "*staff cracks* memory-rot upon you!",
+      "context-vapor! be gone, stranger!",
+    ],
+    victoryLine: "…ah. i remember now. you are the one who keeps the contract. … *crumbles to dust*",
+    questions: [
+      {
+        prompt: "Your firm uses pnpm + vitest. Claude wastes turns trying `npm test`. Highest-ROI fix?",
+        choices: [
+          { id: 'a', label: 'Tell Claude in every prompt', correct: false },
+          { id: 'b', label: 'Add `Run tests with: pnpm vitest` to CLAUDE.md, check it in', correct: true },
+          { id: 'c', label: "Switch the firm to npm to match Claude's defaults", correct: false },
+          { id: 'd', label: 'Wait for auto-memory to figure it out', correct: false },
+        ],
+        passFeedback: 'STRIKE! One line in the contract. Every session, every teammate, Claude obeys.',
+        failFeedback: 'MISS! CLAUDE.md is the contract Claude reads every session. Bake what it can\'t infer.',
+      },
+      {
+        prompt: "You want a personal rule 'always lint before suggesting a commit' WITHOUT imposing it on teammates. Where?",
+        choices: [
+          { id: 'a', label: './CLAUDE.md (team contract)', correct: false },
+          { id: 'b', label: './CLAUDE.local.md (gitignored, just you)', correct: true },
+          { id: 'c', label: '~/.claude/CLAUDE.md (global preferences)', correct: false },
+          { id: 'd', label: 'A README footnote', correct: false },
+        ],
+        passFeedback: 'STRIKE! .local.md is gitignored. Yours alone. Teammates do their own thing.',
+        failFeedback: 'MISS! .CLAUDE.md is the team contract. Your discipline ≠ their burden. Use .local.md.',
+      },
+      {
+        prompt: "Three hours into a feature, context window is full, but you're close to done. What command?",
+        choices: [
+          { id: 'a', label: '/clear — start fresh', correct: false },
+          { id: 'b', label: '/compact — summarize old turns, keep going', correct: true },
+          { id: 'c', label: '/rewind — go back to a checkpoint', correct: false },
+          { id: 'd', label: '/btw — ask a side question', correct: false },
+        ],
+        passFeedback: 'STRIKE! /compact frees the window without nuking the conversation.',
+        failFeedback: 'MISS! /clear nukes everything. /compact preserves and summarizes. Different tools.',
+      },
+      {
+        prompt: "What does Claude's auto-memory at `~/.claude/projects/<project>/memory/` store?",
+        choices: [
+          { id: 'a', label: 'Your API keys', correct: false },
+          { id: 'b', label: 'Conventions and patterns Claude figured out on its own', correct: true },
+          { id: 'c', label: 'Backups of every prompt you sent', correct: false },
+          { id: 'd', label: 'Output of every shell command', correct: false },
+        ],
+        passFeedback: 'STRIKE! Run /memory to see it. Promote the useful bits to CLAUDE.md.',
+        failFeedback: 'MISS! It\'s a learned-conventions cache. Not a key vault, not a log dump.',
+      },
+    ],
   },
 };

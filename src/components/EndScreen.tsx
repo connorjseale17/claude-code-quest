@@ -43,13 +43,13 @@ export function EndScreen() {
       <PixelSprite frame="victory" scale={6} />
 
       <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '0.02em' }}>
-        <span style={{ color: '#E8633D' }}>{'>'}</span> QUEST COMPLETE
+        <span style={{ color: '#F85149' }}>{'>'}</span> THE OVERLORD HAS FALLEN
       </div>
 
-      <div style={{ fontSize: 14, lineHeight: 1.6, textAlign: 'center', maxWidth: 520, color: '#7D7D7D' }}>
-        You walked the welcome antechamber, the claude.md archives, the slash command registry, the MCP server network, and the subagent briefing room.
+      <div style={{ fontSize: 14, lineHeight: 1.6, textAlign: 'center', maxWidth: 540, color: '#7D7D7D' }}>
+        You cleared the welcome antechamber, the claude.md archives, the slash registry, the MCP network, the subagent pool — and the throne room.
         <br />
-        <span style={{ color: '#E8E8E8' }}>All five levels cleared.</span>
+        <span style={{ color: '#E8E8E8' }}>Six bosses. One operator. The firm endures.</span>
       </div>
 
       <div style={{ display: 'flex', gap: 16 }}>

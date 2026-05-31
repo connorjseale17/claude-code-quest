@@ -5,9 +5,11 @@ import { LEVEL_CONFIGS } from './engine/roomConfigs';
 import { TerminalFrame } from './components/TerminalFrame';
 import { Room } from './components/Room';
 import { ChallengeTerminal } from './components/ChallengeTerminal';
+import { BossBattle } from './components/BossBattle';
 import { LorePanel } from './components/LorePanel';
 import { NPCEncounter } from './components/NPCEncounter';
 import { PracticeTerminal } from './components/PracticeTerminal';
+import { CONTENT } from './content';
 import { PauseMenu } from './components/PauseMenu';
 import { IntroOverlay } from './components/IntroOverlay';
 import { EndScreen } from './components/EndScreen';
@@ -48,7 +50,9 @@ function GameScreen() {
       <div className="flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
           <Room />
-          {state.activePanel?.type === 'challenge' && <ChallengeTerminal />}
+          {state.activePanel?.type === 'challenge' && (
+            CONTENT[state.currentLevel].battle ? <BossBattle /> : <ChallengeTerminal />
+          )}
           {state.activePanel?.type === 'lore' && <LorePanel />}
           {state.activePanel?.type === 'npc' && <NPCEncounter />}
           {state.activePanel?.type === 'practice' && <PracticeTerminal />}

@@ -240,4 +240,76 @@ export const subagentsContent: LessonContent = {
       ],
     },
   },
+  battle: {
+    name: 'THE LICH QUORUM',
+    spriteKey: 'lich',
+    maxHP: 5,
+    playerHP: 5,
+    phases: 2,
+    introLine: "*three skulls hover* we are the unified one. we do every task ourselves. *jaws crack open* we have never delegated. we have never rested.",
+    tauntLines: [
+      "*hollow laugh* WE need no help!",
+      "*skull rotates* parallel is for the WEAK!",
+      "*aura crackles* we did it ALL OURSELVES!",
+      "*shrieks* delegation is DEATH!",
+    ],
+    victoryLine: "…we… we could have… asked for help… *bones clatter to floor*",
+    questions: [
+      {
+        prompt: "Goal: 'find every place we touch client billing in this 500-file repo.' Who do you assign?",
+        choices: [
+          { id: 'a', label: 'Scout / Explore subagent', correct: true },
+          { id: 'b', label: 'The main agent — let it grep around', correct: false },
+          { id: 'c', label: 'A Plan subagent', correct: false },
+          { id: 'd', label: 'You, manually, in your editor', correct: false },
+        ],
+        passFeedback: 'STRIKE! Scout returns paths + line numbers. Main agent keeps its context clean.',
+        failFeedback: 'MISS! Main agent would burn its context on hundreds of greps. Scout is the right tool.',
+      },
+      {
+        prompt: "Client wants a 6-page proposal dashboard with auth, by Friday. First move?",
+        choices: [
+          { id: 'a', label: 'Spawn a Plan subagent with the goal + constraints', correct: true },
+          { id: 'b', label: 'Start coding — figure out architecture as you go', correct: false },
+          { id: 'c', label: 'Write a long CLAUDE.md describing the dashboard', correct: false },
+          { id: 'd', label: 'Email the client for more requirements first', correct: false },
+        ],
+        passFeedback: 'STRIKE! Plan first. Routes, components, auth, deployment — then execute.',
+        failFeedback: 'MISS! Coding first = Thursday-night rewrite. Plan first saves the engagement.',
+      },
+      {
+        prompt: "When should you spawn a Reviewer subagent on your own diff?",
+        choices: [
+          { id: 'a', label: 'After a meaningful diff is ready, before merge', correct: true },
+          { id: 'b', label: 'Continuously while the main agent is still writing', correct: false },
+          { id: 'c', label: 'Only when CI fails', correct: false },
+          { id: 'd', label: 'Never — the writing agent already reviewed', correct: false },
+        ],
+        passFeedback: 'STRIKE! Fresh context catches what the author missed. Cheap insurance.',
+        failFeedback: 'MISS! The writing agent has author-bias. A fresh Reviewer is the point.',
+      },
+      {
+        prompt: "Test fails intermittently — same code, same commit, sometimes pass. WRONG response?",
+        choices: [
+          { id: 'a', label: 'Rerun until it passes — blame flakiness', correct: true },
+          { id: 'b', label: 'Spawn a Debugger with the failing test + repro', correct: false },
+          { id: 'c', label: 'Add timing instrumentation and rerun', correct: false },
+          { id: 'd', label: 'Check for shared state between tests', correct: false },
+        ],
+        passFeedback: 'STRIKE! Flakiness IS a real bug. Race condition, timing, shared state — debug it.',
+        failFeedback: 'MISS! "Rerun until pass" hides the bug. Flaky = real bug telling you something.',
+      },
+      {
+        prompt: "You want a Friday EOW digest: pull merged PRs, summarize, post to #weekly-review. Auto-fires every Friday 5pm. Right primitive?",
+        choices: [
+          { id: 'a', label: 'A /loop scheduled routine on Anthropic infra, weekly cron', correct: true },
+          { id: 'b', label: 'A foreground subagent you remember to spawn each Friday', correct: false },
+          { id: 'c', label: 'A custom /weekly-digest slash command you run manually', correct: false },
+          { id: 'd', label: 'A PostToolUse hook on every PR merge', correct: false },
+        ],
+        passFeedback: 'STRIKE! Routines for recurring. Subagents for one-shots. Hooks for events.',
+        failFeedback: 'MISS! Schedule = routine. /loop runs on Anthropic infra; your laptop can be off.',
+      },
+    ],
+  },
 };
