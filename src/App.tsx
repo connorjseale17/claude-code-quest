@@ -20,6 +20,8 @@ import { SplashScreen } from './components/SplashScreen';
 import { InstructionsScreen } from './components/InstructionsScreen';
 import { CustomizeScreen } from './components/CustomizeScreen';
 import { LoadingScreen } from './components/LoadingScreen';
+import { MobileControls } from './components/MobileControls';
+import { RotatePrompt } from './components/RotatePrompt';
 
 const BASE_W = 960;
 const BASE_H = 640;
@@ -28,13 +30,26 @@ function useScale() {
   const [scale, setScale] = useState(1);
   useEffect(() => {
     const update = () => {
-      const sx = (window.innerWidth * 0.94) / BASE_W;
-      const sy = (window.innerHeight * 0.92) / BASE_H;
+      // Touch devices: use nearly the full viewport (real estate is precious).
+      // Desktop: keep the existing breathing-room margins.
+      const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+      const wPad = isCoarse ? 1.0 : 0.94;
+      const hPad = isCoarse ? 1.0 : 0.92;
+      // Prefer documentElement.clientHeight on mobile — it tracks dvh better
+      // than window.innerHeight on iOS Safari with the URL bar in flux.
+      const h = isCoarse ? document.documentElement.clientHeight : window.innerHeight;
+      const w = isCoarse ? document.documentElement.clientWidth : window.innerWidth;
+      const sx = (w * wPad) / BASE_W;
+      const sy = (h * hPad) / BASE_H;
       setScale(Math.min(sx, sy));
     };
     update();
     window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
   }, []);
   return scale;
 }
@@ -127,6 +142,10 @@ export default function App() {
           <PhaseRouter />
         </div>
       </div>
+      {/* Touch overlay layers — rendered OUTSIDE the scaled canvas so they're
+          always real CSS pixels, and only visible on coarse-pointer devices. */}
+      <MobileControls />
+      <RotatePrompt />
     </GameProvider>
   );
 }

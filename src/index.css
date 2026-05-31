@@ -130,11 +130,38 @@
 html, body, #root {
   margin: 0;
   padding: 0;
-  height: 100%;
+  /* Use small-viewport units so iOS Safari's URL bar doesn't shrink content on toggle. */
+  height: 100svh;
+  height: 100dvh;
+  width: 100vw;
   background: #0E0E0E;
   font-family: var(--font-mono);
   color: #E8E8E8;
   -webkit-font-smoothing: antialiased;
   image-rendering: pixelated;
   overflow: hidden;
+}
+
+/* Lock down all browser default touch gestures (scroll, overscroll bounce,
+   pinch, text selection, image-preview hold). The game owns every gesture. */
+body {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide the desktop-decorative DPad on touch devices — MobileControls replaces it. */
+@media (pointer: coarse) {
+  .cc-desktop-dpad { display: none !important; }
+}
+
+@keyframes cc-rotate-hint {
+  0%, 30%  { transform: rotate(0deg); }
+  60%      { transform: rotate(-90deg); }
+  100%     { transform: rotate(-90deg); }
 }
