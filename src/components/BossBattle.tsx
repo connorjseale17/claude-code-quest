@@ -7,12 +7,12 @@ import { ChoicePicker } from './ChoicePicker';
 import { PixelSprite } from './PixelSprite';
 import { BossSprite, type BossDisplayPhase } from './BossSprite';
 import { HPBar } from './HPBar';
-import { SceneDodge } from './SceneDodge';
 
-type BattlePhase = 'intro' | 'question' | 'resolve' | 'dodge' | 'victory' | 'defeat';
+type BattlePhase = 'intro' | 'question' | 'resolve' | 'strike' | 'victory' | 'defeat';
+type HitTarget = 'bot' | 'boss' | null;
 
 const RESOLVE_BANNER_MS = 1500;
-const HIT_FLASH_MS = 250;
+const STRIKE_MS = 900;
 const DEFEAT_HOLD_MS = 1800;
 
 export function BossBattle() {
@@ -30,8 +30,7 @@ export function BossBattle() {
   const [playerHP, setPlayerHP] = useState(battle?.playerHP ?? 5);
   const [questionIdx, setQuestionIdx] = useState(0);
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
-  const [dodgeDifficulty, setDodgeDifficulty] = useState<'easy' | 'hard'>('easy');
-  const [shake, setShake] = useState(false);
+  const [hitTarget, setHitTarget] = useState<HitTarget>(null);
   const tauntRef = useRef<string>(battle?.tauntLines[0] ?? '');
 
   const currentQuestion = battle?.questions[questionIdx];
@@ -55,7 +54,7 @@ export function BossBattle() {
     setPlayerHP(battle.playerHP ?? 5);
     setQuestionIdx(0);
     setSelectedChoiceId(null);
-    setDodgeDifficulty('easy');
+    setHitTarget(null);
     setPhase('intro');
   }, [battle]);
 
@@ -70,25 +69,26 @@ export function BossBattle() {
     dispatch({ type: 'PASS_CHALLENGE' });
   }, [dispatch]);
 
-  // ---- resolve banner → dodge wave ----
+  // ---- resolve banner → strike ----
   useEffect(() => {
     if (phase !== 'resolve') return;
-    const id = window.setTimeout(() => setPhase('dodge'), RESOLVE_BANNER_MS);
+    const id = window.setTimeout(() => setPhase('strike'), RESOLVE_BANNER_MS);
     return () => clearTimeout(id);
   }, [phase]);
 
-  // ---- Dodge wave resolves via the SceneDodge callback ----
-  const handleDodgeResolve = useCallback(
-    (heartsLost: number) => {
-      if (!battle) return;
-      if (heartsLost > 0) {
-        setShake(true);
-        window.setTimeout(() => setShake(false), HIT_FLASH_MS);
-      }
-      const newPlayerHP = Math.max(0, playerHP - heartsLost);
-      const newBossHP = lastWasCorrect ? Math.max(0, bossHP - 1) : bossHP;
-      setPlayerHP(newPlayerHP);
-      setBossHP(newBossHP);
+  // ---- strike: apply damage + flash, then transition ----
+  useEffect(() => {
+    if (phase !== 'strike' || !battle) return;
+
+    // Apply HP at strike start so the bar drains in sync with the flash.
+    const newBossHP = lastWasCorrect ? Math.max(0, bossHP - 1) : bossHP;
+    const newPlayerHP = lastWasCorrect ? playerHP : Math.max(0, playerHP - 1);
+    setHitTarget(lastWasCorrect ? 'boss' : 'bot');
+    setBossHP(newBossHP);
+    setPlayerHP(newPlayerHP);
+
+    const id = window.setTimeout(() => {
+      setHitTarget(null);
       if (newBossHP <= 0) {
         setPhase('victory');
       } else if (newPlayerHP <= 0) {
@@ -98,9 +98,10 @@ export function BossBattle() {
         setSelectedChoiceId(null);
         setPhase('question');
       }
-    },
-    [battle, playerHP, bossHP, lastWasCorrect],
-  );
+    }, STRIKE_MS);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   // ---- Keyboard: SPACE advances intro → question, victory → dispatch ----
   useEffect(() => {
@@ -133,19 +134,18 @@ export function BossBattle() {
   const bossDisplay: BossDisplayPhase =
     phase === 'victory'
       ? 'defeat'
-      : phase === 'dodge'
-        ? 'attack'
-        : phase === 'resolve' && lastWasCorrect
-          ? 'hurt'
+      : hitTarget === 'boss'
+        ? 'hurt'
+        : phase === 'strike' && !lastWasCorrect
+          ? 'attack'
           : 'idle';
 
-  const inDodge = phase === 'dodge';
+  // Whole-screen shake only when the PLAYER is hit.
+  const screenShake = phase === 'strike' && hitTarget === 'bot';
 
   function handleChoice(choiceId: string) {
     if (phase !== 'question' || !currentQuestion) return;
     setSelectedChoiceId(choiceId);
-    const choice = currentQuestion.choices.find(c => c.id === choiceId);
-    setDodgeDifficulty(choice?.correct ? 'easy' : 'hard');
     setPhase('resolve');
   }
 
@@ -155,7 +155,7 @@ export function BossBattle() {
       style={{
         background: '#050505',
         fontFamily: "'JetBrains Mono', monospace",
-        animation: shake ? 'cc-shake 250ms steps(4, end)' : undefined,
+        animation: screenShake ? 'cc-shake 250ms steps(4, end) 2' : undefined,
       }}
     >
       {/* HP bars row */}
@@ -164,7 +164,7 @@ export function BossBattle() {
         <HPBar current={bossHP} max={maxBossHP} accent={accent} align="right" label={battle.name} />
       </div>
 
-      {/* Scene area — also hosts the dodge minigame */}
+      {/* Scene area */}
       <div className="flex-1 relative overflow-hidden">
         {/* Boss sprite — upper-right */}
         <div
@@ -175,50 +175,44 @@ export function BossBattle() {
             zIndex: 1,
             opacity: phase === 'defeat' ? 0.5 : 1,
             transition: 'opacity 300ms ease-out',
+            animation:
+              hitTarget === 'boss'
+                ? 'cc-hit-flash 900ms linear 1, cc-shake 250ms steps(4, end) 2'
+                : undefined,
           }}
         >
           <BossSprite spriteKey={battle.spriteKey} phase={bossDisplay} accent={accent} scale={6} art={battle.art} />
         </div>
 
-        {/* Static bot (hidden during dodge — SceneDodge renders the movable one) */}
-        {!inDodge && (
-          <div style={{ position: 'absolute', bottom: 8, left: 60, opacity: phase === 'defeat' ? 0.4 : 1 }}>
-            <PixelSprite frame="bot_back" scale={6} primaryColor={state.player.botColor} />
-          </div>
-        )}
-
-        {/* In-scene dodge: boss flings fireballs, you move the bot */}
-        {inDodge && (
-          <SceneDodge
-            difficulty={dodgeDifficulty}
-            botColor={state.player.botColor}
-            accent={accent}
-            onResolve={handleDodgeResolve}
-          />
-        )}
+        {/* Bot — lower-left (back view). Always rendered at scale 6 — never resized. */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 8,
+            left: 60,
+            opacity: phase === 'defeat' ? 0.4 : 1,
+            animation: hitTarget === 'bot' ? 'cc-hit-flash 900ms linear 1' : undefined,
+          }}
+        >
+          <PixelSprite frame="bot_back" scale={6} primaryColor={state.player.botColor} />
+        </div>
       </div>
 
-      {/* Bottom panel — collapses to a status strip during the dodge */}
+      {/* Bottom panel */}
       <div
         style={{
-          minHeight: inDodge ? 56 : '38%',
-          maxHeight: inDodge ? 56 : '52%',
-          height: inDodge ? 56 : undefined,
+          minHeight: '38%',
+          maxHeight: '52%',
           background: '#0A0A0A',
           borderTop: `2px solid ${accent}`,
-          padding: inDodge ? '0 28px' : '18px 28px',
+          padding: '18px 28px',
           color: '#E8E8E8',
-          overflowY: inDodge ? 'hidden' : 'auto',
-          display: inDodge ? 'flex' : undefined,
-          alignItems: inDodge ? 'center' : undefined,
-          justifyContent: inDodge ? 'center' : undefined,
+          overflowY: 'auto',
         }}
       >
-        {!inDodge && (
-          <div style={{ color: accent, fontSize: 11, letterSpacing: '0.14em', marginBottom: 10 }}>
-            {battle.name}
-          </div>
-        )}
+        <div style={{ color: accent, fontSize: 11, letterSpacing: '0.14em', marginBottom: 10 }}>
+          {battle.name}
+        </div>
 
         {phase === 'intro' && (
           <>
@@ -252,7 +246,7 @@ export function BossBattle() {
           </>
         )}
 
-        {phase === 'resolve' && (
+        {(phase === 'resolve' || phase === 'strike') && (
           <div
             style={{
               padding: '14px 16px',
@@ -263,7 +257,7 @@ export function BossBattle() {
             }}
           >
             <div style={{ color: lastWasCorrect ? '#3FB950' : '#F85149', fontWeight: 700, marginBottom: 6 }}>
-              {lastWasCorrect ? '⚔ STRIKE — incoming counterattack!' : '✗ MISS — brace yourself!'}
+              {lastWasCorrect ? `⚔ STRIKE — ${battle.name} takes a hit!` : `✗ MISS — ${battle.name} strikes you!`}
             </div>
             {lastWasCorrect ? currentQuestion.passFeedback : currentQuestion.failFeedback}
             {!lastWasCorrect && (
@@ -271,19 +265,6 @@ export function BossBattle() {
                 {tauntRef.current}
               </div>
             )}
-          </div>
-        )}
-
-        {inDodge && (
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 700,
-              letterSpacing: '0.18em',
-              color: dodgeDifficulty === 'easy' ? '#3FB950' : '#F85149',
-            }}
-          >
-            — {battle.name} ATTACKS — DODGE! ←↑↓→ / WASD —
           </div>
         )}
 

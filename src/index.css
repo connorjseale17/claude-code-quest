@@ -92,6 +92,21 @@
   100% { transform: translate(0, 0); }
 }
 
+/* Classic "took damage" invuln blink — red/white flash, ~900ms. */
+@keyframes cc-hit-flash {
+  0%, 100% { filter: none; }
+  10%  { filter: brightness(3) saturate(0); }
+  20%  { filter: brightness(1) sepia(1) saturate(8) hue-rotate(-35deg); }
+  30%  { filter: brightness(3) saturate(0); }
+  45%  { filter: brightness(1) sepia(1) saturate(8) hue-rotate(-35deg); }
+  60%  { filter: brightness(3) saturate(0); }
+  75%  { filter: brightness(1) sepia(1) saturate(8) hue-rotate(-35deg); }
+  90%  { filter: brightness(2.4) saturate(0); }
+}
+.cc-hit-flash {
+  animation: cc-hit-flash 900ms linear 1;
+}
+
 ::selection {
   background: #E8633D;
   color: #1A1A1A;
