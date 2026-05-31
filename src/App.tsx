@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GameProvider, useGame } from './engine/GameContext';
 import { useMovement } from './engine/useMovement';
+import { DevMenu } from './components/DevMenu';
 import { LEVEL_CONFIGS } from './engine/roomConfigs';
 import { TerminalFrame } from './components/TerminalFrame';
 import { Room } from './components/Room';
@@ -38,7 +39,7 @@ function useScale() {
   return scale;
 }
 
-function GameScreen() {
+function GameScreen({ onDevToggle }: { onDevToggle: () => void }) {
   const state = useGame();
   useMovement();
 
@@ -46,7 +47,7 @@ function GameScreen() {
   const title = `level ${String(level.number).padStart(2, '0')} — ${level.title.toLowerCase()}`;
 
   return (
-    <TerminalFrame title={title}>
+    <TerminalFrame title={title} onDevToggle={onDevToggle}>
       <div className="flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
           <Room />
@@ -67,28 +68,46 @@ function GameScreen() {
 
 function PhaseRouter() {
   const state = useGame();
+  const [devOpen, setDevOpen] = useState(false);
+  const toggleDev = () => setDevOpen(v => !v);
+  const closeDev = () => setDevOpen(false);
 
+  let screen: React.ReactNode;
   switch (state.gamePhase) {
     case 'boot':
-      return <BootScreen />;
+      screen = <BootScreen />;
+      break;
     case 'splash':
-      return <SplashScreen />;
+      screen = <SplashScreen />;
+      break;
     case 'instructions':
-      return <InstructionsScreen />;
+      screen = <InstructionsScreen />;
+      break;
     case 'customize':
-      return <CustomizeScreen />;
+      screen = <CustomizeScreen />;
+      break;
     case 'loading':
-      return <LoadingScreen />;
+      screen = <LoadingScreen />;
+      break;
     case 'gameOver':
-      return (
-        <TerminalFrame title="claude-code-quest --complete" accent>
+      screen = (
+        <TerminalFrame title="claude-code-quest --complete" accent onDevToggle={toggleDev}>
           <EndScreen />
         </TerminalFrame>
       );
+      break;
     case 'playing':
     default:
-      return <GameScreen />;
+      screen = <GameScreen onDevToggle={toggleDev} />;
+      break;
   }
+
+  return (
+    <div className="h-full w-full relative">
+      {screen}
+      <DevMenu open={devOpen} onClose={closeDev} />
+    </div>
+  );
 }
 
 export default function App() {

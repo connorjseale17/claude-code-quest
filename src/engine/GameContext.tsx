@@ -146,7 +146,9 @@ export type GameAction =
   | { type: 'COMPLETE_LEVEL_TRANSITION' }
   | { type: 'SET_PLAYER'; name: string; botColor: string }
   | { type: 'UNLOCK_PRIZE'; prizeId: string }
-  | { type: 'MARK_LESSON_COMPLETED'; npcId: string };
+  | { type: 'MARK_LESSON_COMPLETED'; npcId: string }
+  | { type: 'DEV_WARP_LEVEL'; levelId: LevelId }
+  | { type: 'DEV_UNLOCK_CURRENT' };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -244,6 +246,36 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, showIntro: false };
     case 'GAME_OVER':
       return { ...state, gameOver: true, gamePhase: 'gameOver' };
+    case 'DEV_WARP_LEVEL': {
+      const cfg = LEVEL_CONFIGS[action.levelId];
+      const chamberId = cfg.startingChamber;
+      const chamber = cfg.chambers[chamberId];
+      const ch = state.chambers[chamberId] ?? { ...initialChamberState };
+      return {
+        ...state,
+        gamePhase: 'playing',
+        gameOver: false,
+        currentLevel: action.levelId,
+        currentChamber: chamberId,
+        bot: { x: chamber.spawnX, y: chamber.spawnY, facing: 'right', animation: 'idle' },
+        chambers: { ...state.chambers, [chamberId]: { ...ch, visited: true } },
+        activePanel: null,
+        paused: false,
+        pendingLevelTransition: null,
+        showIntro: false,
+      };
+    }
+    case 'DEV_UNLOCK_CURRENT': {
+      const lvl = state.levels[state.currentLevel];
+      return {
+        ...state,
+        levels: {
+          ...state.levels,
+          [state.currentLevel]: { ...lvl, challengePassed: true, keyCollected: true },
+        },
+        activePanel: null,
+      };
+    }
     case 'TOGGLE_PAUSE':
       return { ...state, paused: !state.paused };
     case 'START_LEVEL_TRANSITION':
