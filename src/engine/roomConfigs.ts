@@ -209,6 +209,16 @@ function buildWelcomeLevel(): LevelConfig {
   const aTiles = blankTileMap(aW, aH);
   // East door opens (unlocked) to Sanctum
   aTiles[6][aW - 1] = 2;
+  // Maze: crate stacks + signage pillars. Critical path along row 6.
+  // Lore alcoves: manual (NW), sticky-note + lore alcoves (N-center, N-east), practice (SW).
+  fillRect(aTiles, 4, 2, 4, 5, 1);
+  fillRect(aTiles, 4, 7, 4, 10, 1);
+  fillRect(aTiles, 8, 1, 8, 4, 1);
+  fillRect(aTiles, 8, 7, 8, 10, 1);
+  fillRect(aTiles, 12, 1, 12, 5, 1);
+  fillRect(aTiles, 12, 7, 12, 10, 1);
+  fillRect(aTiles, 16, 1, 16, 5, 1);
+  fillRect(aTiles, 16, 7, 16, 10, 1);
 
   const antechamber: ChamberConfig = {
     id: 'welcome-antechamber',
@@ -329,6 +339,16 @@ function buildClaudemdLevel(): LevelConfig {
   const aTiles = blankTileMap(aW, aH);
   // North door (open) to Stacks
   aTiles[0][11] = 2;
+  // Library carrels: 8 desk pillars create aisles toward Archivist Owl + N door.
+  // Lore old-note (5,3) in NW alcove; log (17,4) in NE alcove. Owl on spine.
+  fillRect(aTiles, 4, 1, 4, 4, 1);
+  fillRect(aTiles, 8, 1, 8, 4, 1);
+  fillRect(aTiles, 13, 1, 13, 4, 1);
+  fillRect(aTiles, 18, 1, 18, 4, 1);
+  fillRect(aTiles, 4, 7, 4, 10, 1);
+  fillRect(aTiles, 8, 7, 8, 10, 1);
+  fillRect(aTiles, 13, 7, 13, 10, 1);
+  fillRect(aTiles, 18, 7, 18, 10, 1);
   // East door (closed corridor to nowhere — purely decorative break)
 
   const archives: ChamberConfig = {
@@ -435,6 +455,13 @@ function buildClaudemdLevel(): LevelConfig {
   vTiles[6][0] = 2;
   // East door to next level
   vTiles[6][vW - 1] = 2;
+  // Ceremonial vault: flanking colonnades + small north alcove.
+  // South colonnades at rows 7-9 (off spine, which lives on row 6).
+  fillRect(vTiles, 4, 2, 4, 4, 1);
+  fillRect(vTiles, 4, 7, 4, 9, 1);
+  fillRect(vTiles, 8, 2, 8, 3, 1);
+  fillRect(vTiles, 13, 2, 13, 4, 1);
+  fillRect(vTiles, 13, 7, 13, 9, 1);
 
   const vault: ChamberConfig = {
     id: 'claudemd-vault',
@@ -499,6 +526,16 @@ function buildSlashLevel(): LevelConfig {
   const aW = 18, aH = 11;
   const aTiles = blankTileMap(aW, aH);
   aTiles[5][aW - 1] = 2; // east door to registry
+  // Queue-stanchion switchback: N alcove holds command-sheet, S alcove holds index.
+  // Critical path along row 5 past Clerk Cat.
+  fillRect(aTiles, 4, 1, 4, 3, 1);
+  fillRect(aTiles, 8, 1, 8, 3, 1);
+  fillRect(aTiles, 11, 1, 11, 3, 1);
+  fillRect(aTiles, 14, 1, 14, 3, 1);
+  fillRect(aTiles, 4, 7, 4, 9, 1);
+  fillRect(aTiles, 7, 7, 7, 9, 1);
+  fillRect(aTiles, 10, 7, 10, 9, 1);
+  fillRect(aTiles, 14, 7, 14, 9, 1);
 
   const foyer: ChamberConfig = {
     id: 'slash-foyer',
@@ -600,6 +637,12 @@ function buildSlashLevel(): LevelConfig {
   const eTiles = blankTileMap(eW, eH);
   eTiles[5][0] = 2;
   eTiles[5][eW - 1] = 2;
+  // Stage approach: flanking control booths frame a central aisle.
+  fillRect(eTiles, 4, 1, 4, 3, 1);
+  fillRect(eTiles, 4, 7, 4, 9, 1);
+  fillRect(eTiles, 7, 7, 7, 9, 1);
+  fillRect(eTiles, 13, 1, 13, 3, 1);
+  fillRect(eTiles, 13, 7, 13, 9, 1);
 
   const execution: ChamberConfig = {
     id: 'slash-execution',
@@ -664,6 +707,16 @@ function buildMcpLevel(): LevelConfig {
   const aW = 22, aH = 12;
   const aTiles = blankTileMap(aW, aH);
   aTiles[6][aW - 1] = 2;
+  // Patch-panel switchboard: equipment racks carve a serpentine path past Duck.
+  // NW alcove holds broadcast, SE alcove holds connection-log.
+  fillRect(aTiles, 4, 1, 4, 4, 1);
+  fillRect(aTiles, 4, 8, 4, 10, 1);
+  fillRect(aTiles, 8, 1, 8, 3, 1);
+  fillRect(aTiles, 8, 7, 8, 10, 1);
+  fillRect(aTiles, 13, 1, 13, 4, 1);
+  fillRect(aTiles, 13, 8, 13, 10, 1);
+  fillRect(aTiles, 17, 1, 17, 3, 1);
+  fillRect(aTiles, 17, 7, 17, 10, 1);
 
   const hub: ChamberConfig = {
     id: 'mcp-hub',
@@ -766,6 +819,14 @@ function buildMcpLevel(): LevelConfig {
   const iTiles = blankTileMap(iW, iH);
   iTiles[5][0] = 2;
   iTiles[5][iW - 1] = 2;
+  // Twin server cabinets framing the integration aisle.
+  fillRect(iTiles, 4, 1, 4, 3, 1);
+  fillRect(iTiles, 4, 7, 4, 9, 1);
+  fillRect(iTiles, 7, 1, 7, 3, 1);
+  fillRect(iTiles, 9, 1, 9, 3, 1);
+  fillRect(iTiles, 7, 7, 7, 9, 1);
+  fillRect(iTiles, 13, 1, 13, 3, 1);
+  fillRect(iTiles, 13, 7, 13, 9, 1);
 
   const integration: ChamberConfig = {
     id: 'mcp-integration',
@@ -830,6 +891,15 @@ function buildSubagentsLevel(): LevelConfig {
   const aW = 20, aH = 12;
   const aTiles = blankTileMap(aW, aH);
   aTiles[6][aW - 1] = 2;
+  // Cubicle dividers: N alcove holds roster, S alcove holds mission-brief.
+  // Scout and Planner sit between dividers; critical path threads past them.
+  fillRect(aTiles, 4, 1, 4, 3, 1);
+  fillRect(aTiles, 4, 8, 4, 10, 1);
+  fillRect(aTiles, 8, 1, 8, 3, 1);
+  fillRect(aTiles, 11, 1, 11, 3, 1);
+  fillRect(aTiles, 13, 7, 13, 10, 1);
+  fillRect(aTiles, 16, 1, 16, 3, 1);
+  fillRect(aTiles, 16, 7, 16, 10, 1);
 
   const lobby: ChamberConfig = {
     id: 'subagents-lobby',
@@ -887,6 +957,15 @@ function buildSubagentsLevel(): LevelConfig {
   const pTiles = blankTileMap(pW, pH);
   pTiles[7][0] = 2;
   pTiles[7][pW - 1] = 2;
+  // Workstation pods: corner alcoves hold fragment-x (NW), fragment-y (SE),
+  // practice (S-center). A spine block forces a north detour past Reviewer + Debugger.
+  fillRect(pTiles, 2, 3, 5, 3, 1);     // NW alcove S boundary (fragment-x at 4,2)
+  fillRect(pTiles, 12, 3, 15, 3, 1);   // NE alcove S boundary
+  fillRect(pTiles, 5, 10, 5, 12, 1);   // practice alcove W boundary
+  fillRect(pTiles, 7, 10, 11, 10, 1);  // practice alcove N boundary (open at col 6)
+  fillRect(pTiles, 12, 9, 15, 9, 1);   // SE alcove N boundary (entry via col 16; fragment-y at 14,11)
+  fillRect(pTiles, 12, 10, 12, 12, 1); // SE alcove W boundary
+  fillRect(pTiles, 8, 6, 9, 8, 1);     // spine pinch — forces detour north past bots
 
   const pool: ChamberConfig = {
     id: 'subagents-pool',
@@ -954,6 +1033,14 @@ function buildSubagentsLevel(): LevelConfig {
   const bTiles = blankTileMap(bW, bH);
   bTiles[5][0] = 2;
   bTiles[5][bW - 1] = 2;
+  // Ops room — single inner ring with openings at row 5 (W + E spine).
+  // Terminal sits in the N inner alcove, key in the S inner alcove.
+  fillRect(bTiles, 3, 2, 3, 4, 1);   // W wall upper
+  fillRect(bTiles, 3, 6, 3, 7, 1);   // W wall lower
+  fillRect(bTiles, 4, 2, 12, 2, 1);  // N wall
+  fillRect(bTiles, 12, 3, 12, 4, 1); // E wall upper
+  fillRect(bTiles, 12, 6, 12, 7, 1); // E wall lower
+  fillRect(bTiles, 4, 8, 12, 8, 1);  // S wall
 
   const briefing: ChamberConfig = {
     id: 'subagents-briefing',
@@ -1018,6 +1105,9 @@ function buildFinalBossLevel(): LevelConfig {
   const tTiles = blankTileMap(tW, tH);
   // West door (entry from subagents-briefing)
   tTiles[6][0] = 2;
+  // Extra colonnade pillars for ceremonial approach.
+  fillRect(tTiles, 10, 4, 10, 5, 1);
+  fillRect(tTiles, 10, 8, 10, 9, 1);
   // East door (game end, locked until boss falls)
   tTiles[6][tW - 1] = 2;
   // Throne platform — two columns of "pillar" walls flanking center
