@@ -77,6 +77,12 @@
   animation: cc-led-pulse 1.4s ease-in-out infinite;
 }
 
+/* Boss idle bob (image-based bosses). */
+@keyframes cc-boss-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
 /* Boss-battle screen shake on damage. */
 @keyframes cc-shake {
   0%   { transform: translate(0, 0); }

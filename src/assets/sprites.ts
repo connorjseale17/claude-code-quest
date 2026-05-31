@@ -369,6 +369,24 @@ FRAMES.heart = fixWidths([
   '................',
 ]);
 
+// Fireball projectile (boss attack in the dodge phase). '1' tints, '4' = hot core.
+FRAMES.fireball = fixWidths([
+  '................',
+  '................',
+  '................',
+  '.......11.......',
+  '......1141......',
+  '.....114441.....',
+  '.....144441.....',
+  '....1144441.....',
+  '....1444441.....',
+  '.....114441.....',
+  '......1441......',
+  '.......11.......',
+  '................',
+  '................',
+]);
+
 // =====================
 // Boss sprites — palette '1' tints to level accentColor.
 // Each boss: idle_1, idle_2 (animated cycle), attack, hurt, defeat.

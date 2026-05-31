@@ -29,6 +29,10 @@ export type BossBattle = {
   tauntLines: string[];
   victoryLine: string;
   questions: BattleQuestion[];
+  /** Optional real-image art. When set, BossSprite renders an <img> (with CSS
+   *  state effects) instead of the palette-grid sprite. Drop a PNG at
+   *  public/sprites/bosses/<name>.png and set src: '/sprites/bosses/<name>.png'. */
+  art?: { src: string; width?: number };
 };
 
 export type BattleQuestion = {
