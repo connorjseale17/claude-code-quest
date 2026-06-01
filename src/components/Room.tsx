@@ -50,12 +50,25 @@ export function Room() {
         height: totalHeight,
       }}
     >
-      {/* Floor and walls */}
+      {/* Floor and walls — walls render as void-black; floor tiles adjacent
+          to walls get a 3px orange edge strip on each wall-facing side
+          (bright on top/left, dark on bottom/right). Matches the design
+          file aesthetic. */}
       {chamber.tiles.map((row, y) =>
         row.map((tile, x) => {
           const isWall = tile === 1;
           const isDoorTile = chamber.doors.some(d => d.x === x && d.y === y);
           if (isDoorTile) return null;
+
+          // For floor tiles only, check each neighbor for wall adjacency.
+          const isWallTile = (nx: number, ny: number) => {
+            if (nx < 0 || ny < 0 || nx >= chamber.width || ny >= chamber.height) return true;
+            return chamber.tiles[ny][nx] === 1;
+          };
+          const wallNorth = !isWall && isWallTile(x, y - 1);
+          const wallSouth = !isWall && isWallTile(x, y + 1);
+          const wallWest = !isWall && isWallTile(x - 1, y);
+          const wallEast = !isWall && isWallTile(x + 1, y);
 
           const isFloorDot =
             !isWall &&
@@ -64,6 +77,10 @@ export function Room() {
             x > 0 && y > 0 &&
             x < chamber.width - 1 &&
             y < chamber.height - 1;
+
+          const edgeLight = theme.accentColor;
+          const edgeDark = theme.wallShadow ?? theme.accentColor;
+          const stripT = 3;
 
           return (
             <div
@@ -74,9 +91,21 @@ export function Room() {
                 top: y * TILE_SIZE,
                 width: TILE_SIZE,
                 height: TILE_SIZE,
-                background: isWall ? theme.wallColor : theme.floorColor,
+                background: isWall ? '#0C0B0A' : theme.floorColor,
               }}
             >
+              {wallNorth && (
+                <div className="absolute" style={{ left: 0, top: 0, width: TILE_SIZE, height: stripT, background: edgeLight }} />
+              )}
+              {wallWest && (
+                <div className="absolute" style={{ left: 0, top: 0, width: stripT, height: TILE_SIZE, background: edgeLight }} />
+              )}
+              {wallSouth && (
+                <div className="absolute" style={{ left: 0, top: TILE_SIZE - stripT, width: TILE_SIZE, height: stripT, background: edgeDark }} />
+              )}
+              {wallEast && (
+                <div className="absolute" style={{ left: TILE_SIZE - stripT, top: 0, width: stripT, height: TILE_SIZE, background: edgeDark }} />
+              )}
               {isFloorDot && (
                 <div
                   className="absolute"

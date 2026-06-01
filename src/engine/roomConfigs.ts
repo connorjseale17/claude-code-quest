@@ -295,7 +295,9 @@ function buildWelcomeLevel(): LevelConfig {
     spawnX: 1,
     spawnY: 6,
     items: [
-      { id: 'terminal', type: 'challenge', x: 9, y: 5, sprite: 'crt_monitor' },
+      // The EMBERLING boss visual — bestiary slime sprite, animated 2-frame
+      // bounce. Interacting opens the boss battle.
+      { id: 'terminal', type: 'challenge', x: 9, y: 5, sprite: 'slime_a' },
     ],
     doors: [
       {

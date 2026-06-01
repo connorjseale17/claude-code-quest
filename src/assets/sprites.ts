@@ -7,6 +7,13 @@ export const PIXEL_PALETTE: Record<string, string | null> = {
   '5': '#3FB950',
   '7': '#E8E8E8',
   '8': '#6BA8DD',
+
+  // Bestiary palette extensions — per-enemy fixed colors (not tint-overridden).
+  // Slime
+  'a': '#46C95C',
+  'b': '#1F8F38',
+  'c': '#0F2A16',
+  'd': '#DFF7E4',
 };
 
 const W = 16;
@@ -1004,4 +1011,43 @@ FRAMES.overlord_defeat = W32([
   '..........333333333.............',
   '...........333333...............',
   '.............333................',
+]);
+
+// =============================================================================
+// BESTIARY — overworld enemy sprites (palette is per-enemy, not theme-tinted).
+// 14×16 grids matching the bestiary HTML. Each enemy is a 2-frame loop.
+// =============================================================================
+
+// SLIME (Emberling visual) — bouncing green blob, frame B is the squash.
+FRAMES.slime_a = fixWidths([
+  '.....aaaaaa.....',
+  '...aaaaaaaaaa...',
+  '..aaaaaaaaaaaa..',
+  '.aaaaaaaaaaaaaa.',
+  'aaaaaaaaaaaaaaaa',
+  'aaaaccaaaaccaaaa',
+  'aaaadcaaaadcaaaa',
+  'aaaaaaaaaaaaaaaa',
+  'aaaaaaaaaaaaaaaa',
+  'aaaaaaaaaaaaaaaa',
+  '.aaaaaaaaaaaaaa.',
+  '..bbbbbbbbbbbb..',
+  '...bbbbbbbbbb...',
+  '.....bbbbbb.....',
+]);
+FRAMES.slime_b = fixWidths([
+  '................',
+  '................',
+  '....aaaaaaaa....',
+  '..aaaaaaaaaaaa..',
+  '.aaaaaaaaaaaaaa.',
+  'aaaaccaaaaccaaaa',
+  'aaaacdaaaacdaaaa',
+  'aaaaaaaaaaaaaaaa',
+  'aaaaaaaaaaaaaaaa',
+  '.aaaaaaaaaaaaaa.',
+  '..bbbbbbbbbbbb..',
+  '...bbbbbbbbbb...',
+  '.....bbbbbb.....',
+  '................',
 ]);
