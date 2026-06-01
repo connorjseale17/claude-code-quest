@@ -20,13 +20,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     "tiles": [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
-      [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2],
-      [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
-      [1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1],
       [1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -35,15 +35,15 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       {
         "id": "manual",
         "type": "lore",
-        "x": 7,
-        "y": 6,
+        "x": 6,
+        "y": 4,
         "sprite": "paper"
       },
       {
         "id": "sticky-note",
         "type": "lore",
-        "x": 16,
-        "y": 4,
+        "x": 15,
+        "y": 5,
         "sprite": "paper"
       }
     ],
@@ -65,7 +65,7 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       {
         "id": "guide-bot",
         "x": 12,
-        "y": 5,
+        "y": 3,
         "color": "#3FB950",
         "name": "Guide-bot",
         "dialog": [
@@ -78,7 +78,7 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     ],
     "decorations": [
       {
-        "x": 7,
+        "x": 6,
         "y": 2,
         "sprite": "barrel"
       },
@@ -93,18 +93,18 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "banner"
       },
       {
-        "x": 7,
-        "y": 9,
+        "x": 3,
+        "y": 6,
         "sprite": "bones"
       },
       {
         "x": 2,
-        "y": 2,
+        "y": 8,
         "sprite": "puddle"
       },
       {
-        "x": 1,
-        "y": 10,
+        "x": 8,
+        "y": 5,
         "sprite": "brazier"
       },
       {
@@ -118,13 +118,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "wall_runes"
       },
       {
-        "x": 2,
-        "y": 6,
-        "sprite": "summoning_circle"
+        "x": 8,
+        "y": 2,
+        "sprite": "brazier"
       }
     ],
     "spawnX": 2,
-    "spawnY": 6
+    "spawnY": 5
   },
   "welcome-sanctum": {
     "width": 19,
@@ -155,14 +155,14 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "id": "proposal-architect-practice",
         "type": "practice",
         "x": 8,
-        "y": 4,
+        "y": 2,
         "sprite": "hint_token"
       },
       {
         "id": "side-note",
         "type": "lore",
-        "x": 3,
-        "y": 6,
+        "x": 2,
+        "y": 3,
         "sprite": "paper"
       }
     ],
@@ -212,12 +212,7 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "treasure_chest"
       },
       {
-        "x": 8,
-        "y": 4,
-        "sprite": "crt_terminal"
-      },
-      {
-        "x": 1,
+        "x": 11,
         "y": 1,
         "sprite": "cobweb"
       },
@@ -227,19 +222,14 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "chains"
       },
       {
-        "x": 8,
+        "x": 9,
         "y": 9,
         "sprite": "bones"
       },
       {
-        "x": 17,
-        "y": 10,
+        "x": 5,
+        "y": 1,
         "sprite": "cobweb"
-      },
-      {
-        "x": 8,
-        "y": 5,
-        "sprite": "table"
       },
       {
         "x": 10,
@@ -272,11 +262,6 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "weapon_rack"
       },
       {
-        "x": 14,
-        "y": 7,
-        "sprite": "summoning_circle"
-      },
-      {
         "x": 2,
         "y": 10,
         "sprite": "anvil"
@@ -285,6 +270,26 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 8,
         "y": 10,
         "sprite": "sconce"
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "sprite": "cursor_beacon"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "sprite": "floor_lever"
+      },
+      {
+        "x": 16,
+        "y": 8,
+        "sprite": "bones"
+      },
+      {
+        "x": 16,
+        "y": 9,
+        "sprite": "rubble"
       }
     ],
     "spawnX": 1,
