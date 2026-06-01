@@ -20,6 +20,33 @@ Boss-sprite assignments (suggested — adjust if you want):
 | 05 | LICH QUORUM | skeleton |
 | 06 | THE OVERLORD | dragon |
 
+## Hazard model (locked — same across every level)
+
+The mazes are no longer purely about navigation; they're a real platforming
+challenge with hazards that damage the player. Spec:
+
+- **Player has 5 hearts of overworld HP.** Currently displayed as a small HP
+  bar in the top-left of the play canvas.
+- **Hazards damage on contact.** Touching an active hazard tile costs 1 heart
+  + a ~0.5s invuln-flash so you can step away cleanly.
+- **0 HP → respawn at the chamber entry door** with full HP. Boss progress,
+  keys, and collected lore are preserved. The respawn is forgiving — the
+  maze is still a teaching tool, you just retry the corridor.
+- **Four hazard families** are available (see each level's hazard-kit section):
+  *timed gates* (wall-on-cycle), *pressure plates + gates* (state puzzles),
+  *projectile shooters* (wall-mounted darts firing across a row), and
+  *decorative danger* (looks scary, doesn't damage — purely atmospheric).
+- **Hazards have telegraphs.** Every "on" phase is preceded by a 1-beat
+  warm-up visual so the player can read the cycle.
+- **Hazards have safe windows.** Every hazard puzzle must have a clear
+  cross-able moment, AND ideally a slow alternative path around it for
+  accessibility (longer, less risky).
+
+Design each maze to be **fully playable without hazards** — the hazards are
+an overlay layer. Mark hazard placements with cycle/visual/safe-window
+notes so we can wire them up in an engine pass without redesigning the
+chamber. Same maze data, hazards turned off in v1, on in v1.5.
+
 ---
 
 ## PROMPT — Level 01: WELCOME
@@ -85,6 +112,31 @@ The lesson this level teaches: **how to operate Claude Code safely from the firs
 - **Maze density** — heavier than open-floor; ~22-30% of interior is wall. Branching corridors and at least one dead-end alcove per chamber.
 - **The cast is locked; the maze is yours to invent.** Take liberties with chamber dimensions and prop choices where they serve the design.
 
+### Hazard kit for Level 01
+
+This level **introduces** hazards — keep the density gentle, this is the
+player's first contact with the system. Hazard theme: **warming flames**.
+
+Available families (see the "Hazard model" section at the top of this doc
+for full mechanics + damage/respawn behavior):
+
+- **Timed gates** as flame jets: a floor tile that toggles between safe
+  and lit on a cycle (~2s off → 1s warming → 2s on). Visually use the
+  `brazier` palette — orange flame, floor scorch when off.
+- **Decorative danger**: `cracked-bricks`, `rubble`, `cobweb` in corners
+  to read "abandoned but lived-in" without damaging.
+
+**Place 1-2 hazards in this level total** (Welcome is a tutorial level —
+don't overwhelm). A single flame-jet pair in the corridor before the
+Sanctum's challenge altar is a great teaching moment. No pressure-plates
+or projectile shooters in Level 01 — save those for later levels.
+
+Add as the 6th deliverable per chamber:
+
+6. **Hazard placements** — for each hazard: (x,y) tile, family, cycle
+   timing (e.g., "off 2s · warm 1s · on 2s"), visual reskin, and a one-
+   sentence note on the safe-passage window the player will use.
+
 Surprise us. Welcome should feel like a friendly threshold — warm, lived-in, slightly worn — with the boss room turning a notch colder as the Emberling stirs.
 
 ---
@@ -143,6 +195,34 @@ A scholar's level. Bookshelves, banner-style hangings, candle/sconce light, dust
 
 Distinct chambers: Archives = open + warm reading-room with desks (use `bookshelf`, `table`, `wall-sconce`, `banner`); Stacks = tight maze of shelves with narrow aisles (use `bookshelf` heavily, `chains`, `cobweb` in corners); Vault = ceremonial + cold (use `mana-crystal`, `wall-runes`, `summoning-circle`, `brazier`).
 
+### Hazard kit for Level 02
+
+The wraith's domain. Hazard theme: **memory-rot magic** — barriers that
+fade in and out as the archives' wards activate.
+
+Available families (see "Hazard model" at top of doc):
+
+- **Timed gates** as magic barriers: a vertical line of `wall-runes` that
+  pulses purple-active on a cycle. Reads as "memory wards" the wraith
+  flickers on to trap intruders.
+- **Decorative danger**: `chains`, `cobweb`, swinging from the
+  ceiling-corners of every chamber. Sets mood.
+
+**Place 2-3 hazards in this level total.** The Stacks is a maze of shelves
+— at least one timed magic-barrier should gate a critical-path corridor
+there. The Vault should feel cleaner / more ceremonial; if you place a
+hazard there, make it part of the boss-room approach (one ring of pulsing
+floor-runes around the altar that activate during the approach).
+
+No projectile shooters or pressure plates in Level 02 — keep the metaphor
+strict (this is a wraith's domain, not a mechanical one).
+
+Add as the 6th deliverable per chamber:
+
+6. **Hazard placements** — for each: (x,y), family, cycle timing, visual
+   reskin (e.g. "purple wall-runes pulse, 3s safe → 1s warm → 2s sealed"),
+   and the safe-passage window.
+
 Same constraints as Level 01: tile grid 16-22 × 11-14, locked cast, ~22-30% walls, branching corridors and at least one dead-end per chamber. Distinct from each other and from every other chamber in the game.
 
 ---
@@ -198,6 +278,36 @@ The lesson: **custom slash commands, skills (auto-invoking commands), hooks (det
 A working clerical dungeon. Filing cabinets as walls (`bookshelf` + `crate`), `crt-terminal` props on desks, `cable-run` on the floor between them. `server-stack` clusters in the Registry. `cursor-beacon` lights blinking on terminals. Sconces give way to `mana-crystal` and CRT glow. Execution should feel like the inside of a green CRT — pure terminal phosphor.
 
 Distinct chambers: Foyer = front-desk + queue (use `table`, `chains` as queue stanchions, `cursor-beacon` on the desk); Registry = filing-cabinet maze (use `bookshelf` arranged in tight columns, `cable-run` underfoot, `crt-terminal` and `server-stack` decorating walls); Execution = stage with central altar (use `summoning-circle` around the altar, `cursor-beacon` on the four corners, otherwise sparse).
+
+### Hazard kit for Level 03
+
+The mechanical level. Hazard theme: **clerical machinery** — stone crushers
+that slam shut on a schedule, plus a pressure-plate puzzle that opens a
+shortcut.
+
+Available families:
+
+- **Timed gates** as crushers: a wall section that drops ("slams") on a
+  cycle, blocking a corridor when shut. Visually a thick stone slab; the
+  warm-up is a ~1s "rumbling" pulse. Place at chokepoints in the Registry
+  maze.
+- **Pressure plates + gates**: at least one in this level. Step on a
+  `floor-lever` to open a specific wall section elsewhere (could be a
+  shortcut back to the Foyer from deep in the Registry, OR a secret
+  alcove with a fourth lore card). Use the existing `floor-lever` prop.
+- **Decorative danger**: `chains`, `rubble`, hanging `cracked-bricks` for
+  industrial worn-in feel.
+
+**Place 2-3 hazards** in this level: 1-2 crushers in the Registry maze
+(gates on the critical path), and 1 pressure plate that unlocks a
+shortcut or secret. Execution can stay clean — the boss IS the hazard
+there.
+
+Add as the 6th deliverable per chamber:
+
+6. **Hazard placements** — for each: (x,y), family, cycle timing OR
+   pressure-plate target ("plate at (X,Y) opens wall section at (P,Q-R)"),
+   visual reskin, safe-passage window.
 
 Same constraints. Distinct from every other chamber.
 
@@ -255,6 +365,39 @@ Cool server-room aesthetic. `server-stack` against walls, `cable-run` snaking ac
 
 Distinct chambers: Hub = central switchboard (use `cable-run` radiating from a center point, `server-stack` ringing the walls); Rack = tall corridor maze (use `server-stack` AS the wall columns themselves); Integration = altar wired into the wall (use `cable-run` connecting altar to a server cluster, `puddle` and `cursor-beacon` for atmosphere).
 
+### Hazard kit for Level 04
+
+The server-room level. Hazard theme: **plasma + electric darts** — the
+infrastructure itself attacks. This is the level where **projectile
+shooters** make their debut.
+
+Available families:
+
+- **Timed gates** as plasma jets: a floor tile that toggles between safe
+  and a cyan-orange plasma plume on a cycle. Visually drawn from the
+  `mana-crystal` palette (cyan core, orange flare). Use these in the
+  Rack maze corridors.
+- **Projectile shooters** (NEW for this level): a wall-mounted "dart
+  emitter" — embedded in a `server-stack` panel — that fires a small
+  electric pulse across a row on a cycle. Telegraphed by a wind-up glow
+  on the emitter, ~1s before fire. The dart moves tile-by-tile across
+  the row over ~2 seconds, then despawns. Player pauses-and-continues
+  between volleys.
+- **Decorative danger**: `puddle` (coolant leaks), `cable-run` with
+  occasional sparks, `cracked-bricks` near server towers.
+
+**Place 3 hazards in this level**: at least one plasma-jet corridor in
+the Rack, one projectile-shooter hallway (a long straight corridor with
+a wall-mounted emitter — classic dart-trap setup), and one decorative-
+only flourish in the Hub. Integration is the boss room — keep it tense
+but clean.
+
+Add as the 6th deliverable per chamber:
+
+6. **Hazard placements** — for each: (x,y), family, cycle timing
+   (including projectile speed across the row), visual reskin, and the
+   safe-passage window.
+
 Same constraints. Distinct from every other chamber.
 
 ---
@@ -311,6 +454,35 @@ Operational, collaborative. `table` props for briefing surfaces, `crt-terminal` 
 
 Distinct chambers: Lobby = two NPCs by an open foyer with mission board (use `banner`, `table`, `cursor-beacon`); Pool = four pods around a central walkway (use `table` + `crt-terminal` per pod, `bookshelf` for reference racks); Briefing = ceremonial single-altar room (use `wall-runes` glowing pink, `chains` hanging, `mana-crystal` faint).
 
+### Hazard kit for Level 05
+
+The ops level. Hazard theme: **shadow barriers + pressure-puzzle shortcuts**.
+The Lich Quorum's presence leaks into the pool.
+
+Available families:
+
+- **Timed gates** as shadow-barriers: a vertical or horizontal line that
+  pulses opaque-on-cycle. Visually pink-tinted `wall-runes` flickering on
+  and off. Reads as "the Quorum's grasp tightens, then releases."
+- **Pressure plates + gates**: use again here — one plate in the Pool
+  opens the Briefing Room door early (lets the player skip a long
+  approach if they find the plate). Reuses the `floor-lever` prop.
+- **Decorative danger**: `bones` scattered in the Pool corners (failed
+  subagent shells), `cobweb` over disused workstation pods, `mana-crystal`
+  pulsing faintly.
+
+**Place 2-3 hazards**: one shadow-barrier corridor in the Pool, one
+pressure-plate-opens-shortcut puzzle. Briefing Room can stay clean of
+hazards — the Lich IS the hazard there.
+
+No projectile shooters in Level 05 — those belong to MCP (mechanical
+infrastructure). Keep the metaphor: Subagents are *agents*, not turrets.
+
+Add as the 6th deliverable per chamber:
+
+6. **Hazard placements** — for each: (x,y), family, cycle timing OR
+   pressure-plate target, visual reskin, safe-passage window.
+
 Same constraints. Distinct from every other chamber.
 
 ---
@@ -363,6 +535,46 @@ This is the climax. Make it feel like *Ozymandias meets a server room.* Suggesti
 - Maybe one **treasure-chest** (closed — never opened, taunting) in a corner as a dead-end aside.
 
 No maze branches. No exploration alcoves. The chamber's job is to make every step feel weightier than the last.
+
+### Hazard kit for Level 06
+
+The finale. Hazard theme: **the gauntlet** — a sequence of hazards from
+every previous level, escalating along the approach.
+
+This is the climax, so go hard. Available families (all four — use them):
+
+- **Timed gates** as flame jets (Welcome-flavor), shadow barriers
+  (Subagents-flavor), and stone crushers (Slash-flavor) — three of each
+  family along the approach, on offset cycles so the player must read
+  multiple rhythms simultaneously.
+- **Projectile shooters** (MCP-flavor): two emitters firing across the
+  approach corridor, telegraphed and timed so the player races between
+  volleys.
+- **Pressure plates + gates**: a single dramatic plate near the throne
+  that, when stepped on, *closes the door behind the player* — sealing
+  them in for the final fight. (Visual + audio cue: chain rattles, door
+  slam.)
+- **Decorative danger**: `bones`, `chains`, `cracked-bricks`, `rubble`,
+  `wall-runes` pulsing crimson, all heavy. The throne room is a
+  battlefield's afterimage.
+
+**Place 5-7 hazards along the approach.** Sequence them so the player
+encounters them in escalating combinations:
+
+1. Single flame jet (warm-up — the player learns the rhythm).
+2. Pair of shadow barriers on opposite cycles (a-b alternating).
+3. A projectile-shooter hallway with one telegraphed dart.
+4. A stone crusher that drops directly on the path.
+5. The "seal the door" pressure plate at the throne's foot.
+
+The approach should feel like the player is being TESTED on everything
+they've learned in the previous five levels.
+
+Add as the 6th deliverable:
+
+6. **Hazard placements** — for each: (x,y), family, cycle timing (or
+   plate target), visual reskin, safe-window. Include a chained sequence
+   note showing the player's expected rhythm across the gauntlet.
 
 ### Constraints
 
