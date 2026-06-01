@@ -144,7 +144,7 @@ export const welcomeContent: LessonContent = {
   },
   battle: {
     name: 'EMBERLING',
-    spriteKey: 'emberling',
+    spriteKey: 'slime',
     maxHP: 3,
     playerHP: 5,
     phases: 1,

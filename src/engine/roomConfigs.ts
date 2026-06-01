@@ -160,11 +160,11 @@ const THEME_ORANGE: Theme = {
 };
 
 const THEME_PURPLE: Theme = {
-  wallColor: '#D94DFF',
-  wallShadow: '#7A2A99',
-  floorColor: '#2A1A33',
-  floorDot: '#FFE066',
-  accentColor: '#FFE066',
+  wallColor: '#0C0B0A',
+  wallShadow: '#5E37A6',
+  floorColor: '#2E2A36',
+  floorDot: '#A972F0',
+  accentColor: '#A972F0',
 };
 
 const THEME_GREEN: Theme = {
@@ -345,22 +345,25 @@ function buildWelcomeLevel(): LevelConfig {
 // ============================================================================
 
 function buildClaudemdLevel(): LevelConfig {
-  // ----- Chamber A: Archives (22×12) -----
-  const aW = 22, aH = 12;
+  // ----- Chamber A: Archives (16×12) -----
+  // Reading room. West door enters from Welcome; east door exits to Stacks.
+  // Two 1×3 vertical pillars (cols 5 and 10) flank the spine; archivist-bot
+  // stands on the spine between them at (8, 6). Lore intentionally not
+  // placed yet — re-attaches in the items pass.
+  const aW = 16, aH = 12;
   const aTiles = blankTileMap(aW, aH);
-  // North door (open) to Stacks
-  aTiles[0][11] = 2;
-  // Library carrels: 8 desk pillars create aisles toward Archivist Owl + N door.
-  // Lore old-note (5,3) in NW alcove; log (17,4) in NE alcove. Owl on spine.
-  fillRect(aTiles, 4, 1, 4, 4, 1);
-  fillRect(aTiles, 8, 1, 8, 4, 1);
-  fillRect(aTiles, 13, 1, 13, 4, 1);
-  fillRect(aTiles, 18, 1, 18, 4, 1);
-  fillRect(aTiles, 4, 7, 4, 10, 1);
-  fillRect(aTiles, 8, 7, 8, 10, 1);
-  fillRect(aTiles, 13, 7, 13, 10, 1);
-  fillRect(aTiles, 18, 7, 18, 10, 1);
-  // East door (closed corridor to nowhere — purely decorative break)
+  // West door (back to Welcome sanctum)
+  aTiles[6][0] = 2;
+  // East door (open) to Stacks
+  aTiles[6][aW - 1] = 2;
+  // Corner crate clusters
+  fillRect(aTiles, 2, 2, 3, 3, 1);
+  fillRect(aTiles, 2, 9, 3, 10, 1);
+  fillRect(aTiles, 12, 2, 13, 3, 1);
+  fillRect(aTiles, 12, 9, 13, 10, 1);
+  // Flanking vertical pillars on the spine
+  fillRect(aTiles, 5, 5, 5, 7, 1);
+  fillRect(aTiles, 10, 5, 10, 7, 1);
 
   const archives: ChamberConfig = {
     id: 'claudemd-archives',
@@ -369,28 +372,34 @@ function buildClaudemdLevel(): LevelConfig {
     width: aW,
     height: aH,
     tiles: aTiles,
-    spawnX: 2,
+    spawnX: 1,
     spawnY: 6,
-    items: [
-      { id: 'old-note', type: 'lore', x: 5, y: 3, sprite: 'paper' },
-      { id: 'log', type: 'lore', x: 17, y: 4, sprite: 'scroll' },
-    ],
+    items: [],
     doors: [
       {
+        id: 'back-to-welcome',
+        x: 0,
+        y: 6,
+        target: { kind: 'chamber', chamber: 'welcome-sanctum' },
+        spawnX: 17,
+        spawnY: 6,
+        locked: false,
+      },
+      {
         id: 'to-stacks',
-        x: 11,
-        y: 0,
+        x: aW - 1,
+        y: 6,
         target: { kind: 'chamber', chamber: 'claudemd-stacks' },
-        spawnX: 9,
-        spawnY: 12,
+        spawnX: 1,
+        spawnY: 6,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'archivist-bot',
-        x: 11,
-        y: 8,
+        x: 8,
+        y: 6,
         sprite: 'owl',
         color: '#D94DFF',
         name: 'Archivist Owl',
@@ -405,20 +414,25 @@ function buildClaudemdLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber B: The Stacks (16×14) — maze -----
-  const sW = 16, sH = 14;
+  // ----- Chamber B: The Stacks (16×12) -----
+  // West entry from Archives, NORTH exit to Vault (the level turns the
+  // corner here). A single col-5 pillar on the spine + a horizontal wall
+  // row 3 cols 9-12 push the player up and around toward the north door.
+  const sW = 16, sH = 12;
   const sTiles = blankTileMap(sW, sH);
-  // South door back to archives
-  sTiles[sH - 1][7] = 2;
-  // East door to vault
-  sTiles[7][sW - 1] = 2;
-  // Bookshelf columns forming a maze
-  fillRect(sTiles, 3, 2, 3, 5, 1);   // shelf
-  fillRect(sTiles, 3, 8, 3, 11, 1);  // shelf
-  fillRect(sTiles, 6, 4, 6, 9, 1);   // shelf
-  fillRect(sTiles, 9, 2, 9, 5, 1);   // shelf
-  fillRect(sTiles, 9, 8, 9, 11, 1);  // shelf
-  fillRect(sTiles, 12, 4, 12, 9, 1); // shelf
+  // West door (back to Archives)
+  sTiles[6][0] = 2;
+  // North door (to Vault)
+  sTiles[0][8] = 2;
+  // Corner crate clusters
+  fillRect(sTiles, 2, 2, 3, 3, 1);
+  fillRect(sTiles, 2, 9, 3, 10, 1);
+  fillRect(sTiles, 12, 2, 13, 3, 1);
+  fillRect(sTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar on the spine
+  fillRect(sTiles, 5, 5, 5, 7, 1);
+  // Horizontal wall row 3, cols 9-12 — forces the climb out north
+  fillRect(sTiles, 9, 3, 12, 3, 1);
 
   const stacks: ChamberConfig = {
     id: 'claudemd-stacks',
@@ -427,31 +441,26 @@ function buildClaudemdLevel(): LevelConfig {
     width: sW,
     height: sH,
     tiles: sTiles,
-    spawnX: 7,
-    spawnY: 12,
-    items: [
-      { id: 'fragment-a', type: 'lore', x: 1, y: 1, sprite: 'book' },
-      { id: 'fragment-b', type: 'lore', x: 14, y: 1, sprite: 'book' },
-      { id: 'fragment-c', type: 'lore', x: 1, y: 12, sprite: 'paper' },
-      { id: 'contract-auditor-practice', type: 'practice', x: 14, y: 12, sprite: 'hint_token' },
-    ],
+    spawnX: 1,
+    spawnY: 6,
+    items: [],
     doors: [
       {
         id: 'back',
-        x: 7,
-        y: sH - 1,
+        x: 0,
+        y: 6,
         target: { kind: 'chamber', chamber: 'claudemd-archives' },
-        spawnX: 11,
-        spawnY: 1,
+        spawnX: aW - 2,
+        spawnY: 6,
         locked: false,
       },
       {
         id: 'to-vault',
-        x: sW - 1,
-        y: 7,
+        x: 8,
+        y: 0,
         target: { kind: 'chamber', chamber: 'claudemd-vault' },
-        spawnX: 1,
-        spawnY: 6,
+        spawnX: 8,
+        spawnY: 10,
         locked: false,
       },
     ],
@@ -459,20 +468,25 @@ function buildClaudemdLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber C: Vault (16×11) -----
-  const vW = 16, vH = 11;
+  // ----- Chamber C: Vault (16×12) -----
+  // South entry from Stacks; east locked exit to Slash (preserved from
+  // existing wiring — slash-foyer expects a west entry).
+  // Two staggered horizontal wall rows (3-8, row 8) and (7-12, row 5)
+  // force a zigzag approach toward MORDRANG at (8, 3).
+  const vW = 16, vH = 12;
   const vTiles = blankTileMap(vW, vH);
-  // West door back to stacks
-  vTiles[6][0] = 2;
-  // East door to next level
+  // South door (back to Stacks)
+  vTiles[vH - 1][8] = 2;
+  // East door (locked) to next level
   vTiles[6][vW - 1] = 2;
-  // Ceremonial vault: flanking colonnades + small north alcove.
-  // South colonnades at rows 7-9 (off spine, which lives on row 6).
-  fillRect(vTiles, 4, 2, 4, 4, 1);
-  fillRect(vTiles, 4, 7, 4, 9, 1);
-  fillRect(vTiles, 8, 2, 8, 3, 1);
-  fillRect(vTiles, 13, 2, 13, 4, 1);
-  fillRect(vTiles, 13, 7, 13, 9, 1);
+  // Corner crate clusters
+  fillRect(vTiles, 2, 2, 3, 3, 1);
+  fillRect(vTiles, 2, 9, 3, 10, 1);
+  fillRect(vTiles, 12, 2, 13, 3, 1);
+  fillRect(vTiles, 12, 9, 13, 10, 1);
+  // Staggered horizontal walls — zigzag approach
+  fillRect(vTiles, 3, 8, 8, 8, 1);
+  fillRect(vTiles, 7, 5, 12, 5, 1);
 
   const vault: ChamberConfig = {
     id: 'claudemd-vault',
@@ -481,19 +495,20 @@ function buildClaudemdLevel(): LevelConfig {
     width: vW,
     height: vH,
     tiles: vTiles,
-    spawnX: 1,
-    spawnY: 6,
+    spawnX: 8,
+    spawnY: 10,
     items: [
-      { id: 'scroll', type: 'challenge', x: 11, y: 4, sprite: 'scroll' },
+      // MORDRANG boss visual — bestiary warlock sprite, animated.
+      { id: 'scroll', type: 'challenge', x: 8, y: 3, sprite: 'warlock_a' },
     ],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 6,
+        x: 8,
+        y: vH - 1,
         target: { kind: 'chamber', chamber: 'claudemd-stacks' },
-        spawnX: sW - 2,
-        spawnY: 7,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
       {

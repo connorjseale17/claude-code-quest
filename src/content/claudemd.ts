@@ -147,7 +147,7 @@ export const claudemdContent: LessonContent = {
   },
   battle: {
     name: 'MORDRANG',
-    spriteKey: 'mordrang',
+    spriteKey: 'warlock',
     maxHP: 3,
     playerHP: 5,
     phases: 1,

@@ -14,6 +14,10 @@ export const PIXEL_PALETTE: Record<string, string | null> = {
   'b': '#1F8F38',
   'c': '#0F2A16',
   'd': '#DFF7E4',
+  // Warlock
+  'e': '#A972F0', // body purple
+  'f': '#5E37A6', // shadow purple
+  'h': '#FFD23F', // gold eyes
 };
 
 const W = 16;
@@ -1017,6 +1021,43 @@ FRAMES.overlord_defeat = W32([
 // BESTIARY — overworld enemy sprites (palette is per-enemy, not theme-tinted).
 // 14×16 grids matching the bestiary HTML. Each enemy is a 2-frame loop.
 // =============================================================================
+
+// WARLOCK (Mordrang visual) — hooded purple caster, frame B raises the hood
+// and ignites the gold eyes (mid-cast). 15-row grid.
+FRAMES.warlock_a = fixWidths([
+  '.......ee.......',
+  '......eeee......',
+  '......eeee......',
+  '.....eeeeee.....',
+  '....eeeeeeee....',
+  '...eeeeeeeeee...',
+  '..eeeeeeeeeeee..',
+  '.eeeeeeeeeeeeee.',
+  'eeeeeeeeeeeeeeee',
+  'eeeffffffffffeee',
+  'eeeffhhffhhffeee',
+  'eeeffffffffffeee',
+  '.eeffffffffffee.',
+  '.ffffffffffffff.',
+  '.fff..ffff..fff.',
+]);
+FRAMES.warlock_b = fixWidths([
+  '.......44.......',
+  '.......ee.......',
+  '......eeee......',
+  '.....eeeeee.....',
+  '....eeeeeeee....',
+  '...eeeeeeeeee...',
+  '..eeeeeeeeeeee..',
+  '.eeeeeeeeeeeeee.',
+  'eeeeeeeeeeeeeeee',
+  'eeeffffffffffeee',
+  'eeeffhhffhhffeee',
+  'eeeffffffffffeee',
+  '.eeffffffffffee.',
+  '.ffffffffffffff.',
+  'fff..ffff..fff..',
+]);
 
 // SLIME (Emberling visual) — bouncing green blob, frame B is the squash.
 FRAMES.slime_a = fixWidths([

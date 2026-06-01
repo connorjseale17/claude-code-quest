@@ -14,7 +14,7 @@ interface ItemProps {
 
 // Bestiary altars (slime, ghost, etc.) render larger than items so they read
 // as boss encounters rather than collectibles.
-const BIG_SPRITES = new Set(['slime_a', 'ghost_a', 'goblin_a', 'skeleton_a', 'warlock_a', 'dragon_a']);
+const BIG_SPRITES = new Set(['slime_a', 'ghost_a', 'goblin_a', 'skeleton_a', 'warlock_a', 'dragon_a', 'warlock_a']);
 
 /** If `sprite` ends in `_a` and a `_b` variant exists, return the pair. */
 function getAnimationPair(sprite: string): [string, string] | null {
