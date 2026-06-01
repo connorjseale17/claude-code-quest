@@ -1,3 +1,5 @@
+import { LAYOUT_OVERRIDES } from './layoutOverrides';
+
 // ============================================================================
 // Level / Chamber data model
 //
@@ -113,6 +115,22 @@ export type LevelConfig = {
   startingChamber: ChamberId;
   /** The chamber that contains the boss challenge + key spawn */
   challengeChamber: ChamberId;
+};
+
+/** The editable subset of a ChamberConfig that Layout Mode serializes and that
+ *  layout overrides replace. `id` / `level` / `name` stay stable from the
+ *  builder and are intentionally excluded. */
+export type SerializedChamber = {
+  width: number;
+  height: number;
+  tiles: number[][];
+  items: ItemConfig[];
+  doors: DoorConfig[];
+  npcs: NPCConfig[];
+  decorations: DecorationConfig[];
+  spawnX: number;
+  spawnY: number;
+  keySpawn?: KeySpawnConfig;
 };
 
 // ============================================================================
@@ -1257,7 +1275,41 @@ function buildFinalBossLevel(): LevelConfig {
 // Export
 // ============================================================================
 
-export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
+/** Pull the editable subset out of a full ChamberConfig (deep-copied). */
+export function serializeChamber(c: ChamberConfig): SerializedChamber {
+  return JSON.parse(JSON.stringify({
+    width: c.width,
+    height: c.height,
+    tiles: c.tiles,
+    items: c.items,
+    doors: c.doors,
+    npcs: c.npcs,
+    decorations: c.decorations,
+    spawnX: c.spawnX,
+    spawnY: c.spawnY,
+    keySpawn: c.keySpawn,
+  }));
+}
+
+/** If a committed override exists for this chamber, replace its editable
+ *  fields (deep-copied so callers can't mutate the override constant). */
+function applyOverride(c: ChamberConfig): ChamberConfig {
+  const o = LAYOUT_OVERRIDES[c.id];
+  if (!o) return c;
+  return { ...c, ...(JSON.parse(JSON.stringify(o)) as SerializedChamber) };
+}
+
+function withOverrides(level: LevelConfig): LevelConfig {
+  const chambers: Record<ChamberId, ChamberConfig> = {};
+  for (const [id, ch] of Object.entries(level.chambers)) {
+    chambers[id] = applyOverride(ch);
+  }
+  return { ...level, chambers };
+}
+
+/** Hand-authored levels BEFORE any layout overrides — used by getBaseChamber()
+ *  so Layout Mode's "Reset to source" can restore the builder geometry. */
+const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   welcome: buildWelcomeLevel(),
   claudemd: buildClaudemdLevel(),
   slash: buildSlashLevel(),
@@ -1266,9 +1318,26 @@ export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   'final-boss': buildFinalBossLevel(),
 };
 
+export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
+  welcome: withOverrides(BASE_LEVEL_CONFIGS.welcome),
+  claudemd: withOverrides(BASE_LEVEL_CONFIGS.claudemd),
+  slash: withOverrides(BASE_LEVEL_CONFIGS.slash),
+  mcp: withOverrides(BASE_LEVEL_CONFIGS.mcp),
+  subagents: withOverrides(BASE_LEVEL_CONFIGS.subagents),
+  'final-boss': withOverrides(BASE_LEVEL_CONFIGS['final-boss']),
+};
+
 /** Convenience: lookup a chamber by ID across all levels. */
 export function getChamber(chamberId: ChamberId): ChamberConfig | null {
   for (const level of Object.values(LEVEL_CONFIGS)) {
+    if (level.chambers[chamberId]) return level.chambers[chamberId];
+  }
+  return null;
+}
+
+/** The hand-authored (pre-override) chamber, for Layout Mode "Reset to source". */
+export function getBaseChamber(chamberId: ChamberId): ChamberConfig | null {
+  for (const level of Object.values(BASE_LEVEL_CONFIGS)) {
     if (level.chambers[chamberId]) return level.chambers[chamberId];
   }
   return null;

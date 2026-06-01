@@ -5,13 +5,14 @@ import { LEVEL_CONFIGS, type LevelId } from '../engine/roomConfigs';
 interface DevMenuProps {
   open: boolean;
   onClose: () => void;
+  onLayoutMode: () => void;
 }
 
 const LEVEL_ORDER = (Object.keys(LEVEL_CONFIGS) as LevelId[]).sort(
   (a, b) => LEVEL_CONFIGS[a].number - LEVEL_CONFIGS[b].number,
 );
 
-export function DevMenu({ open, onClose }: DevMenuProps) {
+export function DevMenu({ open, onClose, onLayoutMode }: DevMenuProps) {
   const state = useGame();
   const dispatch = useGameDispatch();
 
@@ -128,6 +129,15 @@ export function DevMenu({ open, onClose }: DevMenuProps) {
             style={{ ...btn, borderColor: '#E8B341', color: '#E8B341' }}
           >
             🏁 Complete game (→ end screen)
+          </button>
+          <button
+            onClick={() => {
+              onLayoutMode();
+              onClose();
+            }}
+            style={{ ...btn, borderColor: '#6BA8DD', color: '#6BA8DD' }}
+          >
+            ✎ Layout Mode (edit map)
           </button>
         </div>
 

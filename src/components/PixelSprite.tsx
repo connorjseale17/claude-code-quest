@@ -5,21 +5,26 @@ interface PixelSpriteProps {
   frame: string | string[];
   scale?: number;
   primaryColor?: string;
+  /** Optional palette override (e.g. PROP_PALETTE). Merged over PIXEL_PALETTE,
+   *  so prop-specific colors win for shared keys without polluting the global
+   *  palette. When omitted, the global PIXEL_PALETTE is used as-is. */
+  palette?: Record<string, string | null>;
   style?: React.CSSProperties;
   className?: string;
 }
 
-export function PixelSprite({ frame, scale = 4, primaryColor, style, className }: PixelSpriteProps) {
+export function PixelSprite({ frame, scale = 4, primaryColor, palette, style, className }: PixelSpriteProps) {
   const f = typeof frame === 'string' ? FRAMES[frame] : frame;
   if (!f) return null;
   const rows = f.length;
   const cols = f[0].length;
+  const pal = palette ? { ...PIXEL_PALETTE, ...palette } : PIXEL_PALETTE;
 
   const cells: React.ReactNode[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const ch = f[r][c];
-      const color = (ch === '1' && primaryColor) ? primaryColor : PIXEL_PALETTE[ch];
+      const color = (ch === '1' && primaryColor) ? primaryColor : pal[ch];
       cells.push(
         <div key={`${r}-${c}`} style={{ background: color || 'transparent' }} />
       );
@@ -50,17 +55,18 @@ interface AnimatedSpriteProps {
   fps?: number;
   scale?: number;
   primaryColor?: string;
+  palette?: Record<string, string | null>;
   style?: React.CSSProperties;
   className?: string;
 }
 
-export function AnimatedSprite({ frames, fps = 6, scale = 4, primaryColor, style, className }: AnimatedSpriteProps) {
+export function AnimatedSprite({ frames, fps = 6, scale = 4, primaryColor, palette, style, className }: AnimatedSpriteProps) {
   const [i, setI] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setI(x => (x + 1) % frames.length), 1000 / fps);
     return () => clearInterval(id);
   }, [frames.length, fps]);
-  return <PixelSprite frame={frames[i]} scale={scale} primaryColor={primaryColor} style={style} className={className} />;
+  return <PixelSprite frame={frames[i]} scale={scale} primaryColor={primaryColor} palette={palette} style={style} className={className} />;
 }
 
 export function BotIdle({ scale = 4, primaryColor, style }: { scale?: number; primaryColor?: string; style?: React.CSSProperties }) {

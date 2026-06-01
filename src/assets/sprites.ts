@@ -1267,3 +1267,90 @@ FRAMES.slime_b = fixWidths([
   '.....bbbbbb.....',
   '................',
 ]);
+
+// =============================================================================
+// PROP LIBRARY — ambient environment props ported from the design Props.html.
+// These use their OWN palette (PROP_PALETTE) because the design's prop colors
+// (wood / steel / bone / fire / etc.) collide with the bestiary keys in the
+// global PIXEL_PALETTE. Render via PixelSprite's `palette` override, e.g.
+//   <PixelSprite frame={PROP_FRAMES[name]} palette={PROP_PALETTE} />
+// Stored as the canonical (first) frame of each prop; animation is a later pass.
+// =============================================================================
+
+export const PROP_PALETTE: Record<string, string | null> = {
+  '.': null,
+  ' ': null,
+  o: '#E8633D', O: '#B84A28',          // orange / dark orange
+  k: '#15181A',                        // near-black outline
+  g: '#6A6A6A', G: '#454545',          // stone light / dark
+  s: '#9AA4AD', S: '#566069',          // steel light / dark
+  w: '#94602E', W: '#5E3C1C',          // wood / dark wood
+  b: '#E6E2CF', B: '#ADA589',          // bone-paper / dark bone
+  f: '#FFD23F', F: '#F2842E', h: '#FFE9A8', // flame yellow / orange / hot
+  m: '#3FB950', M: '#247A38',          // mana-screen green / deep
+  p: '#A972F0', c: '#6FD7C2',          // magic purple / cyan glow
+  i: '#E8E8E8', x: '#6E6E6E',          // light highlight / iron
+};
+
+// Pad all rows of a prop frame to the max row width (spaces = transparent).
+function mkProp(frame: string[]): string[] {
+  const w = Math.max(...frame.map(r => r.length));
+  return frame.map(r => (r + ' '.repeat(w)).slice(0, w));
+}
+
+export const PROP_FRAMES: Record<string, string[]> = {
+  sconce: mkProp(['...f....', '..fhf...', '..fFf...', '...F....', '..ooo...', '...W....', '...W....', '.SsssS..', 'S..k..S.', '.S...S..', '..SkS...', '...S....']),
+  brazier: mkProp(['....ff......', '...fhhf.....', '..ffFFf.....', '...fFFf.....', '....FF......', '.oooooooo...', '.SsssssssS..', '..SssssS....', '...S..S.....', '..S....S....', '.S......S...', 'S........S..']),
+  hanging_lantern: mkProp(['...x....', '...x....', '..sss...', '.s...s..', 's.fhf.s.', 's.fFf.s.', 's.fFf.s.', 's..F..s.', '.s...s..', '..sss...', '...s....', '........']),
+  mana_crystal: mkProp(['....c....', '...cic...', '..cccc...', '.ccccccc.', 'ccciiiccc', '.ccccccc.', '..ccccc..', '...ccc...', '....c....', '.........', '..MMmMM..', '...mmm...']),
+  cursor_beacon: mkProp(['gggggggg', 'gkkkkkkg', 'gkmk kkg', 'gkmmk kg', 'gkkkkkkg', 'gggggggg', '..gGGg..', '..gGGg..', '..GGGG..']),
+  treasure_chest: mkProp(['..wwwwwwwwww..', '.wWWWWWWWWWWw.', '.wWWWWWWWWWWw.', 'wsssssssssssw', 'wWWWWssWWWWWw', 'wWWWWssWWWWWw', 'wWWWWWWWWWWWw', 'wsssssssssssw', '.wwwwwwwwww..', '.............']),
+  barrel: mkProp(['..oooooo..', '.wWWWWWWw.', 'wWWWWWWWWw', 'ssssssssss', 'wWWWWWWWWw', 'wWWWWWWWWw', 'wWWWWWWWWw', 'ssssssssss', 'wWWWWWWWWw', '.wWWWWWWw.', '..oooooo..']),
+  floor_lever: mkProp(['.o......', 'o.......', '.o......', '..o.....', '..o.....', '...s....', '..sss...', '.SsssS..', 'SSSSSSSS', 'GGGGGGGG']),
+  crt_terminal: mkProp(['.SSSSSSSSSSSS.', 'SssssssssssssS', 'Ssk kkkkkk ksS', ' Sk kkkkkk kS ', 'SskkkkkkkkkksS', 'SssssssssssssS', '.SSSSSSSSSSSS.', '....SSSS......', '..SSSSSSSS....', '.GGGGGGGGGG...']),
+  server_stack: mkProp(['SSSSSSSSSS', 'SkkkkkkkkS', 'SkGGGGGkxS', 'SkkkkkkkkS', 'SkGGGGGkxS', 'SkkkkkkkkS', 'SkGGGGGkxS', 'SkkkkkkkkS', 'SkGGGGGkxS', 'SSSSSSSSSS', 'GGGGGGGGGG']),
+  banner: mkProp(['xxxxxxxx', '.oooooo.', '.oooooo.', '.ooiioo.', '.oiiiio.', '.ooiioo.', '.oooooo.', '.oooooo.', '.oOOOOo.', '.o.OO.o.', '.O....O.']),
+  cracked_bricks: mkProp(['gggggggggg', 'gGggGgggGg', 'ggkgggggkg', 'ggGkgggGkg', 'gggkggggkg', 'ggggkgggkg', 'gGgggkGgGg', 'ggggggkggg', 'gggGggkGgg', 'gggggggggg']),
+  wall_runes: mkProp(['............', '.M..M..M..M.', '.m.MmM.MmM..', '..MmM..MmM..', '.M.M.M.M.M..', '............']),
+  chains: mkProp(['x...x...', 'X...X...', 'x...x...', 'X...X...', 'x.x.x.x.', '.xX...Xx.', 'x.x...x.x', 'X.......X', 'xx.....xx', '.x.....x.']),
+  cobweb: mkProp(['ii........', 'i.i.......', 'i..i......', 'i.i.i.....', 'i..i..i...', 'i.i.i.i.i.', 'i....i...i', 'i..i....i.', 'i.i....i..', 'ii....i...']),
+  rubble: mkProp(['................', '....gg....g.....', '..gGGGg..gGg....', '.gGGGGGggGGGg...', 'gGGkGGGGGGGGGg..', '.gGGGGGkGGGGg.g.', '..gGGGgggGgg.gGg', '.g.ggg...g..gGGg']),
+  bones: mkProp(['.bbbb...........', 'bbbbbb..bb....bb', 'bkbbkb...bb..bb.', 'bbbbbb....bbbb..', '.bkkb.....bbbb..', '.b..b....bb..bb.', '........bb....bb', '................']),
+  puddle: mkProp(['...SSSSSS....', '..SccccccS...', '.ScciccccS...', 'SccccccccS...', '.SccccciccS..', '..SccccccS...', '...SSSSSS....']),
+  summoning_circle: mkProp(['...mmmmmm...', '..m......m..', '.m..mmmm..m.', 'm..m....m..m', 'm.m..mm..m.m', 'm.m..mm..m.m', 'm..m....m..m', '.m..mmmm..m.', '..m......m..', '...mmmmmm...']),
+  cable_run: mkProp(['................', 'ss..............', 'sss.........mm..', '..sss.....mmss..', '....sssmmmsss...', '...mmsssss......', '..mss...ssss....', '..ss.......sss..']),
+  table: mkProp(['wwwwwwwwwwww', 'WWWWWWWWWWWW', '.W........W.', '.W........W.', '.W........W.', '.W........W.', '.W........W.', 'WW........WW']),
+  anvil: mkProp(['..sssssss..', '.sSSSSSSSss', 'sSSSSSSSSSS', '.SSSSSSSS..', '...SSSS....', '...SSSS....', '..SSSSSS...', '.GGGGGGGG..', 'GGGGGGGGGG.']),
+  weapon_rack: mkProp(['s.s.s.s.', 's.s.s.s.', 's.x.s.s.', 'i.x.i.i.', 'i.x.i.i.', 'i.x.i.i.', 'wwwwwwww', 'WWWWWWWW', '.W....W.', 'WW....WW']),
+  bookshelf: mkProp(['wwwwwwwwwwww', 'wWWWWWWWWWWw', 'woOmoOpoMoOw', 'woOmoOpoMoOw', 'wWWWWWWWWWWw', 'wpoMooOmoOpw', 'wpoMooOmoOpw', 'wWWWWWWWWWWw', 'wOmoOpoOmoOw', 'wOmoOpoOmoOw', 'wWWWWWWWWWWw', 'WW........WW']),
+  crate: mkProp(['wwwwwwwwww', 'wkwwwwwwkw', 'wwWwwwWwww', 'wwwWWWwwww', 'wwwWWWwwww', 'wwWwwwWwww', 'wkwwwwwwkw', 'wwwwwwwwww']),
+};
+
+/** Editor palette listing — display label + thematic category per prop. */
+export const PROP_LIST: { key: string; label: string; cat: string }[] = [
+  { key: 'sconce', label: 'Wall Sconce', cat: 'light' },
+  { key: 'brazier', label: 'Brazier', cat: 'light' },
+  { key: 'hanging_lantern', label: 'Hanging Lantern', cat: 'light' },
+  { key: 'mana_crystal', label: 'Mana Crystal', cat: 'light' },
+  { key: 'cursor_beacon', label: 'Cursor Beacon', cat: 'light' },
+  { key: 'treasure_chest', label: 'Treasure Chest', cat: 'interactive' },
+  { key: 'barrel', label: 'Barrel', cat: 'interactive' },
+  { key: 'floor_lever', label: 'Floor Lever', cat: 'interactive' },
+  { key: 'crt_terminal', label: 'CRT Terminal', cat: 'interactive' },
+  { key: 'server_stack', label: 'Server Stack', cat: 'interactive' },
+  { key: 'banner', label: 'Banner', cat: 'wall' },
+  { key: 'cracked_bricks', label: 'Cracked Bricks', cat: 'wall' },
+  { key: 'wall_runes', label: 'Wall Runes', cat: 'wall' },
+  { key: 'chains', label: 'Chains', cat: 'wall' },
+  { key: 'cobweb', label: 'Cobweb', cat: 'wall' },
+  { key: 'rubble', label: 'Rubble', cat: 'floor' },
+  { key: 'bones', label: 'Bones', cat: 'floor' },
+  { key: 'puddle', label: 'Puddle', cat: 'floor' },
+  { key: 'summoning_circle', label: 'Summoning Circle', cat: 'floor' },
+  { key: 'cable_run', label: 'Cable Run', cat: 'floor' },
+  { key: 'table', label: 'Table', cat: 'furniture' },
+  { key: 'anvil', label: 'Anvil', cat: 'furniture' },
+  { key: 'weapon_rack', label: 'Weapon Rack', cat: 'furniture' },
+  { key: 'bookshelf', label: 'Bookshelf', cat: 'furniture' },
+  { key: 'crate', label: 'Crate', cat: 'furniture' },
+];

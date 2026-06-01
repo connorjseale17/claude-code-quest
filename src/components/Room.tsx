@@ -4,6 +4,7 @@ import { Bot } from './Bot';
 import { Item } from './Item';
 import { Door } from './Door';
 import { PixelSprite } from './PixelSprite';
+import { PROP_FRAMES, PROP_PALETTE } from '../assets/sprites';
 import { DPad } from './DPad';
 
 const TILE_SIZE = 40;
@@ -124,25 +125,34 @@ export function Room() {
         }),
       )}
 
-      {/* Decorations (non-interactive flavor sprites) */}
-      {chamber.decorations.map((dec, i) => (
-        <div
-          key={`dec-${i}`}
-          className="absolute pointer-events-none"
-          style={{
-            left: dec.x * TILE_SIZE,
-            top: dec.y * TILE_SIZE,
-            width: TILE_SIZE,
-            height: TILE_SIZE,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: 0.7,
-          }}
-        >
-          <PixelSprite frame={dec.sprite} scale={2} primaryColor={dec.tint} />
-        </div>
-      ))}
+      {/* Decorations (non-interactive flavor sprites). Props use their own
+          palette + frame table; other sprites fall back to the global FRAMES. */}
+      {chamber.decorations.map((dec, i) => {
+        const isProp = Boolean(PROP_FRAMES[dec.sprite]);
+        return (
+          <div
+            key={`dec-${i}`}
+            className="absolute pointer-events-none"
+            style={{
+              left: dec.x * TILE_SIZE,
+              top: dec.y * TILE_SIZE,
+              width: TILE_SIZE,
+              height: TILE_SIZE,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: 0.85,
+            }}
+          >
+            <PixelSprite
+              frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite}
+              scale={isProp ? 3 : 2}
+              palette={isProp ? PROP_PALETTE : undefined}
+              primaryColor={isProp ? undefined : dec.tint}
+            />
+          </div>
+        );
+      })}
 
       {/* Doors */}
       {chamber.doors.map(door => {

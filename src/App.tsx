@@ -22,6 +22,7 @@ import { CustomizeScreen } from './components/CustomizeScreen';
 import { LoadingScreen } from './components/LoadingScreen';
 import { MobileControls } from './components/MobileControls';
 import { RotatePrompt } from './components/RotatePrompt';
+import { LayoutEditor } from './components/LayoutEditor';
 
 const BASE_W = 960;
 const BASE_H = 640;
@@ -87,6 +88,7 @@ function GameScreen({ onDevToggle }: { onDevToggle: () => void }) {
 function PhaseRouter() {
   const state = useGame();
   const [devOpen, setDevOpen] = useState(false);
+  const [layoutMode, setLayoutMode] = useState(false);
   const toggleDev = () => setDevOpen(v => !v);
   const closeDev = () => setDevOpen(false);
 
@@ -123,7 +125,8 @@ function PhaseRouter() {
   return (
     <div className="h-full w-full relative">
       {screen}
-      <DevMenu open={devOpen} onClose={closeDev} />
+      <DevMenu open={devOpen} onClose={closeDev} onLayoutMode={() => setLayoutMode(true)} />
+      {layoutMode && <LayoutEditor onExit={() => setLayoutMode(false)} />}
     </div>
   );
 }
