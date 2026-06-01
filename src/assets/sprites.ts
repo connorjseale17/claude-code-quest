@@ -37,6 +37,10 @@ export const PIXEL_PALETTE: Record<string, string | null> = {
   'v': '#F39233', // flame orange
   'w': '#8A3A1E', // deep shadow horn
   'x': '#E0A36B', // light shading
+
+  // Wood / book brown — Minecraft-book lore sprite
+  'y': '#94602E', // medium wood brown (leather cover)
+  'z': '#5E3C1C', // dark wood brown (rim / stitching)
 };
 
 const W = 16;
@@ -187,20 +191,24 @@ FRAMES.scroll = fixWidths([
   '................',
 ]);
 
+// Lore items render with FRAMES.paper — redesigned as a Minecraft-style
+// closed book: dark brown rim (z), wood-brown cover (y) with stitching
+// detail, white page band (4) visible through the middle. Brown palette
+// (y/z) lives in PIXEL_PALETTE; pages reuse '4' (#FFFFFF).
 FRAMES.paper = fixWidths([
   '................',
   '................',
-  '................',
-  '.....77777......',
-  '.....77.177.....',
-  '.....7...77.....',
-  '.....7.7..7.....',
-  '.....7....7.....',
-  '.....7.7..7.....',
-  '.....77777......',
-  '................',
-  '................',
-  '................',
+  '..zzzzzzzzzzzz..',
+  '..zyyyyyyyyyyz..',
+  '..zyyzyyyyzyyz..',
+  '..zyyyyyyyyyyz..',
+  '..z4444444444z..',
+  '..z4yyyyyyyy4z..',
+  '..z4444444444z..',
+  '..zyyyyyyyyyyz..',
+  '..zyyzyyyyzyyz..',
+  '..zyyyyyyyyyyz..',
+  '..zzzzzzzzzzzz..',
   '................',
 ]);
 

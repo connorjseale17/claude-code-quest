@@ -139,6 +139,20 @@ export function DevMenu({ open, onClose, onLayoutMode }: DevMenuProps) {
           >
             ✎ Layout Mode (edit map)
           </button>
+          <button
+            onClick={() => {
+              try {
+                localStorage.removeItem('ccq-player');
+                localStorage.removeItem('ccq-prizes');
+                localStorage.removeItem('ccq-lessons');
+                localStorage.removeItem('ccq-layout-draft');
+              } catch { /* ignore */ }
+              window.location.reload();
+            }}
+            style={{ ...btn, borderColor: '#FF6B8A', color: '#FF6B8A' }}
+          >
+            🗑 Reset player (clear saved name + color)
+          </button>
         </div>
 
         <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #2A2A2A', color: '#5A5A5A', fontSize: 10, lineHeight: 1.5 }}>
