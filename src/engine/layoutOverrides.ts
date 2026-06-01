@@ -5,10 +5,11 @@ import type { SerializedChamber } from './roomConfigs';
 // Layout Mode. A chamber id here REPLACES the hand-authored builder geometry
 // at module load. Delete an entry to revert that chamber to its builder layout.
 //
-// Level 01 (welcome)   authored 2026-06-01
-// Level 02 (claudemd)  authored 2026-06-01
-// Level 03 (slash)     authored 2026-06-01
-// Level 04 (mcp)       authored 2026-06-01
+// Level 01 (welcome)    authored 2026-06-01
+// Level 02 (claudemd)   authored 2026-06-01
+// Level 03 (slash)      authored 2026-06-01
+// Level 04 (mcp)        authored 2026-06-01
+// Level 05 (subagents)  authored 2026-06-01
 // ============================================================================
 
 export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
@@ -1293,6 +1294,403 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     "keySpawn": {
       "x": 13,
       "y": 6
+    }
+  },
+  "subagents-lobby": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+      [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+      [1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "roster",
+        "type": "lore",
+        "x": 10,
+        "y": 6,
+        "sprite": "paper"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back-to-mcp",
+        "x": 0,
+        "y": 6,
+        "target": {
+          "kind": "chamber",
+          "chamber": "mcp-integration"
+        },
+        "spawnX": 14,
+        "spawnY": 6,
+        "locked": false
+      },
+      {
+        "id": "to-pool",
+        "x": 8,
+        "y": 0,
+        "target": {
+          "kind": "chamber",
+          "chamber": "subagents-pool"
+        },
+        "spawnX": 8,
+        "spawnY": 10,
+        "locked": false
+      }
+    ],
+    "npcs": [
+      {
+        "id": "scout-bot",
+        "x": 12,
+        "y": 2,
+        "color": "#3FB950",
+        "name": "Scout-bot",
+        "dialog": [
+          "I run the Explore lane. Read-only — I never touch anything.",
+          "Send me into a 500-file repo with 'find every place we touch client billing'. I come back with paths and line numbers."
+        ]
+      },
+      {
+        "id": "planner-bot",
+        "x": 5,
+        "y": 7,
+        "color": "#6BA8DD",
+        "name": "Planner-bot",
+        "dialog": [
+          "I plan. Architecture, file structure, deliverable outlines. The boring-but-load-bearing part.",
+          "Hand me a goal and the constraints. I come back with steps. Use me before any big build — saves you the rewrite."
+        ]
+      }
+    ],
+    "decorations": [
+      {
+        "x": 1,
+        "y": 1,
+        "sprite": "sconce"
+      },
+      {
+        "x": 9,
+        "y": 10,
+        "sprite": "treasure_chest"
+      },
+      {
+        "x": 8,
+        "y": 6,
+        "sprite": "puddle"
+      },
+      {
+        "x": 12,
+        "y": 8,
+        "sprite": "puddle"
+      },
+      {
+        "x": 4,
+        "y": 10,
+        "sprite": "puddle"
+      },
+      {
+        "x": 1,
+        "y": 10,
+        "sprite": "cobweb"
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "sprite": "chains"
+      },
+      {
+        "x": 7,
+        "y": 2,
+        "sprite": "rubble"
+      },
+      {
+        "x": 13,
+        "y": 8,
+        "sprite": "bones"
+      },
+      {
+        "x": 13,
+        "y": 4,
+        "sprite": "weapon_rack"
+      },
+      {
+        "x": 12,
+        "y": 4,
+        "sprite": "anvil"
+      }
+    ],
+    "spawnX": 1,
+    "spawnY": 6
+  },
+  "subagents-pool": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 2],
+      [1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "mission-brief",
+        "type": "lore",
+        "x": 4,
+        "y": 8,
+        "sprite": "paper"
+      },
+      {
+        "id": "fragment-x",
+        "type": "lore",
+        "x": 12,
+        "y": 9,
+        "sprite": "paper"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back",
+        "x": 8,
+        "y": 11,
+        "target": {
+          "kind": "chamber",
+          "chamber": "subagents-lobby"
+        },
+        "spawnX": 8,
+        "spawnY": 1,
+        "locked": false
+      },
+      {
+        "id": "to-briefing",
+        "x": 15,
+        "y": 6,
+        "target": {
+          "kind": "chamber",
+          "chamber": "subagents-briefing"
+        },
+        "spawnX": 8,
+        "spawnY": 1,
+        "locked": false
+      }
+    ],
+    "npcs": [
+      {
+        "id": "reviewer-bot",
+        "x": 4,
+        "y": 5,
+        "color": "#F0C040",
+        "name": "Reviewer-bot",
+        "dialog": [
+          "Code reviewer. Independent second-opinion energy. Fresh eyes — no conversation context.",
+          "Hand me a diff. I'll tell you what's shaky. I see what your main agent missed."
+        ]
+      },
+      {
+        "id": "debugger-bot",
+        "x": 9,
+        "y": 5,
+        "color": "#FF6B8A",
+        "name": "Debugger-bot",
+        "dialog": [
+          "I chase bugs through stack traces. Scientific method only — hypothesize, instrument, verify.",
+          "Hand me a repro, I bring back the root cause. No band-aids."
+        ]
+      }
+    ],
+    "decorations": [
+      {
+        "x": 1,
+        "y": 5,
+        "sprite": "treasure_chest"
+      },
+      {
+        "x": 12,
+        "y": 10,
+        "sprite": "summoning_circle"
+      },
+      {
+        "x": 7,
+        "y": 1,
+        "sprite": "cable_run"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "sprite": "rubble"
+      },
+      {
+        "x": 2,
+        "y": 8,
+        "sprite": "puddle"
+      },
+      {
+        "x": 7,
+        "y": 1,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 10,
+        "y": 1,
+        "sprite": "barrel"
+      },
+      {
+        "x": 4,
+        "y": 10,
+        "sprite": "weapon_rack"
+      },
+      {
+        "x": 14,
+        "y": 1,
+        "sprite": "banner"
+      }
+    ],
+    "spawnX": 8,
+    "spawnY": 10
+  },
+  "subagents-briefing": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1],
+      [1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "terminal",
+        "type": "challenge",
+        "x": 12,
+        "y": 7,
+        "sprite": "skeleton_a"
+      },
+      {
+        "id": "fragment-y",
+        "type": "lore",
+        "x": 2,
+        "y": 6,
+        "sprite": "paper"
+      },
+      {
+        "id": "orchestrator-practice",
+        "type": "practice",
+        "x": 2,
+        "y": 2,
+        "sprite": "hint_token"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back",
+        "x": 8,
+        "y": 0,
+        "target": {
+          "kind": "chamber",
+          "chamber": "subagents-pool"
+        },
+        "spawnX": 14,
+        "spawnY": 6,
+        "locked": false
+      },
+      {
+        "id": "exit",
+        "x": 15,
+        "y": 6,
+        "target": {
+          "kind": "level",
+          "level": "final-boss",
+          "chamber": "final-boss-throne"
+        },
+        "spawnX": 1,
+        "spawnY": 8,
+        "locked": true,
+        "requiresLevelKey": true
+      }
+    ],
+    "npcs": [],
+    "decorations": [
+      {
+        "x": 6,
+        "y": 9,
+        "sprite": "mana_crystal"
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "sprite": "sconce"
+      },
+      {
+        "x": 12,
+        "y": 1,
+        "sprite": "cursor_beacon"
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 9,
+        "y": 10,
+        "sprite": "chains"
+      },
+      {
+        "x": 4,
+        "y": 10,
+        "sprite": "bones"
+      },
+      {
+        "x": 13,
+        "y": 4,
+        "sprite": "cable_run"
+      },
+      {
+        "x": 1,
+        "y": 9,
+        "sprite": "rubble"
+      }
+    ],
+    "spawnX": 8,
+    "spawnY": 1,
+    "keySpawn": {
+      "x": 13,
+      "y": 9
     }
   }
 };
