@@ -15,23 +15,23 @@ export const welcomeContent: LessonContent = {
   lore: [
     {
       id: 'manual',
-      text: 'Tip: Shift+Tab cycles permission modes. Order: PLAN → ACCEPT-EDITS → AUTO → ASK.',
+      text: 'Shift+Tab cycles the four permission modes. The order is fixed — PLAN, then ACCEPT-EDITS, then AUTO, then ASK, then back to PLAN. PLAN reads but never edits, so it is the safe entry point on any code you do not yet know. ACCEPT-EDITS writes for you and trusts you to review the diff later. AUTO runs whatever it likes with only a safety classifier watching. ASK confirms every single action — slow, but useful when you are doing something irreversible. Burn the cycle into muscle memory and you will reach for the right mode without thinking.',
     },
     {
       id: 'sticky-note',
-      text: "Tip: brief Claude like a junior consultant — concrete deliverable, concrete client, concrete stack.",
+      text: "Brief Claude the same way you would brief a junior consultant joining the engagement on day one. Give a concrete deliverable — a proposal microsite, a client dashboard, a one-pager. Name the concrete client. Specify the concrete stack the firm uses on this project. Tell Claude what good looks like, not what to type. 'Make me a website' guesses everything; 'a one-page proposal microsite for Acme using Next.js and Tailwind' guesses nothing. Specificity is the cheapest leverage you will ever buy.",
     },
     {
       id: 'cli-primer',
-      text: 'The terminal is just text-mode chat with your computer. `cd` to move, `ls` to list, `git status` to see what changed. Claude Code lives in there, and it can text the computer too.',
+      text: 'The terminal is just text-mode chat with your computer. You type a command, it does the thing, it answers back. `cd` moves you into a folder. `ls` lists what is there. `pwd` says where you are. `cat` prints a file. `git status` shows what has changed in the project. Claude Code lives in this same terminal, which means it can text the computer too — read files, run commands, push branches, all from inside the same conversation. If the terminal feels foreign, give it one week. It is the cheapest skill you will ever pick up.',
     },
     {
       id: 'side-note',
-      text: 'Tip: Vercel free tier hosts every prototype. PR → preview URL the client can poke live, no source code email required.',
+      text: 'Vercel free tier hosts every prototype your firm will ever ship. Push to GitHub, import the repo to Vercel once, and every commit on every branch gets its own preview URL within about 90 seconds. No source-code email. No screenshots that go stale by Tuesday. Send the client a link they can poke, watch them click through, iterate on what they actually use. The deliverable lives on the internet from day one of the engagement — that alone changes how the conversation goes.',
     },
     {
       id: 'briefing-formula',
-      text: 'Brief Claude in three parts. WHY: who is it for + what problem. WHAT: stack + the files that matter. HOW: build, test, ship commands. Skip a leg and Claude guesses.',
+      text: 'Brief Claude in three parts every single time. WHY: who is the deliverable for and what problem does it solve? Without WHY, Claude cannot make the dozen small decisions every build requires. WHAT: the stack you are using and the files that matter — point to the route, the component, the config. HOW: the commands that build it, the commands that test it, the commands that ship it. Skip a leg and Claude guesses. Skip two legs and you get a generic landing page instead of your firm-flavored proposal. This is the same three-part shape your CLAUDE.md uses — internalize it once, use it forever.',
     },
   ],
   practice: {
