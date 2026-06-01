@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useGame } from '../engine/GameContext';
 import {
   LEVEL_CONFIGS,
@@ -57,7 +58,8 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
   const [ghost, setGhost] = useState<{ x: number; y: number } | null>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ group: Group; index: number } | null>(null);
+  const dragRef = useRef<{ group: Group; index: number; startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const singleDragRef = useRef<{ which: 'key' | 'spawn'; startX: number; startY: number; origX: number; origY: number } | null>(null);
   const paintRef = useRef<{ target: number; last: string } | null>(null);
 
   // Seed any not-yet-drafted chamber of this level from its current effective config.
@@ -112,23 +114,34 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
     return { x, y };
   }, [cell, ch]);
 
+  const chW = ch?.width ?? 1;
+  const chH = ch?.height ?? 1;
+
   // ---- entity drag (select mode) ----
+  // Delta-based: snap by whole-tile offset from the grab point relative to the
+  // entity's original tile. Overflow-proof (large sprites don't skew the drop)
+  // and a no-move click is a true no-op.
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
-      if (!dragRef.current) return;
-      const t = tileFromPointer(e.clientX, e.clientY);
-      if (t) setGhost(t);
+      const d = dragRef.current;
+      if (!d) return;
+      const dx = Math.round((e.clientX - d.startX) / cell);
+      const dy = Math.round((e.clientY - d.startY) / cell);
+      setGhost({ x: clamp(d.origX + dx, 0, chW - 1), y: clamp(d.origY + dy, 0, chH - 1) });
     };
     const onUp = (e: PointerEvent) => {
       const d = dragRef.current;
       if (!d) return;
-      const t = tileFromPointer(e.clientX, e.clientY);
       dragRef.current = null;
       setGhost(null);
-      if (!t) return;
+      const dx = Math.round((e.clientX - d.startX) / cell);
+      const dy = Math.round((e.clientY - d.startY) / cell);
+      if (dx === 0 && dy === 0) return; // pure click — selection only
+      const nx = clamp(d.origX + dx, 0, chW - 1);
+      const ny = clamp(d.origY + dy, 0, chH - 1);
       mutate(c => {
         const arr = c[d.group] as Array<{ x: number; y: number }>;
-        if (arr[d.index]) { arr[d.index].x = t.x; arr[d.index].y = t.y; }
+        if (arr[d.index]) { arr[d.index].x = nx; arr[d.index].y = ny; }
       });
     };
     window.addEventListener('pointermove', onMove);
@@ -139,26 +152,30 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
     };
-  }, [mutate, tileFromPointer]);
+  }, [mutate, cell, chW, chH]);
 
   // ---- single-entity (key / spawn) drag ----
-  const singleDragRef = useRef<'key' | 'spawn' | null>(null);
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
-      if (!singleDragRef.current) return;
-      const t = tileFromPointer(e.clientX, e.clientY);
-      if (t) setGhost(t);
+      const d = singleDragRef.current;
+      if (!d) return;
+      const dx = Math.round((e.clientX - d.startX) / cell);
+      const dy = Math.round((e.clientY - d.startY) / cell);
+      setGhost({ x: clamp(d.origX + dx, 0, chW - 1), y: clamp(d.origY + dy, 0, chH - 1) });
     };
     const onUp = (e: PointerEvent) => {
-      const g = singleDragRef.current;
-      if (!g) return;
-      const t = tileFromPointer(e.clientX, e.clientY);
+      const d = singleDragRef.current;
+      if (!d) return;
       singleDragRef.current = null;
       setGhost(null);
-      if (!t) return;
+      const dx = Math.round((e.clientX - d.startX) / cell);
+      const dy = Math.round((e.clientY - d.startY) / cell);
+      if (dx === 0 && dy === 0) return;
+      const nx = clamp(d.origX + dx, 0, chW - 1);
+      const ny = clamp(d.origY + dy, 0, chH - 1);
       mutate(c => {
-        if (g === 'spawn') { c.spawnX = t.x; c.spawnY = t.y; }
-        else if (c.keySpawn) { c.keySpawn.x = t.x; c.keySpawn.y = t.y; }
+        if (d.which === 'spawn') { c.spawnX = nx; c.spawnY = ny; }
+        else if (c.keySpawn) { c.keySpawn.x = nx; c.keySpawn.y = ny; }
       });
     };
     window.addEventListener('pointermove', onMove);
@@ -167,7 +184,7 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  }, [mutate, tileFromPointer]);
+  }, [mutate, cell, chW, chH]);
 
   // ---- wall paint (paint mode) ----
   const paintAt = useCallback((clientX: number, clientY: number) => {
@@ -311,12 +328,20 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
   const startEntityDrag = (group: Group, index: number) => (e: React.PointerEvent) => {
     e.stopPropagation();
     setSel({ group, index });
-    if (mode === 'select') dragRef.current = { group, index };
+    const ent = (ch[group] as Array<{ x: number; y: number }>)[index];
+    if (mode === 'select' && ent) {
+      dragRef.current = { group, index, startX: e.clientX, startY: e.clientY, origX: ent.x, origY: ent.y };
+    }
   };
   const startSingleDrag = (which: 'key' | 'spawn') => (e: React.PointerEvent) => {
     e.stopPropagation();
     setSel({ group: which } as Sel);
-    if (mode === 'select') singleDragRef.current = which;
+    const orig = which === 'spawn'
+      ? { x: ch.spawnX, y: ch.spawnY }
+      : ch.keySpawn ? { x: ch.keySpawn.x, y: ch.keySpawn.y } : null;
+    if (mode === 'select' && orig) {
+      singleDragRef.current = { which, startX: e.clientX, startY: e.clientY, origX: orig.x, origY: orig.y };
+    }
   };
 
   const isSel = (group: string, index?: number) =>
@@ -342,7 +367,7 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
   const loreEntries = lc?.lore ?? [];
   const practiceId = lc?.practice?.id;
 
-  return (
+  return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#0A0A0A', display: 'flex', fontFamily: "'JetBrains Mono', monospace", color: '#E8E8E8' }}>
       {/* ---- palette drawer ---- */}
       <div style={{ width: 300, flexShrink: 0, borderRight: '1px solid #2A2A2A', padding: 14, overflowY: 'auto' }}>
@@ -502,7 +527,8 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
           <span>{mode === 'paint' ? 'click/drag tiles to toggle walls' : 'click to select · drag to move'}</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
