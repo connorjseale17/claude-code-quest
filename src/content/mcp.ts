@@ -15,35 +15,35 @@ export const mcpContent: LessonContent = {
   lore: [
     {
       id: 'broadcast',
-      text: 'Tip: MCP is an open standard. Write the integration once, every AI client speaks to it.',
+      text: 'MCP — Model Context Protocol — is an open standard. Anthropic ships it, OpenAI ships it, and any vendor can publish a compatible client.\n\nThe practical consequence is portability. Write a Slack MCP server once and Claude, GPT, Gemini, and anything that comes next can use it through the same shape.\n\nNo more rewriting integrations every time the AI vendor changes. The protocol IS the contract.',
     },
     {
       id: 'connection-log',
-      text: 'Tip: `stdio` transport for local tools (filesystem, shell). `http`/`sse` for remote SaaS (GitHub, Slack). Pick by where it lives.',
+      text: 'Two transports. `stdio` runs the MCP server as a subprocess of Claude, communicating over standard input and output. Use it for anything local: filesystem, your shell tools, scripts on the same machine.\n\n`http` and `sse` connect over the network. Use them for SaaS: Slack, GitHub, your CRM, your data warehouse.\n\nPick by where the resource lives. Local file? stdio. Remote API? http or sse. Picking wrong adds latency you do not need.',
     },
     {
       id: 'rack-a',
-      text: 'Tip: MCP servers expose TOOLS (callable), RESOURCES (readable), PROMPTS (templated). Three shapes, every server.',
+      text: 'Every MCP server exposes three primitives. TOOLS are callable functions: post-to-slack, search-github, create-pull-request. The verbs.\n\nRESOURCES are readable data: a file, a doc, a record. Things Claude can pull in for context. PROMPTS are named templates the server hands Claude when invoked.\n\nThree shapes, every server you will ever touch. Memorize the triplet and the rest of MCP starts to make sense.',
     },
     {
       id: 'essential-stack',
-      text: 'Tip: the essential stack. GitHub MCP (read PRs, manage issues, push branches). Context7 (current library docs, stops Claude writing against deprecated APIs). Playwright (browser automation, end-to-end verify). Filesystem (scoped file access outside the project). Start with these four. Add by need.',
+      text: 'Four servers cover most daily work for a consulting team.\n\nGitHub MCP: read PRs, manage issues, push branches, open pull requests with bodies you actually want. Context7: pulls current library documentation into the conversation so Claude stops writing code against APIs deprecated two versions ago.\n\nPlaywright: browser automation. Navigate, click, fill, screenshot, verify the signup flow end-to-end. Filesystem: scoped file access outside the project directory, useful for cross-repo or shared-docs reads.\n\nStart with these four. Add by need.',
     },
     {
       id: 'mcp-mistake',
-      text: 'Tip: the #1 MCP mistake — installing every cool server you find. Each one dumps its tool definitions into the context window (50k+ tokens with 3 servers). Start with 2-3 that match your daily workflow. Add by need, not by FOMO.',
+      text: 'The number one MCP mistake is installing every cool server you find. Each one dumps its tool definitions into the context window before you have typed a thing.\n\nThree servers can eat fifty thousand tokens just on tool descriptions. That is fifty thousand tokens fewer for your actual code, your actual conversation, your actual work.\n\nStart with two or three that match your real daily workflow. Add by need, not by FOMO. You can always add another later; you cannot easily get the context back.',
     },
     {
       id: 'rack-b',
-      text: "Tip: typical firm stack — GitHub + Context7 + Slack + Drive. Scope each token tight. Auto-approve specific tools (`mcp__github__list_issues`) in settings.json — not whole servers.",
+      text: "A typical consulting-firm stack: GitHub + Context7 + Slack + Drive. Sometimes Notion or your CRM joins; rarely more than five servers total.\n\nScope every token tight. A Slack token that can post to one channel beats a token that can post anywhere. A Drive token scoped to one folder beats one scoped to the whole account.\n\nAuto-approve specific tools (`mcp__github__list_issues`, `mcp__slack__post_to_general`) in settings.json — never whole servers. The narrower the scope, the smaller the blast radius.",
     },
     {
       id: 'hooks-mcp-pair',
-      text: 'Tip: hooks reinforce MCP. PostToolUse hook on Write(*.ts) runs prettier after Claude (or GitHub MCP) edits a file. PreToolUse hook on `mcp__github__create_pull_request` can block PR opens if tests are failing. Same matcher pattern, MCP-aware.',
+      text: 'Hooks pair with MCP using the same matcher logic as any other tool.\n\nA PostToolUse hook with matcher `Write(*.ts)` catches every TypeScript write — whether Claude edited the file directly or GitHub MCP synced one down. Same prettier run, same eslint --fix, no exceptions.\n\nA PreToolUse hook with matcher `mcp__github__create_pull_request` can block PR opens when tests are failing locally. The hook reads, decides, allows or blocks.\n\nMCP tool calls are just tool calls. Hooks treat them the same.',
     },
     {
       id: 'rack-c',
-      text: 'Tip: every MCP tool call sees what the auth token sees. Default-deny in /permissions. Allow narrow patterns explicitly. Treat each server like a vendor, not a feature.',
+      text: 'Every MCP tool call returns exactly what the auth token can see. PII, contracts, internal docs, customer secrets — if the token has access, the tool has access, and the tool has access means Claude has access.\n\nDefault-deny in /permissions. Auto-approve narrow patterns explicitly, never whole servers. A `mcp__github__list_issues` allow rule is fine; a `mcp__github(*)` allow rule is a footgun.\n\nTreat each MCP server like a vendor, not a feature. Audit the source before adding. Rotate tokens. Assume least privilege.',
     },
   ],
   practice: {

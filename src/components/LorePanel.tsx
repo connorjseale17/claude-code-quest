@@ -74,7 +74,7 @@ function inR(x: number, y: number, x0: number, y0: number, x1: number, y1: numbe
 
 /**
  * Renders the pixel-art book into the given canvas. Deterministic — same
- * output every call, so we can memoize this and reuse for every lore item.
+ * output every call, so we can call it once per panel mount.
  */
 function renderBook(canvas: HTMLCanvasElement) {
   canvas.width = W;
@@ -103,7 +103,6 @@ function renderBook(canvas: HTMLCanvasElement) {
 
       const page = inR(x, y, FT, FT, W - FT, H - FT, Math.max(R - FT, 3));
 
-      // Frame (brown wood/leather)
       if (!page) {
         let c: RGBA = C.brown;
         const innerRing = inR(x, y, FT - 3, FT - 3, W - FT + 3, H - FT + 3, Math.max(R - FT + 3, 3));
@@ -115,7 +114,6 @@ function renderBook(canvas: HTMLCanvasElement) {
         continue;
       }
 
-      // Ragged torn page edge
       const dk = fbm(x, y, 5, 71);
       const dk2 = fbm(x, y, 13, 73);
       const edgeAmt = 2.0 + dk * 3.0 + Math.max(0, dk2 - 0.58) * 14 + rnd(x, y, 76) * 1.6;
@@ -129,7 +127,6 @@ function renderBook(canvas: HTMLCanvasElement) {
         continue;
       }
 
-      // Parchment interior (worn & aged)
       let c: RGBA = (rnd(x, y, 3) > 0.95) ? C.page2 : C.page;
       const s1 = fbm(x, y, 48, 31);
       if (s1 > 0.58) c = blend(c, C.stain, Math.min(1, (s1 - 0.58) / 0.34) * 0.40);
@@ -142,12 +139,10 @@ function renderBook(canvas: HTMLCanvasElement) {
       const en = fbm(x, y, 8, 67);
       if (!inR(x, y, FT + 9, FT + 9, W - FT - 9, H - FT - 9, 4)) c = blend(c, C.edgeDk, 0.12 + en * 0.20);
 
-      // Ruling border (skip near spine)
       const onRule = inR(x, y, M, M, W - M, H - M, 5) && !inR(x, y, M + 1, M + 1, W - M - 1, H - M - 1, 5);
       const dxc = Math.abs(x - cx0);
       if (onRule && dxc > spineW + 4) c = C.ruling;
 
-      // Gutter / spine
       if (dxc < spineW) {
         const t = 1 - dxc / spineW;
         if (dxc <= 1) c = C.spineDk;
@@ -163,7 +158,6 @@ function renderBook(canvas: HTMLCanvasElement) {
         }
       }
 
-      // Dog-eared bottom corners
       const px0 = FT + 2, px1 = W - FT - 2, py1 = H - FT - 2;
       const dlx = x - px0, dby = py1 - y;
       if (dlx >= 0 && dby >= 0 && dlx + dby < foldS) {
@@ -178,7 +172,6 @@ function renderBook(canvas: HTMLCanvasElement) {
     }
   }
 
-  // Worn-edge chipping pass
   const erase: number[] = [];
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -233,7 +226,9 @@ export function LorePanel() {
   }, [loreEntry]);
 
   if (!loreEntry) return null;
-  const text = loreEntry.text;
+  // Lore text can come as one paragraph or several separated by \n\n.
+  // Render as <p> blocks so the columns can break between paragraphs cleanly.
+  const paragraphs = loreEntry.text.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
 
   return (
     <div
@@ -247,9 +242,12 @@ export function LorePanel() {
         onClick={e => e.stopPropagation()}
         style={{
           position: 'relative',
-          width: 'min(92vw, calc(92vh * 1.5))',
+          // Sized off the parent game container (960x640), not the viewport.
+          // Leaves padding so the chipped/torn edges don't get cropped.
+          width: '72%',
+          maxWidth: 720,
           aspectRatio: `${W} / ${H}`,
-          filter: 'drop-shadow(0 18px 26px rgba(0,0,0,0.55))',
+          filter: 'drop-shadow(0 14px 22px rgba(0,0,0,0.55))',
         }}
       >
         <canvas
@@ -262,55 +260,40 @@ export function LorePanel() {
           }}
         />
 
-        {/* Left page text */}
+        {/* Text container — spans both pages, uses CSS multi-column to flow
+            text across the spine. column-gap matches the spine width (~15% of
+            the text area = ~13% of book width). */}
         <div
           style={{
             position: 'absolute',
             left: '7.5%',
-            top: '11%',
-            width: '36%',
-            height: '78%',
-            color: '#4a3a24',
-            fontFamily: "'Spectral', Georgia, serif",
-            fontSize: 'clamp(11px, 1.6vw, 17px)',
-            lineHeight: 1.55,
-            overflow: 'hidden',
-            textShadow: '0 1px 0 rgba(255,255,255,0.25)',
-            columnCount: 1,
-          }}
-        >
-          <span
-            style={{
-              fontStyle: 'italic',
-              fontSize: '1.7em',
-              float: 'left',
-              lineHeight: 0.85,
-              marginRight: 5,
-              marginTop: 4,
-            }}
-          >
-            {text.charAt(0)}
-          </span>
-          {text.slice(1, Math.ceil(text.length * 0.55))}
-        </div>
-
-        {/* Right page text (continuation) */}
-        <div
-          style={{
-            position: 'absolute',
             right: '7.5%',
-            top: '11%',
-            width: '36%',
-            height: '78%',
-            color: '#4a3a24',
+            top: '12%',
+            height: '74%',
+            color: '#3a2c18',
             fontFamily: "'Spectral', Georgia, serif",
-            fontSize: 'clamp(11px, 1.6vw, 17px)',
-            lineHeight: 1.55,
+            fontSize: 13,
+            lineHeight: 1.6,
+            columnCount: 2,
+            columnGap: '15.3%',
+            columnFill: 'auto',
+            textAlign: 'justify',
+            hyphens: 'auto',
             overflow: 'hidden',
-            textShadow: '0 1px 0 rgba(255,255,255,0.25)',
+            textShadow: '0 1px 0 rgba(255,255,255,0.18)',
           }}
         >
-          {text.slice(Math.ceil(text.length * 0.55))}
+          {paragraphs.map((p, i) => (
+            <p
+              key={i}
+              style={{
+                margin: i === 0 ? '0 0 0.8em 0' : '0.6em 0 0.8em 0',
+                textIndent: i === 0 ? 0 : '1.2em',
+              }}
+            >
+              {p}
+            </p>
+          ))}
         </div>
 
         {/* Bottom-left close button (`<` built into the book) */}
@@ -325,9 +308,9 @@ export function LorePanel() {
             height: '12%',
             background: 'transparent',
             border: 'none',
-            color: '#4a3a24',
+            color: '#3a2c18',
             fontFamily: "'Spectral', Georgia, serif",
-            fontSize: 'clamp(14px, 2.4vw, 28px)',
+            fontSize: 20,
             fontWeight: 500,
             cursor: 'pointer',
             padding: 0,
@@ -358,7 +341,7 @@ export function LorePanel() {
             fontFamily: "'Spectral', Georgia, serif",
             fontStyle: 'italic',
             color: '#6b4f2e',
-            fontSize: 'clamp(9px, 1.1vw, 13px)',
+            fontSize: 10,
             opacity: 0.75,
             pointerEvents: 'none',
           }}

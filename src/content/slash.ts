@@ -15,35 +15,35 @@ export const slashContent: LessonContent = {
   lore: [
     {
       id: 'command-sheet',
-      text: 'Tip: a slash command is a markdown file in `.claude/commands/<name>.md`. The body IS the prompt. Pipe args with $ARGUMENTS.',
+      text: 'A slash command is a markdown file at `.claude/commands/<name>.md`. The body of the file IS the prompt. Type `/name` and Claude expands the contents into the conversation as if you had typed it yourself.\n\nPipe arguments through `$ARGUMENTS`. A command called `review-pr` with body "Review the PR at $ARGUMENTS for our team style and security checks" becomes `/review-pr #142` at the prompt.\n\nVersioned in git, shared with the team. Three minutes of authoring, hours of leverage per use.',
     },
     {
       id: 'index',
-      text: 'Tip: skills live at `.claude/skills/<name>/SKILL.md`. They auto-invoke when their description matches the task. Bundle templates and scripts alongside.',
+      text: 'Skills live at `.claude/skills/<name>/SKILL.md`. Same shape as a slash command, but with YAML frontmatter on top and a folder of supporting files alongside.\n\nThe magic is the description field. When Claude reads a task that matches a skill description, it AUTO-invokes the skill — no slash needed. "Draft a proposal for Acme" wakes up `/draft-proposal` because the skill description matches.\n\nSkills can bundle templates, examples, reference files, even spawn subagents. Slash commands cannot. When in doubt, write a skill.',
     },
     {
       id: 'card-a',
-      text: "Tip: bottle your firm's deliverables — /draft-proposal, /summarize-call, /qbr-deck. One skill per move your firm sells.",
+      text: "Bottle your firm's deliverables one skill at a time. /draft-proposal for the proposal microsite. /summarize-call for discovery notes. /qbr-deck for the quarterly review.\n\nOne skill per move your firm sells. Each is versioned in git, evolves with your practice, and is invoked the same way by every consultant.\n\nNew consultant onboards? They do not learn the moves from scratch. They just use the skills.",
     },
     {
       id: 'hierarchy',
-      text: 'Tip: the hierarchy. CLAUDE.md is ADVICE — Claude usually follows. Skill is a RECIPE — Claude follows when context matches. Hook is LAW — runs every time, no AI judgment. Pick by how non-negotiable the rule is.',
+      text: 'The hierarchy resolves three different shapes of "follow this rule" in three different ways.\n\nCLAUDE.md is ADVICE. Claude reads it every session and usually follows. Skill is a RECIPE. Claude follows when the task description matches and the recipe applies. Hook is LAW. Hook runs every time the event fires, no AI judgment involved.\n\nPick by how non-negotiable the rule is. A preference goes in CLAUDE.md; a procedure goes in a skill; an inviolable guarantee goes in a hook.',
     },
     {
       id: 'hooks-intro',
-      text: 'Tip: hooks fire on lifecycle events. PreToolUse (before any tool, can BLOCK). PostToolUse (after, can format/lint). SessionStart and SessionEnd. Matchers like `Bash(git commit*)` or `Write(*.ts)` target specific cases.',
+      text: 'Hooks fire on lifecycle events and run shell commands. PreToolUse fires before any tool — Write, Bash, MCP — and CAN BLOCK the tool call entirely. PostToolUse fires after, useful for formatters or linters.\n\nSessionStart fires when Claude opens; SessionEnd when it closes. Pull latest from git on start, send a summary to Slack on end.\n\nMatchers target specific cases. `Bash(git commit *)` catches only git commits. `Write(*.ts)` catches only TypeScript writes. `Write(.env*)` catches every flavor of dotenv file. Specific matchers keep hooks fast.',
     },
     {
       id: 'card-b',
-      text: 'Tip: a PostToolUse hook on Write(*.ts) can run prettier + eslint --fix on every TypeScript file Claude touches. Format-on-save, deterministic edition.',
+      text: 'A PostToolUse hook on `Write(*.ts)` runs prettier and eslint --fix on every TypeScript file Claude touches. Format-on-save, deterministic edition.\n\nNo AI judgment. Claude wrote a file, the hook ran the formatter, the formatter rewrote it cleanly. No "Claude usually formats." No drift between teammates.\n\nThe same matcher pattern works for `Write(*.py)` plus ruff, `Write(*.go)` plus gofmt, anything you can run from the command line.',
     },
     {
       id: 'defense-in-depth',
-      text: 'Tip: critical rules deserve layers. PreToolUse hook (hard block) + .gitignore (git-level safety net) + a line in CLAUDE.md (reasoning context). Belt + suspenders + a reminder. Same principle security engineers use.',
+      text: 'Critical rules deserve multiple layers. To make sure no one — Claude or human — ever commits .env files or API keys, you do not pick one mechanism. You stack them.\n\nLayer one: a PreToolUse hook with matcher `Write(.env*)` set to block. Hard enforcement, deterministic. Layer two: .gitignore listing the .env files. Git-level safety net. Layer three: a line in CLAUDE.md reminding Claude why those files are off-limits, so the reasoning travels.\n\nNo single layer is enough. This is the same principle security engineers use: never rely on one control.',
     },
     {
       id: 'card-c',
-      text: "Tip: in a skill's frontmatter, `allowed-tools: Read, Grep, Glob` limits which Claude Code tools the skill can invoke. It's a permission boundary on that skill specifically — like restricting GPT Actions to certain endpoints.",
+      text: "In a skill's frontmatter, `allowed-tools: Read, Grep, Glob` limits which Claude Code tools that skill can invoke. Read views file contents. Grep searches for text patterns. Glob finds files matching wildcards.\n\nWith only those three, the skill literally cannot write files or run shell commands. That is a permission boundary on the skill itself, separate from the session permission mode.\n\nSame idea as restricting GPT Actions to certain API endpoints. Fence each skill to exactly the tools it needs.",
     },
   ],
   practice: {

@@ -15,31 +15,31 @@ export const claudemdContent: LessonContent = {
   lore: [
     {
       id: 'old-note',
-      text: 'Tip: CLAUDE.md belongs in repo root. Claude reads it every session before any task.',
+      text: 'CLAUDE.md belongs in the repository root, alongside the README and the package manifest. Claude reads it every session before any task.\n\nIt is the behavioral contract of the project. Build commands, test commands, naming, repository etiquette, the non-obvious things a new consultant joining the project would need on day one — they all live here.\n\nKeep it tight. Fifty to one hundred and fifty lines is the sweet spot; bloated CLAUDE.md gets ignored, and the most important rules get lost in the noise.',
     },
     {
       id: 'log',
-      text: 'Tip: /init drafts a starter CLAUDE.md from the repo. Prune the noise before checking in.',
+      text: 'Run /init at the start of any project. Claude scans the repository — the languages, the build files, the conventions it can see — and drafts a starter CLAUDE.md you can prune.\n\nDo not accept what /init produces verbatim. Half the value is in the editing: remove what Claude can already infer from the code, and add the things it cannot infer — the firm-specific conventions, the deploy story, the way your team writes commit messages.\n\nA pruned CLAUDE.md is the contract; the raw /init output is just a first draft.',
     },
     {
       id: 'formula',
-      text: 'Tip: every good CLAUDE.md answers three questions. WHY: project purpose and audience. WHAT: architecture, stack, key files. HOW: build, test, lint, conventions. Same three-part formula you use to brief Claude.',
+      text: 'Every good CLAUDE.md answers three questions. WHY: what is this project, who is it for, what problem does it solve? This gives Claude decision-making context for the dozen small choices every build requires.\n\nWHAT: the architecture, the stack, the key directories and files. Where things live and how they connect. HOW: build commands, test commands, lint commands, conventions, things to avoid.\n\nSame three-part formula you use to brief Claude on any task. Learn it once, write it everywhere.',
     },
     {
       id: 'fragment-a',
-      text: 'Tip: loading hierarchy. Managed policy → ~/.claude/CLAUDE.md → parent dirs → project root → subdirs → .claude/rules/*.md. Most-specific wins.',
+      text: 'The loading hierarchy resolves conflicts by specificity. Managed enterprise policy first, then ~/.claude/CLAUDE.md (your global preferences), then CLAUDE.md in parent directories, then the project root, then subdirectories, then .claude/rules/*.md.\n\nMost-specific wins: a subdirectory rule overrides the project root, which overrides your user-global. Managed policy is the only layer that cannot be overridden.\n\nThe practical takeaway: avoid writing contradictions. If two files disagree, Claude may pick one arbitrarily.',
     },
     {
       id: 'fragment-b',
-      text: 'Tip: /compact preserves the conversation and summarizes old turns. /clear nukes it. Pick by intent.',
+      text: '/compact preserves the conversation. It summarizes the older turns into a compressed memory and frees up the window so you can keep going without losing the thread.\n\n/clear nukes the conversation entirely. File edits stay on disk, but the chat history is gone. Use it between unrelated tasks.\n\nPick by intent: still in the same engagement, just running out of room → /compact. Switching engagements entirely → /clear. Different tools, different moments.',
     },
     {
       id: 'auto-memory-warn',
-      text: 'Tip: auto-memory writes itself between sessions. Quality varies. Treat it like notes a new hire took — review, correct, prune. A wrong auto-memory line is worse than no line.',
+      text: 'Auto-memory writes itself between sessions. Claude jots what it learned — naming patterns, dependencies it mapped, conventions it figured out.\n\nQuality varies. Some notes are gold; others are misremembered or simply wrong. Treat them like notes a new hire took on their first week: useful when correct, dangerous when stale.\n\nRun /memory to read what auto-memory captured. Review, correct, prune. A wrong auto-memory line is worse than no line at all, because Claude will trust it next session.',
     },
     {
       id: 'fragment-c',
-      text: 'Tip: /memory shows what Claude figured out on its own. Promote the useful bits to CLAUDE.md so the whole team gets them.',
+      text: '/memory shows what Claude has figured out on its own across sessions — the conventions, build steps, and patterns it inferred from your repository.\n\nIt is also where the loaded CLAUDE.md files appear, so you can verify the hierarchy is resolving the way you expect.\n\nPromote the useful auto-memory bits to CLAUDE.md so the whole team gets them; delete the noise so it does not lead the next session astray.',
     },
   ],
   practice: {

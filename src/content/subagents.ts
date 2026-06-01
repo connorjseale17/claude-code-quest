@@ -15,31 +15,31 @@ export const subagentsContent: LessonContent = {
   lore: [
     {
       id: 'roster',
-      text: 'Tip: a subagent gets a fresh context window — brief it like a stranger walking in cold. It cannot see your conversation; tell it everything it needs.',
+      text: 'A subagent gets a fresh context window. It cannot see your conversation, your scratch work, or what the main agent already knows about the codebase.\n\nBrief it like a stranger walking in cold on day one. Give it the goal, the constraints, the files it should read, the output shape you expect.\n\nVague briefs come back with vague results. Concrete briefs come back with what you actually wanted. The subagent has no priors; supply them.',
     },
     {
       id: 'agent-taxonomy',
-      text: 'Tip: four agent shapes. ORCHESTRATOR (manager) breaks a goal into pieces. SPECIALIST (Reviewer, Debugger, Planner) deep on one domain. UTILITY (general purpose) handles routine tasks. BACKGROUND (monitor) watches conditions and alerts on trigger.',
+      text: 'Four agent shapes show up in every well-run setup.\n\nORCHESTRATOR is the manager: takes a high-level goal, breaks it into subtasks, delegates to specialists, synthesizes the results. SPECIALIST is the SME — Code Reviewer, Test Writer, Security Auditor, deep in one domain.\n\nUTILITY is the swiss-army knife: routine tasks that do not need specialization — file organization, dependency bumps, commit-message writing. BACKGROUND is the monitor: runs continuously, watches conditions, alerts when something fires.\n\nPick the right shape for the role and the team runs itself.',
     },
     {
       id: 'mission-brief',
-      text: 'Tip: /agents shows every running subagent at a glance — blocked, waiting, done. Spawn N in one message and they run truly concurrent.',
+      text: 'Run /agents to see every running subagent at a glance — what each is doing, what it is waiting on, which ones have finished, which ones are blocked.\n\nSpawn multiple subagents in a single message and they run truly concurrent — not in turns, not on a queue. Five Explore subagents each chasing a different question return in parallel.\n\nWatch the panel, pull the results when they are ready. Concurrency is free; use it.',
     },
     {
       id: 'git-shared-vs-local',
-      text: 'Tip: what goes in git — CLAUDE.md, .claude/settings.json, .claude/rules/, .claude/skills/, .claude/agents/, .mcp.json. What stays local — .claude/settings.local.json, ~/.claude/, your tokens. Shared layer is the team contract; local is yours alone.',
+      text: 'What goes in git is the team contract. CLAUDE.md, .claude/settings.json, .claude/rules/, .claude/skills/, .claude/agents/, and .mcp.json all live in the repository — every teammate inherits them.\n\nWhat stays local is your personal layer. .claude/settings.local.json is gitignored and holds your private overrides. ~/.claude/CLAUDE.md applies across every project you work on. Your tokens, your scratch notes, your .env files — never in git.\n\nThe shared layer scales the team. The local layer keeps you sane. Mixing them up is how secrets leak.',
     },
     {
       id: 'fragment-x',
-      text: 'Tip: spawn N subagents in one message — they run truly concurrent. Five agents researching five competitors at once; one orchestrator stitches the brief.',
+      text: 'Subagents spawned in one message run truly concurrent. Five agents researching five competitors at once. Three agents auditing three different code paths in parallel.\n\nOne orchestrator collects the results and stitches them into a single brief. This is not pretend-concurrency on a queue; it is real parallel work happening at the same time.\n\nThroughput scales linearly with the number you spawn, up to the limit of what your token budget can comfortably support.',
     },
     {
       id: 'plugin',
-      text: 'Tip: bundle your firm\'s setup into a plugin — skills, agents, hooks, MCP configs, rules. Push to a GitHub repo. Teammates run `/plugin install github.com/your-org/firm-plugin` and the whole stack lights up. Update once; everyone runs `/reload-plugins`.',
+      text: "Bundle your firm's whole Claude Code setup into a plugin — skills, agents, hooks, MCP configs, rules, all of it.\n\nPush the plugin to a GitHub repo. Teammates run `/plugin install github.com/your-org/firm-plugin` and the whole stack lights up in their project. One install, the entire library of moves is live.\n\nWhen you update the plugin, teammates run `/reload-plugins` and they get the latest. One source of truth. No drift. Same principle as a shared component library — and the same payoff.",
     },
     {
       id: 'fragment-y',
-      text: 'Tip: routines (/loop) schedule agents on Anthropic infra. Your laptop can be off. The Agent SDK lets you trigger Claude Code from your own code — Slack message in, PR out.',
+      text: 'Routines schedule agents to run on Anthropic infrastructure. Set up a /loop with a cron expression and Claude fires on its own schedule — your laptop can be closed, you can be at lunch, the work still happens.\n\nThe Agent SDK lets you go further. Trigger Claude Code from your own application. A Slack message arrives; your handler invokes Claude; Claude opens a PR; the link comes back as a reply.\n\nSlack message in, PR out, no human at the keyboard.',
     },
   ],
   practice: {

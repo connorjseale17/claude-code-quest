@@ -12,7 +12,7 @@ export const finalBossContent: LessonContent = {
   lore: [
     {
       id: 'complexity-maxim',
-      text: 'Tip: the one rule that governs all of this — only add complexity when you feel friction. Start with CLAUDE.md and plain prompts. Notice what you repeat. Automate THAT specific thing. Every hook, MCP server, skill, agent, plugin earns its way in by solving a real problem.',
+      text: 'The one rule that governs all of this: only add complexity when you feel friction. Not before.\n\nStart with CLAUDE.md and plain prompts. That alone covers more daily work than people expect. Notice what you keep repeating, the workarounds you reach for, the manual steps that grate. Automate that specific thing.\n\nEvery hook, MCP server, skill, agent, plugin earns its way into your setup by solving a real friction you actually have. The creator of Claude Code himself runs a surprisingly minimal stack. Speculative complexity is the cheapest way to slow yourself down.\n\nFriction first, automation second. Always.',
     },
   ],
   battle: {
