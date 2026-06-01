@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PixelSprite } from './PixelSprite';
-import { FRAMES } from '../assets/sprites';
+import { FRAMES, IMAGE_FRAMES } from '../assets/sprites';
 
 interface ItemProps {
   x: number;
@@ -35,9 +35,10 @@ function getAnimationPair(sprite: string): [string, string] | null {
 
 // Sprite names that should render as a real image (PNG) instead of a
 // palette-grid frame. Used for hand-authored item art that doesn't fit the
-// 16-wide pixel-grid format we use for everything else.
+// 16-wide pixel-grid format we use for everything else. Reuses
+// IMAGE_FRAMES from sprites.ts so we get the refined, bundled asset.
 export const IMAGE_SPRITES: Record<string, string> = {
-  paper: '/sprites/book.png', // Minecraft-style book — used for every lore item
+  paper: IMAGE_FRAMES.book, // Minecraft-style book — used for every lore item
 };
 
 export function Item({ x, y, sprite, tileSize, tint }: ItemProps) {
