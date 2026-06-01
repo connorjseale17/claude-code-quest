@@ -12,9 +12,18 @@ interface ItemProps {
   tint?: string;
 }
 
-// Bestiary altars (slime, ghost, etc.) render larger than items so they read
-// as boss encounters rather than collectibles.
-const BIG_SPRITES = new Set(['slime_a', 'ghost_a', 'goblin_a', 'skeleton_a', 'warlock_a', 'dragon_a', 'warlock_a']);
+// Per-sprite scale overrides for bestiary altars. The design specifies
+// fit:[2,2] for standard enemies (~80px = scale 5 at our 40px tile size)
+// and fit:[5,5] for the dragon (~200px = scale 7). Any sprite not in this
+// map uses the default 3.
+const BESTIARY_SCALES: Record<string, number> = {
+  slime_a: 5,
+  ghost_a: 5,
+  goblin_a: 5,
+  skeleton_a: 5,
+  warlock_a: 5,
+  dragon_a: 7,
+};
 
 /** If `sprite` ends in `_a` and a `_b` variant exists, return the pair. */
 function getAnimationPair(sprite: string): [string, string] | null {
@@ -35,7 +44,7 @@ export function Item({ x, y, sprite, tileSize, tint }: ItemProps) {
   }, [pair]);
 
   const frame = pair ? pair[phase] : sprite;
-  const scale = BIG_SPRITES.has(sprite) ? 4 : 3;
+  const scale = BESTIARY_SCALES[sprite] ?? 3;
 
   return (
     <div
