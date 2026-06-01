@@ -6,7 +6,7 @@ import { BotIdle } from './PixelSprite';
 const LINES = [
   '> Welcome to Claude Code Quest.',
   '> A game about the tool that built it.',
-  '> Five levels. One operator. Let\'s go.',
+  '> Six bosses. One mission. Let\'s go.',
 ];
 
 export function SplashScreen() {

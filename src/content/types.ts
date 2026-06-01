@@ -14,7 +14,7 @@ export type LessonContent = {
 };
 
 export type BossBattle = {
-  /** Display name, e.g. "EMBERLING". */
+  /** Display name, e.g. "Sloppy the Glob". */
   name: string;
   /** Base sprite key — frames are `${spriteKey}_idle_1/2`, `_attack`, `_hurt`, `_defeat`. */
   spriteKey: string;

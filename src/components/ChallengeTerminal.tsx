@@ -104,10 +104,10 @@ export function ChallengeTerminal() {
     <RetroChassis
       variant="mac"
       accent={accent}
-      diskLabel="CHALLENGE"
+      diskLabel="BOSS BATTLE"
       chassisName="CLAUDY-MAC"
       topbarText={`LVL ${numLabel} · ${level.title}`}
-      topbarSub="CHALLENGE.DISK"
+      topbarSub="BOSS.BATTLE"
       onClose={closePanel}
     >
       <div onClick={skipTypewriter} style={{ cursor: 'default', height: '100%' }}>

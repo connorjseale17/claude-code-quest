@@ -19,7 +19,7 @@ interface RetroChassisProps {
   variant: 'mac' | 'lab';
   /** Theme accent color (top strip + LED + screen border highlight) */
   accent: string;
-  /** Label printed during boot, e.g. "CHALLENGE" or "PRACTICE" */
+  /** Label printed during boot, e.g. "BOSS BATTLE" or "PRACTICE" */
   diskLabel: string;
   /** Display name shown below the chassis, e.g. "CLAUDY-MAC" */
   chassisName: string;
