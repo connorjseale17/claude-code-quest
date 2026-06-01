@@ -204,21 +204,27 @@ const THEME_CRIMSON: Theme = {
 // ============================================================================
 
 function buildWelcomeLevel(): LevelConfig {
-  // ----- Chamber A: Antechamber (20×12) -----
-  const aW = 20, aH = 12;
+  // ----- Chamber A: Antechamber (19×12) -----
+  // New maze: a spine wall at col 9 with a 1-tile pinch at row 6 splits the
+  // chamber in two. The player weaves up over the col-5 center pillar, through
+  // the pinch past guide-bot, then up over the col-14 center pillar to the
+  // east door. Items / lore / decorations are intentionally not placed here
+  // yet — they come in a later pass.
+  const aW = 19, aH = 12;
   const aTiles = blankTileMap(aW, aH);
   // East door opens (unlocked) to Sanctum
   aTiles[6][aW - 1] = 2;
-  // Maze: crate stacks + signage pillars. Critical path along row 6.
-  // Lore alcoves: manual (NW), sticky-note + lore alcoves (N-center, N-east), practice (SW).
-  fillRect(aTiles, 4, 2, 4, 5, 1);
-  fillRect(aTiles, 4, 7, 4, 10, 1);
-  fillRect(aTiles, 8, 1, 8, 4, 1);
-  fillRect(aTiles, 8, 7, 8, 10, 1);
-  fillRect(aTiles, 12, 1, 12, 5, 1);
-  fillRect(aTiles, 12, 7, 12, 10, 1);
-  fillRect(aTiles, 16, 1, 16, 5, 1);
-  fillRect(aTiles, 16, 7, 16, 10, 1);
+  // Crate clusters in the four corners
+  fillRect(aTiles, 3, 2, 4, 3, 1);
+  fillRect(aTiles, 3, 8, 4, 9, 1);
+  fillRect(aTiles, 13, 2, 14, 3, 1);
+  fillRect(aTiles, 13, 8, 14, 9, 1);
+  // Center pillars left + right of the spine
+  fillRect(aTiles, 5, 5, 5, 7, 1);
+  fillRect(aTiles, 14, 5, 14, 7, 1);
+  // Spine wall at col 9, gap at row 6 = the central pinch
+  fillRect(aTiles, 9, 1, 9, 5, 1);
+  fillRect(aTiles, 9, 7, 9, 10, 1);
 
   const antechamber: ChamberConfig = {
     id: 'welcome-antechamber',
@@ -229,11 +235,7 @@ function buildWelcomeLevel(): LevelConfig {
     tiles: aTiles,
     spawnX: 2,
     spawnY: 6,
-    items: [
-      { id: 'manual', type: 'lore', x: 6, y: 3, sprite: 'book' },
-      { id: 'sticky-note', type: 'lore', x: 14, y: 4, sprite: 'paper' },
-      { id: 'proposal-architect-practice', type: 'practice', x: 3, y: 9, sprite: 'hint_token' },
-    ],
+    items: [],
     doors: [
       {
         id: 'to-sanctum',
@@ -248,7 +250,7 @@ function buildWelcomeLevel(): LevelConfig {
     npcs: [
       {
         id: 'guide-bot',
-        x: 10,
+        x: 11,
         y: 6,
         color: '#3FB950',
         name: 'Guide-bot',

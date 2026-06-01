@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code Quest — Level 01: WELCOME</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{ --orange:#E8633D; --void:#1A1A1A; --bg:#0E0E0E; --text:#E8E8E8; --muted:#7D7D7D; --green:#3FB950; --line:#2A2A2A; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg); }
+  body{ font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; color:var(--text); -webkit-font-smoothing:antialiased; min-height:100vh; }
+  ::selection{ background:var(--orange); color:var(--void); }
+  .wrap{ max-width:1180px; margin:0 auto; padding:30px 24px 70px; }
+
+  header{ border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:20px; }
+  .cmd{ color:var(--muted); font-size:12.5px; } .cmd .tok{ color:var(--green); }
+  .titlerow{ display:flex; align-items:baseline; gap:16px; margin-top:10px; flex-wrap:wrap; }
+  h1{ font-size:27px; font-weight:700; margin:0; letter-spacing:0.02em; }
+  h1 .caret{ color:var(--orange); }
+  .lv{ color:var(--orange); font-size:13px; letter-spacing:0.14em; border:1px solid color-mix(in oklab,var(--orange) 45%,var(--line)); padding:3px 9px; }
+  .sub{ color:var(--muted); font-size:12.5px; margin-top:10px; line-height:1.7; max-width:840px; }
+  .sub b{ color:var(--text); font-weight:500; }
+
+  .toolbar{ display:flex; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  .btn{ font-family:inherit; font-size:11.5px; letter-spacing:0.04em; color:var(--text); background:var(--void); border:1px solid var(--line); padding:7px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .btn:hover{ border-color:var(--orange); color:var(--orange); }
+  .btn.on{ border-color:var(--orange); color:var(--orange); }
+  .btn .dot{ width:7px; height:7px; background:var(--green); display:inline-block; } .btn.paused .dot{ background:var(--muted); }
+
+  .crt{ position:relative; margin-top:18px; border:1px solid var(--line); background:#0b0b0b; padding:14px; overflow:hidden; }
+  .crt::after{ content:""; position:absolute; inset:0; background-image:repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,0.22) 2px 3px); pointer-events:none; z-index:5; }
+  .stage{ position:relative; width:100%; overflow:auto; }
+  svg.map{ display:block; image-rendering:pixelated; width:100%; height:auto; }
+  .chamlabel{ position:absolute; z-index:7; font-size:10px; letter-spacing:0.24em; color:var(--muted); text-transform:uppercase; }
+
+  .cols{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
+  @media(max-width:760px){ .cols{ grid-template-columns:1fr; } }
+  .panel{ border:1px solid var(--line); background:var(--void); padding:14px 16px; }
+  .panel h3{ margin:0 0 10px; font-size:12px; letter-spacing:0.1em; color:var(--orange); font-weight:700; }
+  .panel h3.late{ margin-top:18px; }
+  .row{ display:flex; gap:9px; font-size:11.5px; line-height:1.5; padding:6px 0; border-top:1px solid #1f1f1f; }
+  .row:first-of-type{ border-top:none; }
+  .row .ic{ flex:0 0 16px; height:16px; margin-top:1px; }
+  .row .k{ color:var(--text); } .row .d{ color:var(--muted); }
+  .cham{ font-size:11.5px; line-height:1.65; color:var(--muted); margin:0 0 12px; }
+  .cham b{ color:var(--text); } .cham .nm{ color:var(--orange); font-weight:600; }
+  .legend{ display:flex; flex-wrap:wrap; gap:10px 16px; }
+  .leg{ display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); }
+  .leg .sw{ width:14px; height:14px; }
+  footer{ color:var(--muted); font-size:11px; line-height:1.7; border-top:1px solid var(--line); padding-top:16px; margin-top:24px; }
+  footer .tok{ color:var(--green); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="cmd">$ <span class="tok">./play</span> --level 01 --map</div>
+    <div class="titlerow">
+      <h1><span class="caret">&gt;</span> WELCOME</h1>
+      <span class="lv">LEVEL 01</span>
+    </div>
+    <p class="sub">
+      Two clearly-separate chambers joined by a single corridor. Each room is a bounded space with pillars and
+      <b>wall blockers</b> that break the straight line — the player has to weave up and over to cross. Only two sprites
+      are fixed: <b>guide-bot</b> on the route through the Antechamber, and the <b>EMBERLING</b> boss battle in the Sanctum.
+      Lore, props and lights get placed later.
+    </p>
+    <div class="toolbar">
+      <button class="btn paused" id="playBtn"><span class="dot"></span><span id="playLbl">ANIMATE</span></button>
+      <button class="btn on" id="pathBtn">CRITICAL PATH</button>
+      <button class="btn on" id="labelBtn">LABELS</button>
+    </div>
+  </header>
+
+  <div class="crt">
+    <div class="stage" id="stage"></div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h3>FIXED SPRITES</h3>
+      <div id="castList"></div>
+    </div>
+    <div class="panel">
+      <h3>THE TWO CHAMBERS</h3>
+      <p class="cham"><span class="nm">ANTECHAMBER</span> — warm bounded room. Two wall blockers sit on the spine and a
+        central pinch funnels the player, so crossing means weaving up-and-over rather than walking straight. <b>guide-bot</b>
+        stands on the route just past the pinch.</p>
+      <p class="cham"><span class="nm">SANCTUM</span> — colder boss hall. A colonnade of pillars plus an approach blocker
+        bend the walk toward the <b>EMBERLING</b> battle at the far end. A black void + lone corridor keep the two rooms
+        unmistakably separate.</p>
+      <h3 class="late">LEGEND</h3>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="tok">#</span> Each chamber is its own bounded rectangle (separate <b>fillRect</b> region); props export as named
+    <b>decorations</b>. No HP overlay and no corridor hazards in this pass — those wire up separately. Connectivity verified:
+    every floor tile reachable from the entry, no cast member inside a wall.
+  </footer>
+</div>
+
+<script>
+// ===========================================================================
+// PALETTE
+// ===========================================================================
+const PAL = {
+  ".":null,
+  "o":"#E8633D","O":"#B84A28","r":"#C9402C",
+  "k":"#15181A","g":"#6A6A6A","G":"#454545",
+  "s":"#9AA4AD","S":"#566069","w":"#94602E","W":"#5E3C1C",
+  "b":"#E6E2CF","B":"#ADA589",
+  "f":"#FFD23F","F":"#F2842E","h":"#FFE9A8",
+  "m":"#3FB950","M":"#247A38","p":"#A972F0","c":"#6FD7C2",
+  "i":"#E8E8E8","x":"#6E6E6E",
+};
+
+// ===========================================================================
+// SPRITES  (frames: 1 static, 2 animated)
+// ===========================================================================
+const SPR = {
+  botGreen:{ s:[[
+    "..mmmmmmm..",".mmmmmmmmm.","mmmmmmmmmmm","mmkkmmmkkmm","mmkkmmmkkmm",
+    "mmmmmmmmmmm","mmmmmmmmmmm","mmmmmmmmmmm",".mmmmmmmmm.","..m.m.m.m.."]] },
+  slime:{ s:[[
+    ".....mmmmmm.....","...mmmmmmmmmm...","..mmmmmmmmmmmm..",".mmmmmmmmmmmmmm.",
+    "mmmmmmmmmmmmmmmm","mmmmkkmmmmkkmmmm","mmmmikmmmmikmmmm","mmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm",".mmmmmmmmmmmmmm.","..MMMMMMMMMMMM..",
+    "...MMMMMMMMMM...",".....MMMMMM....."],
+    [".....mmmmmm.....","...mmmmmmmmmm...","..mmmmmmmmmmmm..",".mmmmmmmmmmmmmm.",
+    "mmmmmmmmmmmmmmmm","mmmmkkmmmmkkmmmm","mmmmkimmmmkimmmm","mmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm",".mmmmmmmmmmmmmm.","..MMMMMMMMMMMM..",
+    "...MMMMMMMMMM...",".....MMMMMM....."]] },
+  book:{ s:[[".oooooo.","oioooooi","obbbbbbo","obWbbWbo","obbbbbbo","obWbbWbo","oOoooooO",".OOOOOO."]] },
+  paper:{ s:[[".bbbbbb.","bbbbbbbb","bWWbbWWb","bbbbbbbb","bWbbbWWb","bbbbbbbb","bWWbbbWb",".bbbbbb."]] },
+  hint:{ s:[["..oooo..",".o....o.","......o.",".....o..","....o...","....o...","........","....o...","........","........"]] },
+  crt:{ s:[[
+    ".SSSSSSSSSSSS.","SssssssssssssS","Sskmkkkkkkkk sS","Skmmkkkkkkkk sS","Skkkkkkkkkkk sS",
+    "SssssssssssssS",".SSSSSSSSSSSS.","....SSSS......","..SSSSSSSS....",".GGGGGGGGGG..."],
+    [".SSSSSSSSSSSS.","SssssssssssssS","Sskmkkkmkkkk sS","Skmmkkkkmkkk sS","Skkkkkkkkkkk sS",
+    "SssssssssssssS",".SSSSSSSSSSSS.","....SSSS......","..SSSSSSSS....",".GGGGGGGGGG..."]] },
+  sconce:{ s:[[
+    "...f....","..fhf...","..fFf...","...F....","..ooo...","...W....","...W....",".SsssS..","S..k..S.","..SkS...","...S....","........"],
+    ["....f...","...fhf..","..ffF...","...F....","..ooo...","...W....","...W....",".SsssS..","S..k..S.","..SkS...","...S....","........"]] },
+  brazier:{ s:[[
+    "....ff......","...fhhf.....","..ffFFf.....","...fFFf.....","....FF......",".oooooooo...",".SsssssssS..","..SssssS....","...S..S.....","..S....S....",".S......S...","S........S.."],
+    ["...ff.f.....","..fhhhf.....",".ffFFff.....","..fFFFf.....","...fFf......",".oooooooo...",".SsssssssS..","..SssssS....","...S..S.....","..S....S....",".S......S...","S........S.."]] },
+  bookshelf:{ s:[[
+    "wwwwwwwwwwww","wWWWWWWWWWWw","woOmoOpoMoOw","woOmoOpoMoOw","wWWWWWWWWWWw","wpoMooOmoOpw",
+    "wpoMooOmoOpw","wWWWWWWWWWWw","wOmoOpoOmoOw","wOmoOpoOmoOw","wWWWWWWWWWWw","WW........WW"]] },
+  banner:{ s:[["xxxxxxxx",".oooooo.",".oooooo.",".ooiioo.",".oiiiio.",".ooiioo.",".oooooo.",".oooooo.",".oOOOOo.",".o.OO.o.",".O....O."]] },
+  manaCrystal:{ s:[[
+    "....c....","...cic...","..cccc...",".ccccccc.","ccciiiccc",".ccccccc.","..ccccc..","...ccc...","....c....",".........","..MMmMM..","...mmm..."],
+    ["....i....","...cic...","..ciic...",".cciiccc.","cciiiiicc",".cciiicc.","..ciiic..","...cic...","....i....","....m....",".MMmmmMM.","..mmmmm.."]] },
+  wallRunes:{ s:[["............",".o..o..o..o.","o.OoO.OoO...",".OoO..OoO...","o.o.o.o.o...","............"],
+    [".c..c..c..c.","o.coc.coc...",".coc..coc...","c.c.c.c.c...","..o..o..o...","............"]] },
+  scircle:{ s:[[
+    "...oooooo...","..o......o..",".o..oooo..o.","o..o....o..o","o.o..oo..o.o","o.o..oo..o.o","o..o....o..o",".o..oooo..o.","..o......o..","...oooooo..."],
+    ["...ffffff...","..f......f..",".f..ffoo..f.","f..o.FF.o..f","f.o.foof.o.f","f.o.foof.o.f","f..o.FF.o..f",".f..ffoo..f.","..f......f..","...ffffff..."]] },
+  key:{ s:[["..ooo...",".o...o..",".o...o..",".oo.oo..","...o....","...o....","...oo...","...o....","...ooo..","........"]] },
+};
+
+// ===========================================================================
+// LEVEL DATA  — two separate rooms + a void gap + one thin corridor
+//   Antechamber  x0-18   |  void/corridor x19-22  |  Sanctum x23-41
+// ===========================================================================
+const MH=12, TILE=24;
+// ROOM 1 — bounded chamber; pillars + two wall blockers force the path to weave
+const ANTE=[
+  "###################",
+  "#........#........#",
+  "#..##....#...##...#",
+  "#..##....#...##...#",
+  "#........#........#",
+  "#....#...#....#...#",
+  "#....#...#....#...#",
+  "#....#...#....#...#",
+  "#..##....#...##...#",
+  "#..##....#...##...#",
+  "#........#........#",
+  "###################",
+];
+// ROOM 2 — bounded boss hall; colonnade pillars + an approach blocker
+const SANC=[
+  "###################",
+  "#.................#",
+  "#..##.......##....#",
+  "#..##.......##....#",
+  "#.................#",
+  "#....#............#",
+  "#....#............#",
+  "#....#............#",
+  "#.................#",
+  "#..##.......##....#",
+  "#..##.......##....#",
+  "###################",
+];
+const MW = ANTE[0].length + 4 + SANC[0].length; // 19 + 4 + 19 = 42
+function buildGrid(){
+  const g=[];
+  for(let y=0;y<MH;y++){
+    const gap = (y===6) ? "...." : "####";
+    g.push((ANTE[y]+gap+SANC[y]).split(""));
+  }
+  // carve: entry, antechamber exit, central pinch, sanctum west door, sanctum locked exit
+  [[0,6],[18,6],[9,6],[23,6],[41,6]].forEach(([x,y])=> g[y][x]=".");
+  return g;
+}
+const GRID=buildGrid();
+const A0=0, S0=23; // room x-origins
+
+const DOORS=[
+  {x:0,y:6,state:"open"},
+  {x:18,y:6,state:"open"},
+  {x:23,y:6,state:"open"},
+  {x:41,y:6,state:"locked",label:"→ LV 02"},
+];
+
+// Only the two fixed sprites — guide-bot in room 1, the boss in room 2.
+// All other props / lore / lights get placed later in the engine pass.
+const ENTS=[
+  {spr:"botGreen",x:11,y:6,fit:[1,1],kind:"npc",id:"guide-bot",desc:"Room 1 — green Claude-bot on the route, just past the central pinch."},
+  {spr:"slime",x:32,y:5,fit:[2,2],kind:"boss",id:"EMBERLING",desc:"Room 2 — the boss battle waits in the hall at the end of the approach."},
+];
+
+// critical path — weaves up-and-over the blockers instead of running straight
+const PATH=[
+  [1,6],[4,6],[4,4],[8,4],[8,6],[9,6],[11,6],[13,6],[13,4],[15,4],[15,6],[18,6], // room 1 weave
+  [23,6],[27,6],[27,4],[30,4],[30,6],[33,6]                                        // corridor + room 2 weave
+];
+
+// ===========================================================================
+// RENDER
+// ===========================================================================
+const stage=document.getElementById("stage");
+let frame=0, playing=false, showPath=true, showLabels=true;
+
+function spriteRects(grid, ox, oy, scale){
+  let r=""; for(let y=0;y<grid.length;y++){ const row=grid[y]; for(let x=0;x<row.length;x++){ const f=PAL[row[x]]; if(!f) continue;
+    r+=`<rect x="${(ox+x*scale).toFixed(2)}" y="${(oy+y*scale).toFixed(2)}" width="${scale.toFixed(2)}" height="${scale.toFixed(2)}" fill="${f}"/>`; } }
+  return r;
+}
+function placeSprite(def){
+  const sp=SPR[def.spr]; const frames=sp.s; const fr=(def.anim&&playing)?frames[frame%frames.length]:frames[0];
+  const gw=fr[0].length, gh=fr.length; const [fw,fh]=def.fit||[1,1];
+  const boxW=fw*TILE, boxH=fh*TILE; const scale=Math.min(boxW/gw, boxH/gh)*0.9;
+  const ox=def.x*TILE+(boxW-gw*scale)/2, oy=def.y*TILE+(boxH-gh*scale)/2;
+  return spriteRects(fr, ox, oy, scale);
+}
+function floorColor(x){ if(x<=18) return "#34302E"; if(x>=23) return "#2B2E31"; return "#241f1b"; }
+
+function render(){
+  let svg=`<svg class="map" viewBox="0 0 ${MW*TILE} ${MH*TILE}" width="${MW*TILE}">`;
+  svg+=`<rect x="0" y="0" width="${MW*TILE}" height="${MH*TILE}" fill="#0c0b0a"/>`;
+  // floor tiles + green dots (per-room tint)
+  for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){
+    if(GRID[y][x]!==".") continue;
+    const px=x*TILE, py=y*TILE;
+    svg+=`<rect x="${px}" y="${py}" width="${TILE}" height="${TILE}" fill="${floorColor(x)}"/>`;
+    if((x+y)%2===0) svg+=`<rect x="${px+TILE/2-1}" y="${py+TILE/2-1}" width="2" height="2" fill="#3FB950" opacity="0.28"/>`;
+  }
+  // orange edge highlights (floor tiles touching wall)
+  const isWall=(x,y)=> x<0||y<0||x>=MW||y>=MH || GRID[y][x]!==".";
+  for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){
+    if(GRID[y][x]!==".") continue;
+    const px=x*TILE, py=y*TILE, t=2;
+    if(isWall(x,y-1)) svg+=`<rect x="${px}" y="${py}" width="${TILE}" height="${t}" fill="#E8633D"/>`;
+    if(isWall(x,y+1)) svg+=`<rect x="${px}" y="${py+TILE-t}" width="${TILE}" height="${t}" fill="#B84A28"/>`;
+    if(isWall(x-1,y)) svg+=`<rect x="${px}" y="${py}" width="${t}" height="${TILE}" fill="#E8633D"/>`;
+    if(isWall(x+1,y)) svg+=`<rect x="${px+TILE-t}" y="${py}" width="${t}" height="${TILE}" fill="#B84A28"/>`;
+  }
+  // decal (summoning circle) under altar
+  ENTS.filter(e=>e.kind==="decal").forEach(e=> svg+=placeSprite(e));
+  // doors
+  DOORS.forEach(d=>{
+    const px=d.x*TILE, py=d.y*TILE; const col=d.state==="locked"?"#7D7D7D":"#E8633D";
+    svg+=`<rect x="${px+2}" y="${py-TILE+3}" width="${TILE-4}" height="${TILE*2-6}" fill="${d.state==='locked'?'#1c1a18':'#241a14'}" stroke="${col}" stroke-width="2"/>`;
+    if(d.state==="locked"){ svg+=`<rect x="${px+TILE/2-4}" y="${py+2}" width="8" height="7" fill="#7D7D7D"/><rect x="${px+TILE/2-3}" y="${py-1}" width="6" height="4" fill="none" stroke="#7D7D7D" stroke-width="2"/>`; }
+  });
+  // ambient + cast
+  ENTS.filter(e=>e.kind!=="decal").forEach(e=> svg+=placeSprite(e));
+  // critical path
+  if(showPath){
+    const pts=PATH.map(([x,y])=>`${x*TILE+TILE/2},${y*TILE+TILE/2}`).join(" ");
+    svg+=`<polyline points="${pts}" fill="none" stroke="#FFE9A8" stroke-width="2.5" stroke-dasharray="2 5" stroke-linecap="round" opacity="0.92"/>`;
+    const [sx,sy]=PATH[0]; svg+=`<circle cx="${sx*TILE+TILE/2}" cy="${sy*TILE+TILE/2}" r="4" fill="#FFE9A8"/>`;
+  }
+  svg+=`</svg>`;
+  stage.innerHTML=svg;
+  document.querySelectorAll(".chamlabel").forEach(n=>n.remove());
+  if(showLabels){ addLabel("ANTECHAMBER", 9*TILE); addLabel("SANCTUM", 32*TILE); }
+}
+function addLabel(text, cx){
+  const el=document.createElement("div"); el.className="chamlabel"; el.textContent=text;
+  const svg=stage.querySelector("svg"); const scale=svg.clientWidth/(MW*TILE);
+  el.style.left=(cx*scale)+"px"; el.style.top="6px"; el.style.transform="translateX(-50%)";
+  stage.appendChild(el);
+}
+
+// panels
+function renderPanels(){
+  const ic=(spr)=>{ const g=SPR[spr].s[0]; const w=g[0].length,h=g.length;
+    return `<svg class="ic" viewBox="0 0 ${w} ${h}">`+spriteRects(g,0,0,1)+`</svg>`; };
+  const order=["npc","lore","practice","challenge","boss","key"];
+  const kn={npc:"NPC",lore:"LORE",practice:"PRACTICE",challenge:"ALTAR",boss:"BOSS",key:"KEY"};
+  let html="";
+  ENTS.filter(e=>e.id).sort((a,b)=>order.indexOf(a.kind)-order.indexOf(b.kind)).forEach(e=>{
+    html+=`<div class="row">${ic(e.spr)}<div><span class="k">${e.id}</span> <span class="d">· ${kn[e.kind]||e.kind} (${e.x},${e.y})</span><br><span class="d">${e.desc||""}</span></div></div>`;
+  });
+  document.getElementById("castList").innerHTML=html;
+  const LEG=[["#34302E","antechamber floor"],["#2B2E31","sanctum floor"],["#0c0b0a","wall / void"],["#E8633D","wall edge"],["#FFE9A8","critical path"],["#3FB950","NPC / screen"]];
+  document.getElementById("legend").innerHTML=LEG.map(([c,l])=>`<span class="leg"><span class="sw" style="background:${c}"></span>${l}</span>`).join("");
+}
+
+render(); renderPanels();
+window.addEventListener("resize",()=>render());
+
+let timer=null;
+const playBtn=document.getElementById("playBtn"), playLbl=document.getElementById("playLbl");
+playBtn.addEventListener("click",()=>{ playing=!playing;
+  if(playing){ playBtn.classList.remove("paused"); playLbl.textContent="PLAYING"; timer=setInterval(()=>{ frame++; render(); },480); }
+  else { playBtn.classList.add("paused"); playLbl.textContent="ANIMATE"; clearInterval(timer); timer=null; render(); }
+});
+const tgl=(id,setter)=>{ const b=document.getElementById(id); b.addEventListener("click",()=>{ b.classList.toggle("on",setter()); render(); }); };
+tgl("pathBtn",()=>{ showPath=!showPath; return showPath; });
+tgl("labelBtn",()=>{ showLabels=!showLabels; return showLabels; });
+</script>
+</body>
+</html>
