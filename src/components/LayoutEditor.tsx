@@ -379,6 +379,23 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
   const loreEntries = lc?.lore ?? [];
   const practiceId = lc?.practice?.id;
 
+  // Friendly label for the current selection — surfaces ids/sprites so you
+  // can tell what's actually selected instead of "items #2".
+  let selLabel = '';
+  if (sel) {
+    if (sel.group === 'spawn') selLabel = 'spawn point';
+    else if (sel.group === 'key') selLabel = 'key spawn';
+    else {
+      const e = (ch[sel.group] as Array<Record<string, unknown>>)[sel.index];
+      if (e) {
+        if (sel.group === 'items') selLabel = `${e.type} · ${e.id}`;
+        else if (sel.group === 'npcs') selLabel = `npc · ${e.id}`;
+        else if (sel.group === 'doors') selLabel = `door · ${e.id}`;
+        else if (sel.group === 'decorations') selLabel = `prop · ${e.sprite}`;
+      }
+    }
+  }
+
   // ---- inspector (selected entity) ----
   const setPos = (x: number, y: number) => mutate(c => {
     if (!sel) return;
@@ -565,7 +582,7 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 16px', borderTop: '1px solid #2A2A2A', fontSize: 11, color: '#7D7D7D', minHeight: 34 }}>
           <span>{ch.width}×{ch.height}</span>
           {sel && <span style={{ color: '#6BA8DD' }}>
-            selected: {sel.group}{'index' in sel ? ` #${sel.index}` : ''}
+            selected: {selLabel || sel.group}
             <button style={{ ...chipBtn, marginLeft: 8, padding: '2px 6px', borderColor: '#E8633D', color: '#E8633D' }} onClick={deleteSelected}>🗑 delete</button>
           </span>}
           <span style={{ flex: 1 }} />
@@ -580,7 +597,7 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
           <div style={{ position: 'absolute', top: 60, right: 16, width: 220, background: '#0E0E0E', border: '1px solid #2A2A2A', padding: 12, fontSize: 11, zIndex: 50, boxShadow: '0 6px 24px rgba(0,0,0,0.6)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
               <span style={{ color: '#6BA8DD', letterSpacing: '0.1em' }}>
-                {sel.group}{'index' in sel ? ` #${sel.index}` : ''}
+                {selLabel || sel.group}
               </span>
               {sel.group !== 'spawn' && (
                 <button style={{ ...chipBtn, padding: '2px 6px', borderColor: '#E8633D', color: '#E8633D' }} onClick={deleteSelected}>🗑</button>
