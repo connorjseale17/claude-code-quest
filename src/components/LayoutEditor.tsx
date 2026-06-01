@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useGame } from '../engine/GameContext';
 import {
   LEVEL_CONFIGS,
+  ALL_CHAMBER_IDS,
   getBaseChamber,
   serializeChamber,
   type SerializedChamber,
@@ -10,6 +11,8 @@ import {
   type ItemConfig,
   type NPCConfig,
   type DoorConfig,
+  type DoorTarget,
+  type LevelId,
 } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
 import { PixelSprite } from './PixelSprite';
@@ -226,6 +229,12 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
   // ---- keyboard: neutralize game movement; Delete removes; Esc exits ----
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Don't hijack typing inside the inspector's form fields.
+      const tgt = e.target as HTMLElement | null;
+      if (tgt && /^(input|select|textarea)$/i.test(tgt.tagName)) {
+        if (e.key === 'Escape') (tgt as HTMLElement).blur();
+        return;
+      }
       if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); onExit(); return; }
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault(); e.stopImmediatePropagation();
@@ -367,6 +376,42 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
   const loreEntries = lc?.lore ?? [];
   const practiceId = lc?.practice?.id;
 
+  // ---- inspector (selected entity) ----
+  const setPos = (x: number, y: number) => mutate(c => {
+    if (!sel) return;
+    if (sel.group === 'spawn') { c.spawnX = x; c.spawnY = y; }
+    else if (sel.group === 'key') { if (c.keySpawn) { c.keySpawn.x = x; c.keySpawn.y = y; } }
+    else { const a = c[sel.group] as Array<{ x: number; y: number }>; if (a[sel.index]) { a[sel.index].x = x; a[sel.index].y = y; } }
+  });
+  const setSprite = (sprite: string) => mutate(c => {
+    if (!sel || !('index' in sel)) return;
+    const a = c[sel.group] as Array<{ sprite?: string }>;
+    if (a[sel.index]) a[sel.index].sprite = sprite;
+  });
+  const patchDoor = (patch: Partial<DoorConfig>) => mutate(c => {
+    if (sel?.group !== 'doors') return;
+    c.doors[sel.index] = { ...c.doors[sel.index], ...patch };
+  });
+
+  let curX = 0, curY = 0, curSprite = '';
+  if (sel) {
+    if (sel.group === 'spawn') { curX = ch.spawnX; curY = ch.spawnY; }
+    else if (sel.group === 'key') { curX = ch.keySpawn?.x ?? 0; curY = ch.keySpawn?.y ?? 0; }
+    else { const e = (ch[sel.group] as Array<{ x: number; y: number; sprite?: string }>)[sel.index]; if (e) { curX = e.x; curY = e.y; curSprite = e.sprite ?? ''; } }
+  }
+  const spriteOpts = sel?.group === 'decorations' ? PROP_LIST.map(p => p.key)
+    : sel?.group === 'npcs' ? ['idle_a', 'cat', 'owl', 'duck', 'dog', 'fox', 'wizard']
+    : sel?.group === 'items' ? ['paper', 'book', 'scroll', 'hint_token', 'crt_monitor', 'database', 'key', 'slime_a', 'warlock_a', 'goblin_a', 'ghost_a', 'skeleton_a', 'dragon_a']
+    : [];
+  const selDoor = sel?.group === 'doors' ? ch.doors[sel.index] : null;
+  const levelIds = Object.keys(LEVEL_CONFIGS) as LevelId[];
+  const targetChamber = selDoor && selDoor.target.kind !== 'end' ? selDoor.target.chamber : '';
+  const targetLevel = selDoor && selDoor.target.kind === 'level' ? selDoor.target.level : levelIds[0];
+
+  const inField: React.CSSProperties = { ...chipBtn, width: 56, padding: '4px 6px' };
+  const inWide: React.CSSProperties = { ...chipBtn, width: '100%', padding: '4px 6px' };
+  const inLabel: React.CSSProperties = { color: '#7D7D7D', fontSize: 10, letterSpacing: '0.1em', margin: '8px 0 3px' };
+
   return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#0A0A0A', display: 'flex', fontFamily: "'JetBrains Mono', monospace", color: '#E8E8E8' }}>
       {/* ---- palette drawer ---- */}
@@ -411,7 +456,7 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
       </div>
 
       {/* ---- main area ---- */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative' }}>
         {/* toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: '1px solid #2A2A2A', flexWrap: 'wrap' }}>
           <span style={{ color: '#7D7D7D', fontSize: 11 }}>{level.title}</span>
@@ -526,6 +571,97 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
             : <span style={{ color: '#3FB950' }}>✓ no issues</span>}
           <span>{mode === 'paint' ? 'click/drag tiles to toggle walls' : 'click to select · drag to move'}</span>
         </div>
+
+        {/* ---- inspector (floats top-right when something is selected) ---- */}
+        {sel && (
+          <div style={{ position: 'absolute', top: 60, right: 16, width: 220, background: '#0E0E0E', border: '1px solid #2A2A2A', padding: 12, fontSize: 11, zIndex: 50, boxShadow: '0 6px 24px rgba(0,0,0,0.6)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ color: '#6BA8DD', letterSpacing: '0.1em' }}>
+                {sel.group}{'index' in sel ? ` #${sel.index}` : ''}
+              </span>
+              {sel.group !== 'spawn' && (
+                <button style={{ ...chipBtn, padding: '2px 6px', borderColor: '#E8633D', color: '#E8633D' }} onClick={deleteSelected}>🗑</button>
+              )}
+            </div>
+
+            <div style={inLabel}>POSITION</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input type="number" value={curX} min={0} max={ch.width - 1} style={inField}
+                onChange={e => setPos(clamp(Number(e.target.value) || 0, 0, ch.width - 1), curY)} />
+              <input type="number" value={curY} min={0} max={ch.height - 1} style={inField}
+                onChange={e => setPos(curX, clamp(Number(e.target.value) || 0, 0, ch.height - 1))} />
+            </div>
+
+            {spriteOpts.length > 0 && (
+              <>
+                <div style={inLabel}>SPRITE</div>
+                <select value={curSprite} style={inWide} onChange={e => setSprite(e.target.value)}>
+                  {!spriteOpts.includes(curSprite) && curSprite && <option value={curSprite}>{curSprite}</option>}
+                  {spriteOpts.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </>
+            )}
+
+            {selDoor && (
+              <>
+                <div style={inLabel}>DOOR TARGET</div>
+                <select value={selDoor.target.kind} style={inWide}
+                  onChange={e => {
+                    const kind = e.target.value as DoorTarget['kind'];
+                    patchDoor({
+                      target: kind === 'end' ? { kind: 'end' }
+                        : kind === 'level' ? { kind: 'level', level: levelIds[0], chamber: ALL_CHAMBER_IDS[0] }
+                        : { kind: 'chamber', chamber: ALL_CHAMBER_IDS[0] },
+                    });
+                  }}>
+                  <option value="chamber">chamber (same level)</option>
+                  <option value="level">level (cross-level)</option>
+                  <option value="end">end (game complete)</option>
+                </select>
+
+                {selDoor.target.kind === 'level' && (
+                  <>
+                    <div style={inLabel}>TARGET LEVEL</div>
+                    <select value={targetLevel} style={inWide}
+                      onChange={e => patchDoor({ target: { kind: 'level', level: e.target.value as LevelId, chamber: targetChamber || ALL_CHAMBER_IDS[0] } })}>
+                      {levelIds.map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                  </>
+                )}
+
+                {selDoor.target.kind !== 'end' && (
+                  <>
+                    <div style={inLabel}>TARGET CHAMBER</div>
+                    <select value={targetChamber} style={inWide}
+                      onChange={e => patchDoor({
+                        target: selDoor.target.kind === 'level'
+                          ? { kind: 'level', level: targetLevel, chamber: e.target.value }
+                          : { kind: 'chamber', chamber: e.target.value },
+                      })}>
+                      {ALL_CHAMBER_IDS.map(id => <option key={id} value={id}>{id}</option>)}
+                    </select>
+                    <div style={inLabel}>SPAWN (x, y) IN TARGET</div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input type="number" value={selDoor.spawnX} style={inField}
+                        onChange={e => patchDoor({ spawnX: Number(e.target.value) || 0 })} />
+                      <input type="number" value={selDoor.spawnY} style={inField}
+                        onChange={e => patchDoor({ spawnY: Number(e.target.value) || 0 })} />
+                    </div>
+                  </>
+                )}
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={selDoor.locked} onChange={e => patchDoor({ locked: e.target.checked })} />
+                  locked
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={!!selDoor.requiresLevelKey} onChange={e => patchDoor({ requiresLevelKey: e.target.checked })} />
+                  requires level key
+                </label>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>,
     document.body,
