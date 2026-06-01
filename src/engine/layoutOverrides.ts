@@ -45,6 +45,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 15,
         "y": 5,
         "sprite": "paper"
+      },
+      {
+        "id": "cli-primer",
+        "type": "lore",
+        "x": 3,
+        "y": 7,
+        "sprite": "paper"
       }
     ],
     "doors": [
@@ -69,10 +76,10 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "color": "#3FB950",
         "name": "Guide-bot",
         "dialog": [
-          "Hey, operator. Fresh session? Good. Let's set you up before you wreck something.",
-          "Four permission modes. PLAN — read-only, drafts an approach. ACCEPT-EDITS — writes for you, review by diff. AUTO — runs free, a classifier watches. ASK — confirms each step.",
-          "Shift+Tab cycles them. Default to PLAN when you're walking into unfamiliar code. ACCEPT-EDITS when you're iterating. AUTO for long boring loops you trust the direction on.",
-          "Building a one-pager for a client? Describe what you want in English. Review the plan. Approve. Vercel hosts it for free. Same as briefing a junior consultant — except this one types."
+          "Hey. Fresh session? Good. Let's set you up before you wreck something.",
+          "The terminal is text-mode chat with your computer. `cd`, `ls`, `git status` — those are the keys. Claude Code lives in there, and it can text the computer too.",
+          "Four permission modes. PLAN reads. ACCEPT-EDITS writes. AUTO runs free with a safety classifier. ASK confirms each step. Shift+Tab cycles.",
+          "Brief me in three parts. WHY — who + problem. WHAT — stack + key files. HOW — build, test, ship commands. Then Vercel auto-deploys on every push."
         ]
       }
     ],
@@ -163,6 +170,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "type": "lore",
         "x": 2,
         "y": 3,
+        "sprite": "paper"
+      },
+      {
+        "id": "briefing-formula",
+        "type": "lore",
+        "x": 10,
+        "y": 4,
         "sprite": "paper"
       }
     ],

@@ -2,7 +2,7 @@ import type { LessonContent } from './types';
 
 export const welcomeContent: LessonContent = {
   roomId: 'welcome',
-  intro: 'Welcome, operator. Talk to Guide-bot first — he walks you through how Claude Code actually works. Then read any lore you spot on the way to the sanctum. The terminal in there checks what you learned.',
+  intro: 'Welcome, operator. Talk to Guide-bot first — he walks you through how Claude Code actually works. Read any lore you spot along the way. The boss battle in the sanctum checks what you picked up.',
   prompt: "You're starting a Claude Code session on a brand-new client repo to scope out a proposal microsite. You've never opened the codebase. Which permission mode should you start in?",
   choices: [
     { id: 'a', label: 'auto — fastest, classifier handles the rest', correct: false },
@@ -10,20 +10,28 @@ export const welcomeContent: LessonContent = {
     { id: 'c', label: 'plan — read and propose before touching anything', correct: true },
     { id: 'd', label: 'acceptEdits — let Claude write, review by diff later', correct: false },
   ],
-  passFeedback: '[PASS] Read, plan, then write. The plan is the first draft of the deliverable.',
+  passFeedback: '[PASS] Read, plan, then write. The plan IS the first draft of the deliverable.',
   failFeedback: '[FAIL] Auto and acceptEdits both edit. New repo + unknown stakes = plan mode first.',
   lore: [
     {
       id: 'manual',
-      text: 'Tip: Shift+Tab cycles permission modes. Order: PLAN, ACCEPT-EDITS, AUTO, ASK.',
+      text: 'Tip: Shift+Tab cycles permission modes. Order: PLAN → ACCEPT-EDITS → AUTO → ASK.',
     },
     {
       id: 'sticky-note',
-      text: "Tip: brief Claude like you'd brief a junior consultant — what, who for, in what style.",
+      text: "Tip: brief Claude like a junior consultant — concrete deliverable, concrete client, concrete stack.",
+    },
+    {
+      id: 'cli-primer',
+      text: 'The terminal is just text-mode chat with your computer. `cd` to move, `ls` to list, `git status` to see what changed. Claude Code lives in there, and it can text the computer too.',
     },
     {
       id: 'side-note',
-      text: 'Tip: Vercel free tier hosts every prototype. PR → preview URL the client can review live.',
+      text: 'Tip: Vercel free tier hosts every prototype. PR → preview URL the client can poke live, no source code email required.',
+    },
+    {
+      id: 'briefing-formula',
+      text: 'Brief Claude in three parts. WHY: who is it for + what problem. WHAT: stack + the files that matter. HOW: build, test, ship commands. Skip a leg and Claude guesses.',
     },
   ],
   practice: {
@@ -40,11 +48,15 @@ export const welcomeContent: LessonContent = {
   conversations: {
     'guide-bot': {
       summary:
-        'Four permission modes (PLAN, ACCEPT-EDITS, AUTO, ASK — Shift+Tab cycles). Brief in plain English, review the plan, ship to Vercel for a preview URL the client can click.',
+        'The terminal is text-mode chat with your computer; Claude Code lives there. Four permission modes (PLAN, ACCEPT-EDITS, AUTO, ASK — Shift+Tab cycles). Brief in WHY / WHAT / HOW. Ship to Vercel for a preview URL the client can click.',
       beats: [
         {
           kind: 'say',
-          text: "Hey, operator. Fresh session? Good. Let me walk you through the basics before you wreck a client repo.",
+          text: "Hey. Fresh session? Good. Let me walk you through the basics before we touch real code.",
+        },
+        {
+          kind: 'say',
+          text: "Foundations first. The terminal is just text-mode chat with your computer. `cd` moves you. `ls` lists. `git status` shows what changed. Claude Code lives in there, and it can text the computer too.",
         },
         {
           kind: 'say',
@@ -83,7 +95,7 @@ export const welcomeContent: LessonContent = {
         },
         {
           kind: 'say',
-          text: "Next concept: how to brief me. Don't dump code at me. Describe the deliverable in plain English — like you'd brief a junior consultant. What, who for, in what style.",
+          text: "Next concept: how to brief me. Three parts. WHY — who is it for and what problem. WHAT — the stack and the files that matter. HOW — build, test, ship commands. Skip a leg and I guess.",
         },
         {
           kind: 'blank',
@@ -97,7 +109,7 @@ export const welcomeContent: LessonContent = {
             { id: 'brand-color', suggestions: ['#B23A1D', '#0B5394', '#2F4858'] },
           ],
           followup:
-            "That's the shape. Concrete deliverable, concrete client, stack, brand color. I plan. You read. You approve. Then code lands. Beats 'make me a website' by an order of magnitude.",
+            "That's the shape. Concrete deliverable. Concrete client. Stack. Brand color. I plan; you read; you approve; code lands. Beats 'make me a website' by an order of magnitude.",
         },
         {
           kind: 'say',
@@ -113,7 +125,7 @@ export const welcomeContent: LessonContent = {
               label: 'localhost while you build, screenshots for the client',
               correct: false,
               reaction:
-                "They can't poke around a screenshot. They'll second-guess every decision because they can't see it move. Lose-lose.",
+                "They can't poke a screenshot. They'll second-guess every decision because they can't see it move. Lose-lose.",
             },
             {
               id: 'vercel',
@@ -127,34 +139,34 @@ export const welcomeContent: LessonContent = {
               label: 'email them the source code',
               correct: false,
               reaction:
-                "Operator. They're a strategy partner, not an engineer. They want a URL they can click. Source code is your problem, not theirs.",
+                "They're a strategy partner, not an engineer. They want a URL they can click. Source code is your problem, not theirs.",
             },
           ],
         },
         {
           kind: 'say',
-          text: "Recap: plan first. Brief plainly. Ship to Vercel. That's the loop. It scales from a one-pager to a full client dashboard.",
+          text: "Recap: terminal is text-chat with the machine. PLAN first. Brief in WHY / WHAT / HOW. Ship to Vercel. That loop scales from a one-pager to a full client dashboard.",
         },
         {
           kind: 'say',
-          text: "Through the east door is the sanctum. An EMBERLING guards the key in there — small but twitchy, throws sparks when it's wrong-footed. Answer well and you'll dodge the flames. Good luck, operator.",
+          text: "Through the east door is the sanctum. Sloppy the Glob squats on the key in there — small, twitchy, flings goo when it's wrong-footed. Answer well and you'll keep your shoes clean. Good luck.",
         },
       ],
     },
   },
   battle: {
-    name: 'EMBERLING',
+    name: 'Sloppy the Glob',
     spriteKey: 'slime',
     maxHP: 3,
     playerHP: 5,
     phases: 1,
-    introLine: "*shrieks* a meatbag enters my chamber! you will burn for waking me!",
+    introLine: "*gurgles* …who let you in… this is MY chamber… and you didn't even read the manual…",
     tauntLines: [
-      "*spits sparks* pathetic!",
-      "*cackles* burn, slow one, burn!",
-      "is that all you've got, meatbag?",
+      "*flings goo* sloppy keystrokes, sloppy human!",
+      "*belches* skipped the docs, did you?",
+      "*splats* you can't just YOLO into a strange repo!",
     ],
-    victoryLine: "*hisses* … the flames… going out… you win this, operator…",
+    victoryLine: "*deflates* …fine… you read the room… take the key, operator…",
     questions: [
       {
         prompt: "You just opened a brand-new client repo. Never touched the codebase. Which permission mode do you start in?",
@@ -164,7 +176,7 @@ export const welcomeContent: LessonContent = {
           { id: 'c', label: 'plan — read and propose before touching anything', correct: true },
           { id: 'd', label: 'acceptEdits — let Claude write, review by diff later', correct: false },
         ],
-        passFeedback: 'STRIKE! Read first, write second. The plan is the first draft of the deliverable.',
+        passFeedback: 'STRIKE! Read first, write second. The plan IS the first draft of the deliverable.',
         failFeedback: 'MISS! Auto and acceptEdits both edit. New repo + unknown stakes = plan mode first.',
       },
       {
@@ -172,11 +184,22 @@ export const welcomeContent: LessonContent = {
         choices: [
           { id: 'a', label: 'Ctrl+P', correct: false },
           { id: 'b', label: 'Shift+Tab', correct: true },
-          { id: 'c', label: 'Cmd+M', correct: false },
+          { id: 'c', label: '/plan toggle', correct: false },
           { id: 'd', label: 'Esc twice', correct: false },
         ],
         passFeedback: 'STRIKE! Shift+Tab. PLAN → ACCEPT-EDITS → AUTO → ASK, repeat.',
         failFeedback: 'MISS! Shift+Tab is the cycle. Muscle-memorize it.',
+      },
+      {
+        prompt: "You're briefing Claude on a client one-pager. Which framing produces the most reliable build?",
+        choices: [
+          { id: 'a', label: '"Make me a website."', correct: false },
+          { id: 'b', label: '"Use Next.js, deploy to Vercel."', correct: false },
+          { id: 'c', label: 'WHY: a proposal microsite for Acme. WHAT: Next.js + Tailwind, one route. HOW: pnpm dev, pnpm build, Vercel preview on push.', correct: true },
+          { id: 'd', label: 'Paste the brand guidelines PDF and hit enter.', correct: false },
+        ],
+        passFeedback: 'STRIKE! WHY / WHAT / HOW. Same three-part formula CLAUDE.md uses. Skip a leg and Claude guesses.',
+        failFeedback: 'MISS! "Make me a website" leaves every decision to chance. WHY (who + problem), WHAT (stack + key files), HOW (commands). All three.',
       },
       {
         prompt: "Client wants to poke around your proposal microsite by EOW. Where does it live?",
