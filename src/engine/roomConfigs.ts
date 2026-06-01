@@ -265,17 +265,25 @@ function buildWelcomeLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber B: Sanctum (18×12) -----
-  const bW = 18, bH = 12;
+  // ----- Chamber B: Sanctum (19×12) -----
+  // Boss hall: a single 1×3 approach blocker at col 5 forces the player to
+  // weave north before entering the chamber's open east half, where the
+  // EMBERLING altar waits at (9, 5). Four corner crate clusters frame the
+  // hall as a colonnade. Lore / decorations are not placed here yet — they
+  // come in a later pass alongside the bestiary boss-sprite swap.
+  const bW = 19, bH = 12;
   const bTiles = blankTileMap(bW, bH);
   // West door (unlocked, back to antechamber)
   bTiles[6][0] = 2;
   // East door (locked, to next level)
   bTiles[6][bW - 1] = 2;
-  // Interior wall columns forming an L-path
-  fillRect(bTiles, 7, 2, 7, 7, 1);   // vertical wall col 7 rows 2-7
-  fillRect(bTiles, 8, 7, 11, 7, 1);  // horizontal wall row 7 cols 8-11
-  fillRect(bTiles, 12, 3, 12, 6, 1); // vertical wall col 12 rows 3-6 — creates dead-end pocket
+  // Corner crate clusters
+  fillRect(bTiles, 3, 2, 4, 3, 1);
+  fillRect(bTiles, 3, 9, 4, 10, 1);
+  fillRect(bTiles, 12, 2, 13, 3, 1);
+  fillRect(bTiles, 12, 9, 13, 10, 1);
+  // Approach blocker pillar (1×3) on the entry side
+  fillRect(bTiles, 5, 5, 5, 7, 1);
 
   const sanctum: ChamberConfig = {
     id: 'welcome-sanctum',
@@ -287,8 +295,7 @@ function buildWelcomeLevel(): LevelConfig {
     spawnX: 1,
     spawnY: 6,
     items: [
-      { id: 'terminal', type: 'challenge', x: 14, y: 3, sprite: 'crt_monitor' },
-      { id: 'side-note', type: 'lore', x: 14, y: 9, sprite: 'paper' },
+      { id: 'terminal', type: 'challenge', x: 9, y: 5, sprite: 'crt_monitor' },
     ],
     doors: [
       {
