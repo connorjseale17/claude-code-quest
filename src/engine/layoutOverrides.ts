@@ -1382,6 +1382,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 10,
         "y": 6,
         "sprite": "paper"
+      },
+      {
+        "id": "agent-taxonomy",
+        "type": "lore",
+        "x": 4,
+        "y": 4,
+        "sprite": "paper"
       }
     ],
     "doors": [
@@ -1525,6 +1532,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 12,
         "y": 9,
         "sprite": "paper"
+      },
+      {
+        "id": "git-shared-vs-local",
+        "type": "lore",
+        "x": 7,
+        "y": 3,
+        "sprite": "paper"
       }
     ],
     "doors": [
@@ -1657,6 +1671,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "type": "lore",
         "x": 2,
         "y": 6,
+        "sprite": "paper"
+      },
+      {
+        "id": "plugin",
+        "type": "lore",
+        "x": 7,
+        "y": 4,
         "sprite": "paper"
       },
       {

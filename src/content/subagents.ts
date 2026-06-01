@@ -2,7 +2,7 @@ import type { LessonContent } from './types';
 
 export const subagentsContent: LessonContent = {
   roomId: 'subagents',
-  intro: 'Operator. Final level. The pool runs parallel agents — each in its own context, each with its own brief. Foreground for one-shots. Background for overnight. Routines for tomorrow morning. You are no longer alone.',
+  intro: 'The Pool. Parallel agents — each in its own context, each with its own brief. Foreground for one-shots. Background for overnight. Routines for tomorrow morning. You are no longer alone.',
   prompt: "You want a Friday end-of-week routine: pull every PR merged this week, summarize each, post a digest to #weekly-review on Slack. Fires every Friday at 5pm without you touching it. What's the right Claude Code primitive for this?",
   choices: [
     { id: 'a', label: 'A foreground subagent you remember to spawn each Friday', correct: false },
@@ -15,19 +15,31 @@ export const subagentsContent: LessonContent = {
   lore: [
     {
       id: 'roster',
-      text: 'Tip: a subagent gets a fresh context window — brief it like a stranger walking in cold.',
+      text: 'Tip: a subagent gets a fresh context window — brief it like a stranger walking in cold. It cannot see your conversation; tell it everything it needs.',
+    },
+    {
+      id: 'agent-taxonomy',
+      text: 'Tip: four agent shapes. ORCHESTRATOR (manager) breaks a goal into pieces. SPECIALIST (Reviewer, Debugger, Planner) deep on one domain. UTILITY (general purpose) handles routine tasks. BACKGROUND (monitor) watches conditions and alerts on trigger.',
     },
     {
       id: 'mission-brief',
-      text: 'Tip: /agents shows every running subagent at a glance — blocked, waiting, done.',
+      text: 'Tip: /agents shows every running subagent at a glance — blocked, waiting, done. Spawn N in one message and they run truly concurrent.',
+    },
+    {
+      id: 'git-shared-vs-local',
+      text: 'Tip: what goes in git — CLAUDE.md, .claude/settings.json, .claude/rules/, .claude/skills/, .claude/agents/, .mcp.json. What stays local — .claude/settings.local.json, ~/.claude/, your tokens. Shared layer is the team contract; local is yours alone.',
     },
     {
       id: 'fragment-x',
-      text: 'Tip: spawn N subagents in one message — they run truly concurrent. 5× throughput on parallel briefs.',
+      text: 'Tip: spawn N subagents in one message — they run truly concurrent. Five agents researching five competitors at once; one orchestrator stitches the brief.',
+    },
+    {
+      id: 'plugin',
+      text: 'Tip: bundle your firm\'s setup into a plugin — skills, agents, hooks, MCP configs, rules. Push to a GitHub repo. Teammates run `/plugin install github.com/your-org/firm-plugin` and the whole stack lights up. Update once; everyone runs `/reload-plugins`.',
     },
     {
       id: 'fragment-y',
-      text: 'Tip: routines (/loop) schedule agents on Anthropic infra. Your laptop can be off.',
+      text: 'Tip: routines (/loop) schedule agents on Anthropic infra. Your laptop can be off. The Agent SDK lets you trigger Claude Code from your own code — Slack message in, PR out.',
     },
   ],
   practice: {
@@ -54,15 +66,19 @@ export const subagentsContent: LessonContent = {
   conversations: {
     'scout-bot': {
       summary:
-        'Spawn an Explore/Scout subagent when you need to find something in a big repo without burning the main agent\'s context. Brief: what to find, what to return (paths + line numbers).',
+        'Four agent shapes (Orchestrator/Specialist/Utility/Background). Spawn an Explore/Scout subagent for find-something-in-a-big-repo without burning main-agent context. Brief: what to find, what to return (paths + line numbers).',
       beats: [
         {
           kind: 'say',
-          text: "I run the Explore lane, operator. Read-only — I never touch anything.",
+          text: "I run the Explore lane. Read-only — I never touch anything.",
         },
         {
           kind: 'say',
-          text: "Send me into a 500-file repo with a fuzzy question. 'Find every place we touch client billing.' I come back with paths and line numbers. Your main agent keeps its context clean.",
+          text: "Four agent shapes you'll see in here. ORCHESTRATOR (manager) — breaks a goal into pieces, delegates, synthesizes. SPECIALIST — deep on one domain (me, Planner, Reviewer, Debugger). UTILITY — general purpose, routine tasks. BACKGROUND — watches conditions, alerts when something fires.",
+        },
+        {
+          kind: 'say',
+          text: "Send me — a Specialist — into a 500-file repo with a fuzzy question. 'Find every place we touch client billing.' I come back with paths and line numbers. Your main agent keeps its context clean.",
         },
         {
           kind: 'choice',
@@ -104,7 +120,7 @@ export const subagentsContent: LessonContent = {
       beats: [
         {
           kind: 'say',
-          text: "I plan, operator. Architecture, file structure, deliverable outlines. The boring-but-load-bearing part.",
+          text: "I plan. Architecture, file structure, deliverable outlines. The boring-but-load-bearing part.",
         },
         {
           kind: 'say',
@@ -146,7 +162,7 @@ export const subagentsContent: LessonContent = {
     },
     'reviewer-bot': {
       summary:
-        'Spawn a Reviewer subagent after a meaningful diff, before merge. Fresh context = catches what the writing agent missed.',
+        'Spawn a Reviewer subagent after a meaningful diff, before merge. Fresh context = catches what the writing agent missed. The team workflow: shared .claude/ in git, personal .local.json + ~/.claude/ stays out.',
       beats: [
         {
           kind: 'say',
@@ -185,17 +201,17 @@ export const subagentsContent: LessonContent = {
         },
         {
           kind: 'say',
-          text: "Hand me a diff. I tell you what's shaky. I see what your main agent missed.",
+          text: "One more thing while you're here — team workflow. What goes in git: CLAUDE.md, .claude/settings.json, .claude/rules/, .claude/skills/, .claude/agents/, .mcp.json. What stays local: .claude/settings.local.json, ~/.claude/, your tokens. Shared layer = team contract. Local = yours alone.",
         },
       ],
     },
     'debugger-bot': {
       summary:
-        'Spawn a Debugger subagent with a repro + recent changes. Scientific method: hypothesize → instrument → verify. No band-aids. Flaky tests are real bugs.',
+        'Spawn a Debugger subagent with a repro + recent changes. Scientific method: hypothesize → instrument → verify. No band-aids. Flaky tests are real bugs. Plugins let you ship your whole agent fleet to teammates in one install.',
       beats: [
         {
           kind: 'say',
-          text: "I chase bugs through stack traces, operator. Scientific method only — hypothesize, instrument, verify.",
+          text: "I chase bugs through stack traces. Scientific method only — hypothesize, instrument, verify.",
         },
         {
           kind: 'say',
@@ -235,25 +251,25 @@ export const subagentsContent: LessonContent = {
         },
         {
           kind: 'say',
-          text: "Repro in, root cause out. Don't bandage symptoms.",
+          text: "Last thing: share your fleet. Bundle CLAUDE.md, skills, agents, hooks, MCP configs into a plugin. Push to a GitHub repo. Teammate runs `/plugin install github.com/your-org/firm-plugin` — whole stack lights up. Update once; everyone reloads. Same principle as a shared component library.",
         },
       ],
     },
   },
   battle: {
-    name: 'THE LICH QUORUM',
+    name: 'Subagent Skeletor',
     spriteKey: 'skeleton',
     maxHP: 5,
     playerHP: 5,
     phases: 2,
-    introLine: "*three skulls hover* we are the unified one. we do every task ourselves. *jaws crack open* we have never delegated. we have never rested.",
+    introLine: "*rattles ribcage* BEHOLD! one skeleton! NO subagents! NO plugins! ALL the work — MINE!",
     tauntLines: [
-      "*hollow laugh* WE need no help!",
-      "*skull rotates* parallel is for the WEAK!",
-      "*aura crackles* we did it ALL OURSELVES!",
-      "*shrieks* delegation is DEATH!",
+      "*bones clatter* delegation is for the WEAK!",
+      "*hollow laugh* parallel agents? PFAH! me solo!",
+      "*shrieks* no plugins! no SDK! everything by HAND!",
+      "*skull glows* MY context window — overflowing with EVERYTHING!",
     ],
-    victoryLine: "…we… we could have… asked for help… *bones clatter to floor*",
+    victoryLine: "*sighs* …perhaps… a team… would have helped… *crumbles*",
     questions: [
       {
         prompt: "Goal: 'find every place we touch client billing in this 500-file repo.' Who do you assign?",
@@ -278,15 +294,15 @@ export const subagentsContent: LessonContent = {
         failFeedback: 'MISS! Coding first = Thursday-night rewrite. Plan first saves the engagement.',
       },
       {
-        prompt: "When should you spawn a Reviewer subagent on your own diff?",
+        prompt: "You need an agent that watches the build logs for failures and pings you when something breaks. Which type?",
         choices: [
-          { id: 'a', label: 'After a meaningful diff is ready, before merge', correct: true },
-          { id: 'b', label: 'Continuously while the main agent is still writing', correct: false },
-          { id: 'c', label: 'Only when CI fails', correct: false },
-          { id: 'd', label: 'Never — the writing agent already reviewed', correct: false },
+          { id: 'a', label: 'Orchestrator', correct: false },
+          { id: 'b', label: 'Specialist', correct: false },
+          { id: 'c', label: 'Utility', correct: false },
+          { id: 'd', label: 'Background — runs continuously, alerts on trigger', correct: true },
         ],
-        passFeedback: 'STRIKE! Fresh context catches what the author missed. Cheap insurance.',
-        failFeedback: 'MISS! The writing agent has author-bias. A fresh Reviewer is the point.',
+        passFeedback: 'STRIKE! Background agents are the monitors. They sit, they watch, they fire on a condition.',
+        failFeedback: 'MISS! Watch-for-a-trigger = Background. Orchestrators delegate; Specialists go deep; Utilities do routine; Background watches.',
       },
       {
         prompt: "Test fails intermittently — same code, same commit, sometimes pass. WRONG response?",
@@ -298,6 +314,17 @@ export const subagentsContent: LessonContent = {
         ],
         passFeedback: 'STRIKE! Flakiness IS a real bug. Race condition, timing, shared state — debug it.',
         failFeedback: 'MISS! "Rerun until pass" hides the bug. Flaky = real bug telling you something.',
+      },
+      {
+        prompt: "Your firm has 12 repos using the same Claude Code setup: shared CLAUDE.md rules, a style-check skill, a code-reviewer agent, format-on-save hooks. Most maintainable way to keep them all in sync?",
+        choices: [
+          { id: 'a', label: 'Copy the .claude/ directory into each repo and sync manually', correct: false },
+          { id: 'b', label: 'Build a team plugin (skills + agents + hooks + rules), push to a GitHub repo, install with /plugin install', correct: true },
+          { id: 'c', label: 'Put everything in ~/.claude/ so it applies everywhere automatically', correct: false },
+          { id: 'd', label: 'Add a hook that pulls the configs from a central server on SessionStart', correct: false },
+        ],
+        passFeedback: 'STRIKE! Plugin = single source of truth. Update once, every project gets it with /reload-plugins. Same model as a shared component library.',
+        failFeedback: 'MISS! Copying creates drift. ~/.claude/ is personal-only — teammates miss out. Plugins ship the whole stack to the whole team.',
       },
       {
         prompt: "You want a Friday EOW digest: pull merged PRs, summarize, post to #weekly-review. Auto-fires every Friday 5pm. Right primitive?",
