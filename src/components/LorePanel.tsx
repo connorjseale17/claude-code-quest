@@ -91,7 +91,7 @@ function renderBook(canvas: HTMLCanvasElement) {
     D[i + 3] = (c[3] === undefined ? 255 : c[3]);
   };
 
-  const R = 13, OT = 2, FT = 12, cx0 = W / 2, spineW = 15, M = FT + 7, foldS = 16;
+  const R = 13, OT = 2, FT = 12, M = FT + 7, foldS = 16;
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -139,24 +139,10 @@ function renderBook(canvas: HTMLCanvasElement) {
       const en = fbm(x, y, 8, 67);
       if (!inR(x, y, FT + 9, FT + 9, W - FT - 9, H - FT - 9, 4)) c = blend(c, C.edgeDk, 0.12 + en * 0.20);
 
+      // Single continuous ruling rectangle — no center gutter/spine, so the
+      // title and takeaway read cleanly across the full spread.
       const onRule = inR(x, y, M, M, W - M, H - M, 5) && !inR(x, y, M + 1, M + 1, W - M - 1, H - M - 1, 5);
-      const dxc = Math.abs(x - cx0);
-      if (onRule && dxc > spineW + 4) c = C.ruling;
-
-      if (dxc < spineW) {
-        const t = 1 - dxc / spineW;
-        if (dxc <= 1) c = C.spineDk;
-        else {
-          const base = c, k = t * t;
-          c = [
-            base[0] + (C.spine[0] - base[0]) * k,
-            base[1] + (C.spine[1] - base[1]) * k,
-            base[2] + (C.spine[2] - base[2]) * k,
-            255,
-          ];
-          if (dxc < 3) c = jitter(C.spineDk, 14);
-        }
-      }
+      if (onRule) c = C.ruling;
 
       const px0 = FT + 2, px1 = W - FT - 2, py1 = H - FT - 2;
       const dlx = x - px0, dby = py1 - y;
@@ -391,7 +377,7 @@ export function LorePanel() {
               fontSize: fontPx,
               lineHeight: 1.5,
               columnCount: 2,
-              columnGap: '15.3%',
+              columnGap: '9%',
               columnFill: 'auto',
               textAlign: 'justify',
               hyphens: 'auto',
