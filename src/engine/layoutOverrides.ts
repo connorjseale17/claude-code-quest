@@ -7,6 +7,7 @@ import type { SerializedChamber } from './roomConfigs';
 //
 // Level 01 (welcome)   authored 2026-06-01
 // Level 02 (claudemd)  authored 2026-06-01
+// Level 03 (slash)     authored 2026-06-01
 // ============================================================================
 
 export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
@@ -618,6 +619,345 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     "keySpawn": {
       "x": 8,
       "y": 7
+    }
+  },
+  "slash-foyer": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+      [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+      [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+      [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "command-sheet",
+        "type": "lore",
+        "x": 9,
+        "y": 4,
+        "sprite": "paper"
+      },
+      {
+        "id": "index",
+        "type": "lore",
+        "x": 10,
+        "y": 9,
+        "sprite": "paper"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back-to-claudemd",
+        "x": 0,
+        "y": 6,
+        "target": {
+          "kind": "chamber",
+          "chamber": "claudemd-vault"
+        },
+        "spawnX": 14,
+        "spawnY": 6,
+        "locked": false
+      },
+      {
+        "id": "to-registry",
+        "x": 8,
+        "y": 11,
+        "target": {
+          "kind": "chamber",
+          "chamber": "slash-registry"
+        },
+        "spawnX": 8,
+        "spawnY": 1,
+        "locked": false
+      }
+    ],
+    "npcs": [
+      {
+        "id": "clerk-bot",
+        "x": 5,
+        "y": 6,
+        "sprite": "cat",
+        "color": "#3FB950",
+        "name": "Clerk Cat",
+        "dialog": [
+          "Mrrow. Welcome to the Registry. Three drawers: commands, skills, hooks.",
+          "Type a slash, get a recipe. /review-pr expands into your full review brief. No more 'remind me what we check for race conditions?'",
+          "Hooks fire automatically. Format on save. Lint before commit. Block writes to /client-data. Set once. Trust always.",
+          "Most useful for a firm? Bottle the deliverables. One skill per: /draft-proposal, /summarize-call, /qbr-deck. Your library of moves, executable on demand."
+        ]
+      }
+    ],
+    "decorations": [],
+    "spawnX": 1,
+    "spawnY": 6
+  },
+  "slash-registry": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "card-a",
+        "type": "lore",
+        "x": 6,
+        "y": 2,
+        "sprite": "paper"
+      },
+      {
+        "id": "card-b",
+        "type": "lore",
+        "x": 12,
+        "y": 6,
+        "sprite": "paper"
+      },
+      {
+        "id": "command-architect-practice",
+        "type": "practice",
+        "x": 5,
+        "y": 9,
+        "sprite": "hint_token"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back",
+        "x": 8,
+        "y": 0,
+        "target": {
+          "kind": "chamber",
+          "chamber": "slash-foyer"
+        },
+        "spawnX": 8,
+        "spawnY": 10,
+        "locked": false
+      },
+      {
+        "id": "to-execution",
+        "x": 15,
+        "y": 6,
+        "target": {
+          "kind": "chamber",
+          "chamber": "slash-execution"
+        },
+        "spawnX": 1,
+        "spawnY": 6,
+        "locked": false
+      }
+    ],
+    "npcs": [],
+    "decorations": [
+      {
+        "x": 6,
+        "y": 10,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 5,
+        "y": 10,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 4,
+        "y": 10,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 2,
+        "y": 3,
+        "sprite": "summoning_circle"
+      },
+      {
+        "x": 13,
+        "y": 10,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 12,
+        "y": 10,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 1,
+        "y": 6,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 14,
+        "y": 9,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 14,
+        "y": 8,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 13,
+        "y": 9,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 14,
+        "y": 1,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 14,
+        "y": 10,
+        "sprite": "wall_runes"
+      }
+    ],
+    "spawnX": 8,
+    "spawnY": 1
+  },
+  "slash-execution": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1],
+      [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "terminal",
+        "type": "challenge",
+        "x": 11,
+        "y": 6,
+        "sprite": "goblin_a"
+      },
+      {
+        "id": "card-b",
+        "type": "lore",
+        "x": 4,
+        "y": 4,
+        "sprite": "paper"
+      },
+      {
+        "id": "card-c",
+        "type": "lore",
+        "x": 8,
+        "y": 8,
+        "sprite": "paper"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back",
+        "x": 0,
+        "y": 6,
+        "target": {
+          "kind": "chamber",
+          "chamber": "slash-registry"
+        },
+        "spawnX": 14,
+        "spawnY": 6,
+        "locked": false
+      },
+      {
+        "id": "exit",
+        "x": 15,
+        "y": 6,
+        "target": {
+          "kind": "level",
+          "level": "mcp",
+          "chamber": "mcp-hub"
+        },
+        "spawnX": 8,
+        "spawnY": 1,
+        "locked": true,
+        "requiresLevelKey": true
+      }
+    ],
+    "npcs": [],
+    "decorations": [
+      {
+        "x": 12,
+        "y": 9,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "sprite": "summoning_circle"
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "sprite": "cable_run"
+      },
+      {
+        "x": 4,
+        "y": 9,
+        "sprite": "cable_run"
+      },
+      {
+        "x": 13,
+        "y": 10,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 12,
+        "y": 10,
+        "sprite": "wall_runes"
+      },
+      {
+        "x": 7,
+        "y": 1,
+        "sprite": "bones"
+      },
+      {
+        "x": 9,
+        "y": 10,
+        "sprite": "brazier"
+      },
+      {
+        "x": 14,
+        "y": 1,
+        "sprite": "cracked_bricks"
+      }
+    ],
+    "spawnX": 1,
+    "spawnY": 6,
+    "keySpawn": {
+      "x": 13,
+      "y": 6
     }
   }
 };
