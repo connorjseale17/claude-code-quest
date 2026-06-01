@@ -71,17 +71,28 @@ export function LoadingScreen() {
     return () => clearInterval(id);
   }, []);
 
-  // Continue on Space/Enter once ready
+  // Continue on Space/Enter (or any tap) once ready
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const advance = () => {
       if (!ready) return;
+      dispatch({ type: 'COMPLETE_LEVEL_TRANSITION' });
+    };
+    const handleKey = (e: KeyboardEvent) => {
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        dispatch({ type: 'COMPLETE_LEVEL_TRANSITION' });
+        advance();
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    const handleTap = (e: MouseEvent) => {
+      if ((e.target as HTMLElement)?.closest?.('button')) return;
+      advance();
+    };
+    window.addEventListener('keydown', handleKey);
+    window.addEventListener('click', handleTap);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('click', handleTap);
+    };
   }, [ready, dispatch]);
 
   if (!targetLevel) return null;

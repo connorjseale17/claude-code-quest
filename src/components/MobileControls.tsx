@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useGame } from '../engine/GameContext';
 
 /**
  * Floating-thumbstick touch overlay.
@@ -36,7 +37,12 @@ function isInteractiveTarget(t: EventTarget | null): boolean {
 }
 
 export function MobileControls() {
-  const [enabled, setEnabled] = useState(false);
+  const { gamePhase } = useGame();
+  const [isCoarse, setIsCoarse] = useState(false);
+  // Only render controls when actually in-game. Splash, customize, and loading
+  // screens have their own tap-to-advance handlers — the joystick would just
+  // be visual noise there.
+  const enabled = isCoarse && gamePhase === 'playing';
   const stickRef = useRef<{
     pointerId: number;
     anchor: { x: number; y: number };
@@ -49,7 +55,7 @@ export function MobileControls() {
   // Show only on coarse pointers (touch devices).
   useEffect(() => {
     const mq = window.matchMedia('(pointer: coarse)');
-    const apply = () => setEnabled(mq.matches);
+    const apply = () => setIsCoarse(mq.matches);
     apply();
     mq.addEventListener('change', apply);
     return () => mq.removeEventListener('change', apply);

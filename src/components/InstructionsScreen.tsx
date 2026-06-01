@@ -8,14 +8,23 @@ export function InstructionsScreen() {
   const dispatch = useGameDispatch();
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const advance = () => dispatch({ type: 'ADVANCE_PHASE' });
+    const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        dispatch({ type: 'ADVANCE_PHASE' });
+        advance();
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    const handleTap = (e: MouseEvent) => {
+      if ((e.target as HTMLElement)?.closest?.('button')) return;
+      advance();
+    };
+    window.addEventListener('keydown', handleKey);
+    window.addEventListener('click', handleTap);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('click', handleTap);
+    };
   }, [dispatch]);
 
   return (

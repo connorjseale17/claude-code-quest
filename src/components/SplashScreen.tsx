@@ -61,19 +61,31 @@ export function SplashScreen() {
   const completedLines = LINES.slice(0, currentLine);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      // Ignore modifier-only keys
-      if (e.key === 'Meta' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Shift') return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      e.preventDefault();
+    const advance = () => {
       if (allDone) {
         dispatch({ type: 'ADVANCE_PHASE' });
       } else {
         skipAll();
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    const handleKey = (e: KeyboardEvent) => {
+      // Ignore modifier-only keys
+      if (e.key === 'Meta' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Shift') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      e.preventDefault();
+      advance();
+    };
+    const handleTap = (e: MouseEvent) => {
+      // Don't hijack real button taps (dev menu chrome, etc.)
+      if ((e.target as HTMLElement)?.closest?.('button')) return;
+      advance();
+    };
+    window.addEventListener('keydown', handleKey);
+    window.addEventListener('click', handleTap);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('click', handleTap);
+    };
   }, [allDone, dispatch, skipAll]);
 
   const partialLine = currentLine < LINES.length
