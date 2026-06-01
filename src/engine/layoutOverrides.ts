@@ -344,6 +344,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 7,
         "y": 9,
         "sprite": "paper"
+      },
+      {
+        "id": "formula",
+        "type": "lore",
+        "x": 8,
+        "y": 4,
+        "sprite": "paper"
       }
     ],
     "doors": [
@@ -382,9 +389,9 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "name": "Archivist Owl",
         "dialog": [
           "Hoo. The Archives. Every engagement lives or dies by the contract in here.",
-          "CLAUDE.md is the contract. Build commands. Test commands. Naming. Repository etiquette. The non-obvious things a new consultant on the project would need on day one.",
-          "Keep it tight. Bloated CLAUDE.md gets ignored — important rules get lost in the noise. Prune like it's your billable hours.",
-          "/compact when the window fills. /clear between unrelated tasks. /rewind if Claude wandered. Tools are sharp, operator. Use them."
+          "CLAUDE.md answers three questions. WHY: project purpose. WHAT: stack and key files. HOW: build, test, lint commands.",
+          "Loading hierarchy: managed-policy → user-global → parent → project root → subdir → .claude/rules/. Most specific wins. Don't write contradictions.",
+          "/compact when the window fills. /clear between unrelated tasks. Auto-memory? Review with /memory. A wrong note is worse than no note."
         ]
       }
     ],
@@ -463,6 +470,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "type": "lore",
         "x": 3,
         "y": 6,
+        "sprite": "paper"
+      },
+      {
+        "id": "auto-memory-warn",
+        "type": "lore",
+        "x": 7,
+        "y": 7,
         "sprite": "paper"
       }
     ],
