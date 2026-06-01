@@ -146,7 +146,7 @@ export function Room() {
           >
             <PixelSprite
               frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite}
-              scale={isProp ? TILE_SIZE / (PROP_FRAMES[dec.sprite][0]?.length || 12) : 2}
+              scale={isProp ? TILE_SIZE / Math.max(PROP_FRAMES[dec.sprite][0]?.length || 12, PROP_FRAMES[dec.sprite].length || 12) : 2}
               palette={isProp ? PROP_PALETTE : undefined}
               primaryColor={isProp ? undefined : dec.tint}
             />
@@ -183,7 +183,7 @@ export function Room() {
         return (
           <div
             key={item.id}
-            className={glowing ? 'cc-active-objective' : undefined}
+            className={glowing ? 'cc-active-objective' : 'cc-guide-glow'}
             style={{
               ['--glow-color' as string]: theme.accentColor,
             } as React.CSSProperties}
@@ -204,7 +204,7 @@ export function Room() {
       {chamber.npcs.map(npc => (
         <div
           key={npc.id}
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none cc-guide-glow"
           style={{
             left: npc.x * TILE_SIZE,
             top: npc.y * TILE_SIZE,
@@ -213,7 +213,8 @@ export function Room() {
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
-          }}
+            ['--glow-color' as string]: npc.color,
+          } as React.CSSProperties}
         >
           <PixelSprite frame={npc.sprite ?? 'idle_a'} scale={2.4} primaryColor={npc.color} />
         </div>

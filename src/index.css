@@ -39,6 +39,17 @@
   animation: cc-pulse-glow 1.6s ease-in-out infinite;
 }
 
+/* Softer, slower pulse for non-primary interactables (lore / practice /
+   NPCs) — a gentle "you can interact here" cue that doesn't compete with
+   the strong active-objective glow. */
+@keyframes cc-guide-pulse {
+  0%, 100% { filter: drop-shadow(0 0 1px var(--glow-color, #E8633D)); }
+  50%      { filter: drop-shadow(0 0 4px var(--glow-color, #E8633D)); }
+}
+.cc-guide-glow {
+  animation: cc-guide-pulse 2.2s ease-in-out infinite;
+}
+
 /* Retro computer terminal — chassis arrival + power-on. */
 @keyframes cc-chassis-arrive {
   0%   { opacity: 0; transform: scale(0.85); }

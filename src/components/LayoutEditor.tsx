@@ -41,8 +41,11 @@ function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function spriteCols(frame: string[] | undefined): number {
-  return frame && frame[0] ? frame[0].length : 16;
+/** Scale that *contains* a sprite within `box` px on its larger dimension,
+ *  so it never overflows its 1-tile cell in the editor. */
+function fitScale(frame: string[] | undefined, box: number, factor = 0.9): number {
+  if (!frame || !frame[0]) return (box * factor) / 16;
+  return (box * factor) / Math.max(frame[0].length, frame.length);
 }
 
 export function LayoutEditor({ onExit }: { onExit: () => void }) {
@@ -515,7 +518,7 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
             {/* key spawn */}
             {ch.keySpawn && (
               <EntityBox x={ch.keySpawn.x} y={ch.keySpawn.y} cell={cell} onPointerDown={startSingleDrag('key')} style={selOutline(!!isSel('key'))}>
-                <PixelSprite frame="key" scale={(cell * 1.3) / spriteCols(FRAMES.key)} />
+                <PixelSprite frame="key" scale={fitScale(FRAMES.key, cell)} />
               </EntityBox>
             )}
 
@@ -532,7 +535,7 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
               const frame = isProp ? PROP_FRAMES[dec.sprite] : FRAMES[dec.sprite];
               return (
                 <EntityBox key={`dec-${i}`} x={dec.x} y={dec.y} cell={cell} onPointerDown={startEntityDrag('decorations', i)} style={selOutline(!!isSel('decorations', i))}>
-                  {frame && <PixelSprite frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite} palette={isProp ? PROP_PALETTE : undefined} scale={(cell * (isProp ? 1.0 : 1.4)) / spriteCols(frame)} />}
+                  {frame && <PixelSprite frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite} palette={isProp ? PROP_PALETTE : undefined} scale={fitScale(frame, cell)} />}
                 </EntityBox>
               );
             })}
@@ -540,14 +543,14 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
             {/* items */}
             {ch.items.map((it, i) => (
               <EntityBox key={`item-${i}`} x={it.x} y={it.y} cell={cell} onPointerDown={startEntityDrag('items', i)} style={selOutline(!!isSel('items', i))}>
-                {FRAMES[it.sprite] && <PixelSprite frame={it.sprite} scale={(cell * 1.5) / spriteCols(FRAMES[it.sprite])} primaryColor={it.type !== 'challenge' ? theme.accentColor : undefined} />}
+                {FRAMES[it.sprite] && <PixelSprite frame={it.sprite} scale={fitScale(FRAMES[it.sprite], cell)} primaryColor={it.type !== 'challenge' ? theme.accentColor : undefined} />}
               </EntityBox>
             ))}
 
             {/* npcs */}
             {ch.npcs.map((n, i) => (
               <EntityBox key={`npc-${i}`} x={n.x} y={n.y} cell={cell} onPointerDown={startEntityDrag('npcs', i)} style={selOutline(!!isSel('npcs', i))}>
-                <PixelSprite frame={n.sprite ?? 'idle_a'} primaryColor={n.color} scale={(cell * 1.4) / spriteCols(FRAMES[n.sprite ?? 'idle_a'])} />
+                <PixelSprite frame={n.sprite ?? 'idle_a'} primaryColor={n.color} scale={fitScale(FRAMES[n.sprite ?? 'idle_a'], cell)} />
               </EntityBox>
             ))}
 
