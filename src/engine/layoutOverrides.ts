@@ -681,6 +681,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 10,
         "y": 9,
         "sprite": "paper"
+      },
+      {
+        "id": "hooks-intro",
+        "type": "lore",
+        "x": 7,
+        "y": 7,
+        "sprite": "paper"
       }
     ],
     "doors": [
@@ -719,9 +726,9 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "name": "Clerk Cat",
         "dialog": [
           "Mrrow. Welcome to the Registry. Three drawers: commands, skills, hooks.",
-          "Type a slash, get a recipe. /review-pr expands into your full review brief. No more 'remind me what we check for race conditions?'",
-          "Hooks fire automatically. Format on save. Lint before commit. Block writes to /client-data. Set once. Trust always.",
-          "Most useful for a firm? Bottle the deliverables. One skill per: /draft-proposal, /summarize-call, /qbr-deck. Your library of moves, executable on demand."
+          "Slash commands and skills live as markdown files. Commands you summon by typing. Skills auto-invoke when the description matches the task.",
+          "Hooks fire on lifecycle events — PreToolUse (can BLOCK), PostToolUse (format/lint after), SessionStart/End. Shell commands. No AI judgment.",
+          "The hierarchy: CLAUDE.md is ADVICE. Skill is a RECIPE. Hook is LAW. Pick by how non-negotiable the rule is."
         ]
       }
     ],
@@ -759,6 +766,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "type": "lore",
         "x": 12,
         "y": 6,
+        "sprite": "paper"
+      },
+      {
+        "id": "hierarchy",
+        "type": "lore",
+        "x": 6,
+        "y": 7,
         "sprite": "paper"
       },
       {
@@ -896,6 +910,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "type": "lore",
         "x": 8,
         "y": 8,
+        "sprite": "paper"
+      },
+      {
+        "id": "defense-in-depth",
+        "type": "lore",
+        "x": 4,
+        "y": 5,
         "sprite": "paper"
       }
     ],
