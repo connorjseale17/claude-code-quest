@@ -30,15 +30,16 @@ function useScale() {
   const [scale, setScale] = useState(1);
   useEffect(() => {
     const update = () => {
-      // Touch devices: use nearly the full viewport (real estate is precious).
-      // Desktop: keep the existing breathing-room margins.
       const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+      // Use visualViewport on mobile — it reflects the actually-visible area
+      // (e.g. shrinks when iOS Safari's URL bar is showing) and updates
+      // smoothly as the URL bar collapses. window.innerHeight lies on iOS.
+      const vv = window.visualViewport;
+      const w = vv ? vv.width : window.innerWidth;
+      const h = vv ? vv.height : window.innerHeight;
+      // Mobile: pack tight to the viewport. Desktop: keep breathing room.
       const wPad = isCoarse ? 1.0 : 0.94;
       const hPad = isCoarse ? 1.0 : 0.92;
-      // Prefer documentElement.clientHeight on mobile — it tracks dvh better
-      // than window.innerHeight on iOS Safari with the URL bar in flux.
-      const h = isCoarse ? document.documentElement.clientHeight : window.innerHeight;
-      const w = isCoarse ? document.documentElement.clientWidth : window.innerWidth;
       const sx = (w * wPad) / BASE_W;
       const sy = (h * hPad) / BASE_H;
       setScale(Math.min(sx, sy));
@@ -46,9 +47,11 @@ function useScale() {
     update();
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
+    window.visualViewport?.addEventListener('resize', update);
     return () => {
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
+      window.visualViewport?.removeEventListener('resize', update);
     };
   }, []);
   return scale;
