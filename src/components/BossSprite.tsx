@@ -15,17 +15,17 @@ interface BossSpriteProps {
 /**
  * CSS effects per phase — reused across the image path AND the bestiary path
  * so any sprite (PNG or palette-grid `_a`/`_b` pair) gets the same idle bob,
- * attack lunge, hurt flash, and defeat fade.
+ * attack lunge, hurt flash, and defeat fade. No drop-shadow glow — it gets
+ * clipped by the stage's overflow-hidden and creates a boxed look.
  */
-const PHASE_STYLE = (accent: string): Record<BossDisplayPhase, React.CSSProperties> => ({
+const PHASE_STYLE = (_accent: string): Record<BossDisplayPhase, React.CSSProperties> => ({
   idle: {
     animation: 'cc-boss-bob 2.4s ease-in-out infinite',
-    filter: `drop-shadow(0 0 10px ${accent}66)`,
     transition: 'transform 140ms ease-out, filter 140ms ease-out, opacity 300ms ease-out',
   },
   attack: {
     transform: 'scale(1.08) translateX(-10px)',
-    filter: `drop-shadow(0 0 18px ${accent}) brightness(1.2)`,
+    filter: 'brightness(1.2)',
     transition: 'transform 140ms ease-out, filter 140ms ease-out',
   },
   hurt: {
@@ -40,6 +40,10 @@ const PHASE_STYLE = (accent: string): Record<BossDisplayPhase, React.CSSProperti
   },
 });
 
+// The image (PNG) path used to have its own slightly-different drop-shadow
+// glow on idle/attack — also clips against the stage. The PNG branch below
+// has its own byPhase styles; both branches now share the no-glow pattern.
+
 export function BossSprite({ spriteKey, phase, accent, scale = 8, art }: BossSpriteProps) {
   // --- Image path: one PNG + CSS state effects ---
   if (art) {
@@ -49,26 +53,7 @@ export function BossSprite({ spriteKey, phase, accent, scale = 8, art }: BossSpr
       imageRendering: 'pixelated',
       transition: 'transform 140ms ease-out, filter 140ms ease-out, opacity 300ms ease-out',
     };
-    const byPhase: Record<BossDisplayPhase, React.CSSProperties> = {
-      idle: {
-        animation: 'cc-boss-bob 2.4s ease-in-out infinite',
-        filter: `drop-shadow(0 0 10px ${accent}66)`,
-      },
-      attack: {
-        transform: 'scale(1.08) translateX(-10px)',
-        filter: `drop-shadow(0 0 18px ${accent}) brightness(1.2)`,
-      },
-      hurt: {
-        filter: 'brightness(2.2) sepia(1) saturate(5) hue-rotate(-35deg)',
-        animation: 'cc-shake 250ms steps(4, end)',
-      },
-      defeat: {
-        opacity: 0.3,
-        filter: 'grayscale(1) brightness(0.5)',
-        transform: 'rotate(8deg) translateY(12px)',
-      },
-    };
-    return <img src={art.src} alt="" draggable={false} style={{ ...base, ...byPhase[phase] }} />;
+    return <img src={art.src} alt="" draggable={false} style={{ ...base, ...PHASE_STYLE(accent)[phase] }} />;
   }
 
   // --- Bestiary path: `${key}_a`/`_b` pair animates, CSS does the phase. ---
