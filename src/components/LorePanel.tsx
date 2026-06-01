@@ -1,36 +1,215 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useGame, useGameDispatch } from '../engine/GameContext';
 import { CONTENT } from '../content';
 
-// Palette — antique book
-const FRAME = '#5C3E26';          // wooden brown frame
-const FRAME_SHADOW = '#3A2516';   // darker brown for shadow / spine inner edge
-const PAGE = '#EBE0C8';           // warm cream / parchment
-const PAGE_EDGE = '#D4C4A0';      // darker beige for inner page border + edge wear
-const INK = '#3A2818';            // dark brown ink for handwritten text
-const INK_FADE = '#6B4F2E';       // lighter brown for the close hint
+// Base pixel resolution — the canvas is rendered at this size and scaled up
+// nearest-neighbor by CSS. Everything else is sized off W/H.
+const W = 300;
+const H = 200;
+
+// Palette — antique book, lifted from the standalone design.
+type RGBA = [number, number, number, number];
+const C: Record<string, RGBA> = {
+  clear:    [0, 0, 0, 0],
+  outline:  [38, 23, 13, 255],
+  brown:    [122, 74, 41, 255],
+  brownLt:  [151, 98, 57, 255],
+  brownDk:  [86, 51, 28, 255],
+  bevel:    [201, 171, 121, 255],
+  page:     [243, 235, 209, 255],
+  page2:    [236, 227, 196, 255],
+  pageEdge: [224, 211, 174, 255],
+  ruling:   [199, 178, 134, 255],
+  spine:    [214, 198, 158, 255],
+  spineDk:  [150, 127, 90, 255],
+  fold:     [249, 243, 223, 255],
+  foldSh:   [206, 191, 153, 255],
+  stain:    [214, 196, 154, 255],
+  stainDk:  [197, 175, 128, 255],
+  fox:      [176, 143, 96, 255],
+  edgeDk:   [195, 174, 132, 255],
+};
+
+function rnd(x: number, y: number, s: number): number {
+  let n = (x | 0) * 374761393 + (y | 0) * 668265263 + (s | 0) * 982451653;
+  n = (n ^ (n >> 13)) * 1274126177;
+  n = n ^ (n >> 16);
+  return ((n >>> 0) % 100000) / 100000;
+}
+function jitter(c: RGBA, amt: number): RGBA {
+  return [
+    Math.max(0, Math.min(255, c[0] + amt)),
+    Math.max(0, Math.min(255, c[1] + amt)),
+    Math.max(0, Math.min(255, c[2] + amt)),
+    c[3],
+  ];
+}
+function blend(a: RGBA, b: RGBA, k: number): RGBA {
+  return [
+    a[0] + (b[0] - a[0]) * k,
+    a[1] + (b[1] - a[1]) * k,
+    a[2] + (b[2] - a[2]) * k,
+    255,
+  ];
+}
+function smooth(x: number, y: number, scale: number, seed: number): number {
+  const gx = x / scale, gy = y / scale;
+  const x0 = Math.floor(gx), y0 = Math.floor(gy);
+  const fx = gx - x0, fy = gy - y0;
+  const a = rnd(x0, y0, seed), b = rnd(x0 + 1, y0, seed);
+  const c = rnd(x0, y0 + 1, seed), d = rnd(x0 + 1, y0 + 1, seed);
+  const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbm(x: number, y: number, scale: number, seed: number): number {
+  return smooth(x, y, scale, seed) * 0.65 + smooth(x, y, scale / 2.3, seed + 91) * 0.35;
+}
+function inR(x: number, y: number, x0: number, y0: number, x1: number, y1: number, r: number): boolean {
+  if (x < x0 || x >= x1 || y < y0 || y >= y1) return false;
+  const cx = x < x0 + r ? x0 + r : (x >= x1 - r ? x1 - r - 1 : x);
+  const cy = y < y0 + r ? y0 + r : (y >= y1 - r ? y1 - r - 1 : y);
+  const dx = x - cx, dy = y - cy;
+  return dx * dx + dy * dy <= r * r;
+}
 
 /**
- * Saw-tooth path generator. Produces a 0→1 normalized polygon-points
- * string with deterministic but uneven tear marks along the edge.
- * count = number of teeth across that edge.
+ * Renders the pixel-art book into the given canvas. Deterministic — same
+ * output every call, so we can memoize this and reuse for every lore item.
  */
-function tornEdge(count: number, seed: number, amp = 0.018): string {
-  const pts: string[] = [];
-  for (let i = 0; i <= count; i++) {
-    const t = i / count;
-    // Pseudo-random offset per tooth, seeded so it's stable per render.
-    const r = Math.sin((i + seed) * 12.9898) * 43758.5453;
-    const f = r - Math.floor(r);
-    const dy = (f - 0.5) * amp * 2;
-    pts.push(`${t},${dy}`);
+function renderBook(canvas: HTMLCanvasElement) {
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const img = ctx.createImageData(W, H);
+  const D = img.data;
+
+  const set = (x: number, y: number, c: RGBA) => {
+    if (x < 0 || y < 0 || x >= W || y >= H) return;
+    const i = (y * W + x) * 4;
+    D[i] = c[0]; D[i + 1] = c[1]; D[i + 2] = c[2];
+    D[i + 3] = (c[3] === undefined ? 255 : c[3]);
+  };
+
+  const R = 13, OT = 2, FT = 12, cx0 = W / 2, spineW = 15, M = FT + 7, foldS = 16;
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const book = inR(x, y, 0, 0, W, H, R);
+      if (!book) { set(x, y, C.clear); continue; }
+
+      const inkRing = !inR(x, y, OT, OT, W - OT, H - OT, R - OT);
+      if (inkRing) { set(x, y, C.outline); continue; }
+
+      const page = inR(x, y, FT, FT, W - FT, H - FT, Math.max(R - FT, 3));
+
+      // Frame (brown wood/leather)
+      if (!page) {
+        let c: RGBA = C.brown;
+        const innerRing = inR(x, y, FT - 3, FT - 3, W - FT + 3, H - FT + 3, Math.max(R - FT + 3, 3));
+        const outerRing = !inR(x, y, OT + 3, OT + 3, W - OT - 3, H - OT - 3, R - OT - 3);
+        if (innerRing) c = C.brownDk;
+        else if (outerRing && (y < H * 0.42 || x < W * 0.30)) c = C.brownLt;
+        const n = (rnd(x, y, 11) - 0.5) * 9;
+        set(x, y, jitter(c, n | 0));
+        continue;
+      }
+
+      // Ragged torn page edge
+      const dk = fbm(x, y, 5, 71);
+      const dk2 = fbm(x, y, 13, 73);
+      const edgeAmt = 2.0 + dk * 3.0 + Math.max(0, dk2 - 0.58) * 14 + rnd(x, y, 76) * 1.6;
+      const cream = inR(x, y, FT + edgeAmt, FT + edgeAmt, W - FT - edgeAmt, H - FT - edgeAmt, Math.max(R - FT, 2));
+      if (!cream) {
+        const lip = !inR(x, y, FT + 1.5, FT + 1.5, W - FT - 1.5, H - FT - 1.5, Math.max(R - FT, 2));
+        if (lip) { set(x, y, jitter(C.bevel, ((rnd(x, y, 75) - 0.5) * 14) | 0)); continue; }
+        let ce = blend(C.page, C.edgeDk, 0.46 + dk * 0.34);
+        if (dk2 > 0.66) ce = blend(ce, C.fox, 0.26);
+        set(x, y, ce);
+        continue;
+      }
+
+      // Parchment interior (worn & aged)
+      let c: RGBA = (rnd(x, y, 3) > 0.95) ? C.page2 : C.page;
+      const s1 = fbm(x, y, 48, 31);
+      if (s1 > 0.58) c = blend(c, C.stain, Math.min(1, (s1 - 0.58) / 0.34) * 0.40);
+      const s2 = fbm(x, y, 17, 37);
+      if (s2 > 0.66) c = blend(c, C.stainDk, Math.min(1, (s2 - 0.66) / 0.30) * 0.26);
+      const ncx = Math.min(x - (FT + 2), (W - FT - 2) - x);
+      const ncy = Math.min(y - (FT + 2), (H - FT - 2) - y);
+      const cd = Math.max(0, 1 - ncx / 42) * Math.max(0, 1 - ncy / 42);
+      if (cd > 0.02) c = blend(c, C.edgeDk, cd * (0.26 + fbm(x, y, 9, 61) * 0.26));
+      const en = fbm(x, y, 8, 67);
+      if (!inR(x, y, FT + 9, FT + 9, W - FT - 9, H - FT - 9, 4)) c = blend(c, C.edgeDk, 0.12 + en * 0.20);
+
+      // Ruling border (skip near spine)
+      const onRule = inR(x, y, M, M, W - M, H - M, 5) && !inR(x, y, M + 1, M + 1, W - M - 1, H - M - 1, 5);
+      const dxc = Math.abs(x - cx0);
+      if (onRule && dxc > spineW + 4) c = C.ruling;
+
+      // Gutter / spine
+      if (dxc < spineW) {
+        const t = 1 - dxc / spineW;
+        if (dxc <= 1) c = C.spineDk;
+        else {
+          const base = c, k = t * t;
+          c = [
+            base[0] + (C.spine[0] - base[0]) * k,
+            base[1] + (C.spine[1] - base[1]) * k,
+            base[2] + (C.spine[2] - base[2]) * k,
+            255,
+          ];
+          if (dxc < 3) c = jitter(C.spineDk, 14);
+        }
+      }
+
+      // Dog-eared bottom corners
+      const px0 = FT + 2, px1 = W - FT - 2, py1 = H - FT - 2;
+      const dlx = x - px0, dby = py1 - y;
+      if (dlx >= 0 && dby >= 0 && dlx + dby < foldS) {
+        c = (dlx + dby > foldS - 2) ? C.foldSh : C.fold;
+      }
+      const drx = px1 - x, dby2 = py1 - y;
+      if (drx >= 0 && dby2 >= 0 && drx + dby2 < foldS) {
+        c = (drx + dby2 > foldS - 2) ? C.foldSh : C.fold;
+      }
+
+      set(x, y, c);
+    }
   }
-  return pts.join(' ');
+
+  // Worn-edge chipping pass
+  const erase: number[] = [];
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      if (D[i + 3] === 0) continue;
+      const edge =
+        (x > 0 && D[(y * W + x - 1) * 4 + 3] === 0) ||
+        (x < W - 1 && D[(y * W + x + 1) * 4 + 3] === 0) ||
+        (y > 0 && D[((y - 1) * W + x) * 4 + 3] === 0) ||
+        (y < H - 1 && D[((y + 1) * W + x) * 4 + 3] === 0);
+      if (!edge) continue;
+      const nearCorner = (x < R + 4 || x > W - R - 4) && (y < R + 4 || y > H - R - 4);
+      const thr = nearCorner ? 0.55 : 0.80;
+      if (rnd(x, y, 21) > thr) {
+        erase.push(i);
+        if (rnd(x, y, 23) > 0.6) {
+          if (x < W / 2 && x + 1 < W) erase.push((y * W + x + 1) * 4);
+          else if (x - 1 >= 0) erase.push((y * W + x - 1) * 4);
+        }
+      }
+    }
+  }
+  erase.forEach(i => { D[i + 3] = 0; });
+
+  ctx.putImageData(img, 0, 0);
 }
 
 export function LorePanel() {
   const state = useGame();
   const dispatch = useGameDispatch();
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const lesson = CONTENT[state.currentLevel];
   const loreEntry = lesson.lore.find(l => l.id === state.activePanel?.itemId);
@@ -47,177 +226,94 @@ export function LorePanel() {
     return () => window.removeEventListener('keydown', handler);
   }, [dispatch]);
 
+  useEffect(() => {
+    if (canvasRef.current && loreEntry) {
+      renderBook(canvasRef.current);
+    }
+  }, [loreEntry]);
+
   if (!loreEntry) return null;
   const text = loreEntry.text;
-
-  // Generate the four torn-edge paths once per render. Seeds chosen to differ
-  // per edge so they don't look mirrored.
-  const topEdge = tornEdge(40, 1.1, 0.012);
-  const bottomEdge = tornEdge(40, 7.3, 0.014);
-  const leftEdge = tornEdge(28, 3.7, 0.012);
-  const rightEdge = tornEdge(28, 5.1, 0.014);
 
   return (
     <div
       className="absolute inset-0 z-20 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.55)' }}
+      style={{
+        background: 'radial-gradient(120% 130% at 50% 30%, rgba(42,29,18,0.85) 0%, rgba(22,15,9,0.92) 60%, rgba(11,8,5,0.96) 100%)',
+      }}
       onClick={() => dispatch({ type: 'CLOSE_PANEL' })}
     >
       <div
         onClick={e => e.stopPropagation()}
         style={{
           position: 'relative',
-          width: 'min(90vw, 820px)',
-          aspectRatio: '3 / 2',
-          imageRendering: 'pixelated',
+          width: 'min(92vw, calc(92vh * 1.5))',
+          aspectRatio: `${W} / ${H}`,
+          filter: 'drop-shadow(0 18px 26px rgba(0,0,0,0.55))',
         }}
       >
-        {/* ─── Outer wooden frame ─── */}
-        <div
+        <canvas
+          ref={canvasRef}
           style={{
-            position: 'absolute',
-            inset: 0,
-            background: FRAME,
-            // Pixel-y highlight on top, shadow on bottom for depth.
-            boxShadow: `
-              inset 0 4px 0 0 #6E4A2E,
-              inset 0 -6px 0 0 ${FRAME_SHADOW},
-              0 8px 24px rgba(0,0,0,0.6)
-            `,
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            imageRendering: 'pixelated',
           }}
         />
 
-        {/* ─── Page area (cream interior) with torn edges via SVG clip ─── */}
-        <svg
-          width="0"
-          height="0"
-          style={{ position: 'absolute', pointerEvents: 'none' }}
-          aria-hidden
-        >
-          <defs>
-            {/* Build a closed polygon: top edge L→R, right edge T→B, bottom edge R→L, left edge B→T. */}
-            <clipPath id="lore-page-clip" clipPathUnits="objectBoundingBox">
-              <polygon
-                points={`
-                  ${topEdge.split(' ').map(p => {
-                    const [x, dy] = p.split(',').map(Number);
-                    return `${x},${0.045 + dy}`;
-                  }).join(' ')}
-                  ${rightEdge.split(' ').map(p => {
-                    const [t, dx] = p.split(',').map(Number);
-                    return `${0.955 - dx},${t}`;
-                  }).join(' ')}
-                  ${bottomEdge.split(' ').reverse().map(p => {
-                    const [x, dy] = p.split(',').map(Number);
-                    return `${x},${0.955 - dy}`;
-                  }).join(' ')}
-                  ${leftEdge.split(' ').reverse().map(p => {
-                    const [t, dx] = p.split(',').map(Number);
-                    return `${0.045 + dx},${t}`;
-                  }).join(' ')}
-                `}
-              />
-            </clipPath>
-          </defs>
-        </svg>
-
+        {/* Left page text */}
         <div
           style={{
             position: 'absolute',
-            inset: 0,
-            clipPath: 'url(#lore-page-clip)',
-            background: PAGE,
-            // Subtle aged-paper warmth and a hint of grain via layered gradients.
-            backgroundImage: `
-              radial-gradient(ellipse at 25% 30%, rgba(180,140,90,0.06) 0%, transparent 55%),
-              radial-gradient(ellipse at 75% 70%, rgba(180,140,90,0.07) 0%, transparent 55%),
-              radial-gradient(circle at 12% 80%, rgba(120,90,50,0.06) 0%, transparent 12%),
-              radial-gradient(circle at 88% 22%, rgba(120,90,50,0.05) 0%, transparent 10%)
-            `,
-          }}
-        />
-
-        {/* ─── Center spine ─── */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: '5%',
-            bottom: '5%',
-            width: 6,
-            transform: 'translateX(-3px)',
-            background: FRAME_SHADOW,
-            boxShadow: `
-              -3px 0 6px rgba(58,37,22,0.35),
-              3px 0 6px rgba(58,37,22,0.35)
-            `,
-          }}
-        />
-
-        {/* ─── Inner page border (faint double-line, both pages) ─── */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '7%',
-            bottom: '7%',
-            left: '5.5%',
-            right: '5.5%',
-            display: 'flex',
-            pointerEvents: 'none',
-          }}
-        >
-          {[0, 1].map(side => (
-            <div
-              key={side}
-              style={{
-                flex: 1,
-                margin: side === 0 ? '0 1.2% 0 0' : '0 0 0 1.2%',
-                border: `1px solid ${PAGE_EDGE}`,
-                outline: `1px solid ${PAGE_EDGE}55`,
-                outlineOffset: 3,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* ─── Text (handwritten serif, flowing across both pages as 2 cols) ─── */}
-        <div
-          style={{
-            position: 'absolute',
+            left: '7.5%',
             top: '11%',
-            bottom: '13%',
-            left: '8%',
-            right: '8%',
-            fontFamily: "'IM Fell English', 'EB Garamond', Georgia, serif",
-            color: INK,
-            fontSize: 'clamp(15px, 2vw, 19px)',
+            width: '36%',
+            height: '78%',
+            color: '#4a3a24',
+            fontFamily: "'Spectral', Georgia, serif",
+            fontSize: 'clamp(11px, 1.6vw, 17px)',
             lineHeight: 1.55,
-            columnCount: 2,
-            columnGap: '6%',
-            columnFill: 'auto',
-            textAlign: 'justify',
-            hyphens: 'auto',
-            // Slight wobble like a quill — first letter a touch larger.
+            overflow: 'hidden',
+            textShadow: '0 1px 0 rgba(255,255,255,0.25)',
+            columnCount: 1,
           }}
         >
           <span
             style={{
-              fontFamily: "'IM Fell English', 'EB Garamond', serif",
               fontStyle: 'italic',
-              fontSize: '1.5em',
+              fontSize: '1.7em',
               float: 'left',
-              lineHeight: 0.9,
-              marginRight: 6,
+              lineHeight: 0.85,
+              marginRight: 5,
               marginTop: 4,
-              color: INK,
             }}
           >
             {text.charAt(0)}
           </span>
-          {text.slice(1)}
+          {text.slice(1, Math.ceil(text.length * 0.55))}
         </div>
 
-        {/* ─── Bottom-left close button ─── */}
+        {/* Right page text (continuation) */}
+        <div
+          style={{
+            position: 'absolute',
+            right: '7.5%',
+            top: '11%',
+            width: '36%',
+            height: '78%',
+            color: '#4a3a24',
+            fontFamily: "'Spectral', Georgia, serif",
+            fontSize: 'clamp(11px, 1.6vw, 17px)',
+            lineHeight: 1.55,
+            overflow: 'hidden',
+            textShadow: '0 1px 0 rgba(255,255,255,0.25)',
+          }}
+        >
+          {text.slice(Math.ceil(text.length * 0.55))}
+        </div>
+
+        {/* Bottom-left close button (`<` built into the book) */}
         <button
           onClick={() => dispatch({ type: 'CLOSE_PANEL' })}
           aria-label="Close book"
@@ -225,20 +321,20 @@ export function LorePanel() {
             position: 'absolute',
             left: '2.5%',
             bottom: '3%',
-            width: 38,
-            height: 38,
+            width: '6%',
+            height: '12%',
             background: 'transparent',
             border: 'none',
-            color: INK,
-            fontFamily: "'IM Fell English', serif",
-            fontSize: 28,
-            lineHeight: 1,
+            color: '#4a3a24',
+            fontFamily: "'Spectral', Georgia, serif",
+            fontSize: 'clamp(14px, 2.4vw, 28px)',
+            fontWeight: 500,
             cursor: 'pointer',
             padding: 0,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            opacity: 0.7,
+            opacity: 0.85,
             transition: 'opacity 120ms ease, transform 120ms ease',
           }}
           onMouseEnter={e => {
@@ -246,59 +342,29 @@ export function LorePanel() {
             e.currentTarget.style.transform = 'translateX(-2px)';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.opacity = '0.7';
+            e.currentTarget.style.opacity = '0.85';
             e.currentTarget.style.transform = 'translateX(0)';
           }}
         >
           {'<'}
         </button>
 
-        {/* ─── Close hint (bottom-right page corner) ─── */}
+        {/* Close hint (bottom-right corner) */}
         <div
           style={{
             position: 'absolute',
             right: '4%',
-            bottom: '4.5%',
-            fontFamily: "'IM Fell English', serif",
+            bottom: '4%',
+            fontFamily: "'Spectral', Georgia, serif",
             fontStyle: 'italic',
-            color: INK_FADE,
-            fontSize: 14,
-            opacity: 0.7,
+            color: '#6b4f2e',
+            fontSize: 'clamp(9px, 1.1vw, 13px)',
+            opacity: 0.75,
             pointerEvents: 'none',
           }}
         >
           press SPACE to close
         </div>
-
-        {/* ─── Curled bottom corners ─── */}
-        {/* Bottom-left fold */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '4%',
-            bottom: '5%',
-            width: 22,
-            height: 22,
-            background: PAGE_EDGE,
-            clipPath: 'polygon(0 100%, 100% 100%, 0 0)',
-            boxShadow: 'inset -2px 2px 3px rgba(58,37,22,0.35)',
-            pointerEvents: 'none',
-          }}
-        />
-        {/* Bottom-right fold */}
-        <div
-          style={{
-            position: 'absolute',
-            right: '4%',
-            bottom: '5%',
-            width: 22,
-            height: 22,
-            background: PAGE_EDGE,
-            clipPath: 'polygon(100% 100%, 0 100%, 100% 0)',
-            boxShadow: 'inset 2px 2px 3px rgba(58,37,22,0.35)',
-            pointerEvents: 'none',
-          }}
-        />
       </div>
     </div>
   );
