@@ -146,7 +146,7 @@ export function Room() {
           >
             <PixelSprite
               frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite}
-              scale={isProp ? 3 : 2}
+              scale={isProp ? TILE_SIZE / (PROP_FRAMES[dec.sprite][0]?.length || 12) : 2}
               palette={isProp ? PROP_PALETTE : undefined}
               primaryColor={isProp ? undefined : dec.tint}
             />

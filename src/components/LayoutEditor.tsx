@@ -487,7 +487,7 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
               const frame = isProp ? PROP_FRAMES[dec.sprite] : FRAMES[dec.sprite];
               return (
                 <EntityBox key={`dec-${i}`} x={dec.x} y={dec.y} cell={cell} onPointerDown={startEntityDrag('decorations', i)} style={selOutline(!!isSel('decorations', i))}>
-                  {frame && <PixelSprite frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite} palette={isProp ? PROP_PALETTE : undefined} scale={(cell * 1.4) / spriteCols(frame)} />}
+                  {frame && <PixelSprite frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite} palette={isProp ? PROP_PALETTE : undefined} scale={(cell * (isProp ? 1.0 : 1.4)) / spriteCols(frame)} />}
                 </EntityBox>
               );
             })}
