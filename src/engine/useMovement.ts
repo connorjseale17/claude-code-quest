@@ -148,6 +148,8 @@ export function useMovement() {
           if (!chamberState.loreSeen.includes(interactable.itemId)) {
             dispatch({ type: 'MARK_LORE_SEEN', chamberId: chamber.id, loreId: interactable.itemId });
           }
+        } else if (interactable.type === 'practice') {
+          dispatch({ type: 'OPEN_PANEL', panelType: 'practice', itemId: interactable.itemId });
         }
         return;
       }

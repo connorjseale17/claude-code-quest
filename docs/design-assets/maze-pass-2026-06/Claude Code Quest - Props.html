@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code Quest — Props & Ambiance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --orange:#E8633D; --void:#1A1A1A; --bg:#0E0E0E; --floor:#3A3A3A;
+    --text:#E8E8E8; --muted:#7D7D7D; --green:#3FB950; --line:#2A2A2A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); }
+  body { font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; color:var(--text); -webkit-font-smoothing:antialiased; min-height:100vh; }
+  ::selection { background:var(--orange); color:var(--void); }
+  .wrap { max-width:1200px; margin:0 auto; padding:34px 28px 80px; }
+
+  header { border-bottom:1px solid var(--line); padding-bottom:22px; margin-bottom:26px; }
+  .cmd { color:var(--muted); font-size:13px; }
+  .cmd .tok { color:var(--green); }
+  h1 { font-size:30px; font-weight:700; margin:12px 0 0; letter-spacing:0.02em; line-height:1.1; }
+  h1 .caret { color:var(--orange); }
+  .sub { color:var(--muted); font-size:13px; margin-top:12px; line-height:1.7; max-width:800px; }
+  .sub b { color:var(--text); font-weight:500; }
+
+  .toolbar { display:flex; align-items:center; gap:14px; margin-top:20px; flex-wrap:wrap; }
+  .btn { font-family:inherit; font-size:12px; letter-spacing:0.04em; color:var(--text); background:var(--void); border:1px solid var(--line); padding:8px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  .btn:hover { border-color:var(--orange); color:var(--orange); }
+  .btn .dot { width:7px; height:7px; background:var(--green); display:inline-block; }
+  .btn.paused .dot { background:var(--muted); }
+  .speedlabel { color:var(--muted); font-size:12px; }
+
+  /* palette legend */
+  .legend { display:flex; flex-wrap:wrap; gap:14px 22px; margin-top:22px; padding:14px 16px; border:1px solid var(--line); background:var(--void); }
+  .leg { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); }
+  .leg .sw { width:14px; height:14px; border:1px solid rgba(255,255,255,0.12); }
+
+  .sec-h { display:flex; align-items:baseline; gap:12px; margin:34px 0 16px; }
+  .sec-h .n { color:var(--orange); font-size:13px; font-weight:700; }
+  .sec-h .t { color:var(--text); font-size:15px; font-weight:600; letter-spacing:0.04em; }
+  .sec-h .meta { color:var(--muted); font-size:12px; margin-left:auto; }
+  .sec-h .rule { flex:0 0 auto; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(178px,1fr)); gap:14px; }
+
+  .card { background:var(--void); border:1px solid var(--line); display:flex; flex-direction:column; position:relative; }
+  .stage { background:radial-gradient(circle at 50% 46%, color-mix(in oklab, var(--floor) 42%, var(--void)) 0%, var(--void) 74%); display:flex; align-items:center; justify-content:center; min-height:150px; padding:16px; position:relative; overflow:hidden; }
+  .stage::before { content:""; position:absolute; inset:0; background-image:repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,0.15) 3px 4px); pointer-events:none; }
+  .spritebox { line-height:0; }
+  .spritebox svg { display:block; image-rendering:pixelated; }
+  .tag { position:absolute; top:8px; left:9px; font-size:9px; letter-spacing:0.1em; color:var(--muted); text-transform:uppercase; display:flex; align-items:center; gap:5px; }
+  .tag .cdot { width:6px; height:6px; }
+  .flag { position:absolute; top:8px; right:9px; font-size:9px; letter-spacing:0.08em; color:var(--muted); }
+  .flag b { color:var(--orange); }
+  .card-foot { padding:10px 12px 12px; border-top:1px solid var(--line); }
+  .pname { font-size:12.5px; font-weight:600; letter-spacing:0.04em; }
+  .pmeta { color:var(--muted); font-size:10.5px; margin-top:4px; line-height:1.5; }
+  .pmeta .anim { color:var(--green); }
+
+  footer { color:var(--muted); font-size:11.5px; line-height:1.8; border-top:1px solid var(--line); padding-top:20px; margin-top:38px; }
+  footer .tok { color:var(--green); }
+  .cursor { display:inline-block; width:8px; height:14px; background:var(--text); transform:translateY(2px); animation:blink 1s steps(2) infinite; }
+  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="cmd">$ <span class="tok">./props</span> --catalog --all</div>
+    <h1><span class="caret">&gt;</span> PROPS &amp; AMBIANCE</h1>
+    <p class="sub">
+      The environment kit — <b>one shared prop library</b> dropped into every room to make the dungeon feel
+      inhabited. A 50/50 blend of <b>dungeon</b> and <b>terminal</b>: torches and chests alongside CRTs and server stacks.
+      Palette stays strict orange / stone / bone, with accents reserved for <b>fire, magic, and screens</b>.
+      Lights flicker; interactive props show an idle ↔ active state.
+    </p>
+    <div class="legend" id="legend"></div>
+    <div class="toolbar">
+      <button class="btn" id="playBtn"><span class="dot"></span><span id="playLbl">PLAYING</span></button>
+      <span class="speedlabel">animated props loop · pause to step a single frame</span>
+    </div>
+  </header>
+  <div id="sections"></div>
+  <footer>
+    <span class="tok">#</span> All props are pixel-grid art on the shared environment palette — no anti-aliasing.
+    Grid size given in pixels (w × h). Interactive props are tagged <b>idle ↔ active</b>; lights and ambient
+    props auto-loop. Same kit works in every room — rooms differentiate by shape and placement, not custom theming.
+    <span class="cursor"></span>
+  </footer>
+</div>
+
+<script>
+// ---- shared environment palette ----
+const PAL = {
+  ".":null,
+  "o":"#E8633D", "O":"#B84A28",            // orange / dark orange
+  "k":"#15181A",                           // near-black (outline / void)
+  "g":"#6A6A6A", "G":"#454545",            // stone light / dark
+  "s":"#9AA4AD", "S":"#566069",            // steel light / dark
+  "w":"#94602E", "W":"#5E3C1C",            // wood / dark wood
+  "b":"#E6E2CF", "B":"#ADA589",            // bone-paper / dark bone
+  "f":"#FFD23F", "F":"#F2842E", "h":"#FFE9A8", // flame yellow / orange / hot
+  "m":"#3FB950", "M":"#247A38",            // mana-screen green / deep
+  "p":"#A972F0", "c":"#6FD7C2",            // magic purple / cyan glow
+  "i":"#E8E8E8", "x":"#6E6E6E",            // light highlight / iron
+};
+const LEGEND = [
+  ["o","orange"],["g","stone"],["s","steel"],["w","wood"],["b","bone"],
+  ["f","fire"],["m","screen"],["p","magic"],["c","glow"],["x","iron"],
+];
+
+// category colors for the corner dot
+const CAT = {
+  light:"#FFD23F", interactive:"#E8633D", wall:"#9AA4AD", floor:"#6FD7C2", furniture:"#94602E",
+};
+
+// ---------------------------------------------------------------------------
+// PROP LIBRARY.  frames: 1 = static; 2 = animated/stateful.
+// mode: static | flicker | loop | state | sway | shimmer | pulse
+// ---------------------------------------------------------------------------
+const SECTIONS = [
+  { id:"A", title:"LIGHT & FIRE", note:"flicker loops · mood carriers", props:[
+    { name:"WALL SCONCE", cat:"light", mode:"flicker", scale:10, frames:[
+      ["...f....","..fhf...","..fFf...","...F....","..ooo...","...W....","...W....",".SsssS..","S..k..S.",".S...S..","..SkS...","...S...."],
+      ["....f...","...fhf..","..ffF...","...F....","..ooo...","...W....","...W....",".SsssS..","S..k..S.",".S...S..","..SkS...","...S...."],
+    ]},
+    { name:"BRAZIER", cat:"light", mode:"flicker", scale:9, frames:[
+      ["....ff......","...fhhf.....","..ffFFf.....","...fFFf.....","....FF......",".oooooooo...",".SsssssssS..","..SssssS....","...S..S.....","..S....S....",".S......S...","S........S.."],
+      ["...ff.f.....","..fhhhf.....",".ffFFff.....","..fFFFf.....","...fFf......",".oooooooo...",".SsssssssS..","..SssssS....","...S..S.....","..S....S....",".S......S...","S........S.."],
+    ]},
+    { name:"HANGING LANTERN", cat:"light", mode:"flicker", scale:10, frames:[
+      ["...x....","...x....","..sss...",".s...s..","s.fhf.s.","s.fFf.s.","s.fFf.s.","s..F..s.",".s...s..","..sss...","...s....","........"],
+      ["...x....","...x....","..sss...",".s...s..","s..fh.s.","s.fFf.s.","s.fFff.s","s..F..s.",".s...s..","..sss...","...s....","........"],
+    ]},
+    { name:"MANA CRYSTAL", cat:"light", mode:"pulse", scale:10, frames:[
+      ["....c....","...cic...","..cccc...",".ccccccc.","ccciiiccc",".ccccccc.","..ccccc..","...ccc...","....c....",".........","..MMmMM..","...mmm..."],
+      ["....i....","...cic...","..ciic...",".cciiccc.","cciiiiicc",".cciiicc.","..ciiic..","...cic...","....i....","....m....",".MMmmmMM.","..mmmmm.."],
+    ]},
+    { name:"CURSOR BEACON", cat:"light", mode:"flicker", scale:9, frames:[
+      ["gggggggg","gkkkkkkg","gkmk kkg","gkmmk kg","gkkkkkkg","gggggggg","..gGGg..","..gGGg..","..GGGG.."],
+      ["gggggggg","gkkkkkkg","gkmkmmkg","gkmmkmkg","gkkkkkkg","gggggggg","..gGGg..","..gGGg..","..GGGG.."],
+    ]},
+  ]},
+  { id:"B", title:"INTERACTIVE", note:"click targets · idle ↔ active", props:[
+    { name:"TREASURE CHEST", cat:"interactive", mode:"state", scale:10, frames:[
+      ["..wwwwwwwwww..",".wWWWWWWWWWWw.",".wWWWWWWWWWWw.","wsssssssssssw","wWWWWssWWWWWw","wWWWWssWWWWWw","wWWWWWWWWWWWw","wsssssssssssw",".wwwwwwwwww..","............."],
+      ["...k......k...","..wwwwwwwwww..",".wWWWWWWWWWWw.","wkffffffffffkw","wkfhfhfhfhfkw","wWWWWWWWWWWWw","wsssssssssssw",".wwwwwwwwww...","............." ,"............."],
+    ]},
+    { name:"BARREL", cat:"interactive", mode:"static", scale:10, frames:[
+      ["..oooooo..",".wWWWWWWw.","wWWWWWWWWw","ssssssssss","wWWWWWWWWw","wWWWWWWWWw","wWWWWWWWWw","ssssssssss","wWWWWWWWWw",".wWWWWWWw.","..oooooo.."],
+    ]},
+    { name:"FLOOR LEVER", cat:"interactive", mode:"state", scale:10, frames:[
+      [".o......","o.......",".o......","..o.....","..o.....","...s....","..sss...",".SsssS..","SSSSSSSS","GGGGGGGG"],
+      ["........","......o.",".....o..","....o...","...so...","..sss...","..sss...",".SsssS..","SSSSSSSS","GGGGGGGG"],
+    ]},
+    { name:"CRT TERMINAL", cat:"interactive", mode:"state", scale:9, frames:[
+      [".SSSSSSSSSSSS.","SssssssssssssS","Ssk kkkkkk ksS"," Sk kkkkkk kS ","SskkkkkkkkkksS","SssssssssssssS",".SSSSSSSSSSSS.","....SSSS......","..SSSSSSSS....",".GGGGGGGGGG..."],
+      [".SSSSSSSSSSSS.","SssssssssssssS","Sskmkkkkkk ksS"," Skmmkkkkk kS ","Skkkkkkkkkk sS","SssssssssssssS",".SSSSSSSSSSSS.","....SSSS......","..SSSSSSSS....",".GGGGGGGGGG..."],
+    ]},
+    { name:"SERVER STACK", cat:"interactive", mode:"state", scale:8, frames:[
+      ["SSSSSSSSSS","SkkkkkkkkS","SkGGGGGkxS","SkkkkkkkkS","SkGGGGGkxS","SkkkkkkkkS","SkGGGGGkxS","SkkkkkkkkS","SkGGGGGkxS","SSSSSSSSSS","GGGGGGGGGG"],
+      ["SSSSSSSSSS","SkkkkkkkkS","SkGGGGGkmS","SkkkkkkkkS","SkGGGGGkfS","SkkkkkkkkS","SkGGGGGkmS","SkkkkkkkkS","SkGGGGGkmS","SSSSSSSSSS","GGGGGGGGGG"],
+    ]},
+  ]},
+  { id:"C", title:"WALL DRESSING", note:"breaks up flat borders", props:[
+    { name:"BANNER", cat:"wall", mode:"static", scale:9, frames:[
+      ["xxxxxxxx",".oooooo.",".oooooo.",".ooiioo.",".oiiiio.",".ooiioo.",".oooooo.",".oooooo.",".oOOOOo.",".o.OO.o.",".O....O."],
+    ]},
+    { name:"CRACKED BRICKS", cat:"wall", mode:"static", scale:9, frames:[
+      ["gggggggggg","gGggGgggGg","ggkgggggkg","ggGkgggGkg","gggkggggkg","ggggkgggkg","gGgggkGgGg","ggggggkggg","gggGggkGgg","gggggggggg"],
+    ]},
+    { name:"WALL RUNES", cat:"wall", mode:"pulse", scale:9, frames:[
+      ["............",".M..M..M..M.",".m.MmM.MmM..","..MmM..MmM..",".M.M.M.M.M..","............"],
+      [".c..c..c..c.",".m.cmc.cmc..","..cmc..cmc..",".c.c.c.c.c..","..i..i..i...","............"],
+    ]},
+    { name:"CHAINS", cat:"wall", mode:"static", scale:9, frames:[
+      ["x...x...","X...X...","x...x...","X...X...","x.x.x.x.",".xX...Xx.","x.x...x.x","X.......X","xx.....xx",".x.....x."],
+    ]},
+    { name:"COBWEB", cat:"wall", mode:"sway", scale:9, frames:[
+      ["ii........","i.i.......","i..i......","i.i.i.....","i..i..i...","i.i.i.i.i.","i....i...i","i..i....i.","i.i....i..","ii....i..."],
+      ["ii........","i.i.......","i..i......","i.i..i....","i..i...i..","i.i.i.i..i","i....i..i.","i..i...i..","i.i...i...","ii...i...."],
+    ]},
+  ]},
+  { id:"D", title:"FLOOR DETAIL", note:"scatter into negative space", props:[
+    { name:"RUBBLE", cat:"floor", mode:"static", scale:9, frames:[
+      ["................","....gg....g.....","..gGGGg..gGg....",".gGGGGGggGGGg...","gGGkGGGGGGGGGg..",".gGGGGGkGGGGg.g.","..gGGGgggGgg.gGg",".g.ggg...g..gGGg"],
+    ]},
+    { name:"BONES", cat:"floor", mode:"static", scale:9, frames:[
+      [".bbbb...........","bbbbbb..bb....bb","bkbbkb...bb..bb.","bbbbbb....bbbb..",".bkkb.....bbbb..",".b..b....bb..bb.","........bb....bb","................"],
+    ]},
+    { name:"PUDDLE", cat:"floor", mode:"shimmer", scale:9, frames:[
+      ["...SSSSSS....","..SccccccS...",".ScciccccS...","SccccccccS...",".SccccciccS..","..SccccccS...","...SSSSSS...."],
+      ["...SSSSSS....","..SccccccS...",".SciccccccS..","SccccicccS...",".SccicccccS..","..SccccccS...","...SSSSSS...."],
+    ]},
+    { name:"SUMMONING CIRCLE", cat:"floor", mode:"pulse", scale:8, frames:[
+      ["...mmmmmm...","..m......m..",".m..mmmm..m.","m..m....m..m","m.m..mm..m.m","m.m..mm..m.m","m..m....m..m",".m..mmmm..m.","..m......m..","...mmmmmm..."],
+      ["...cccccc...","..c......c..",".c..ccii..c.","c..i.pp.i..c","c.i.pmmp.i.c","c.i.pmmp.i.c","c..i.pp.i..c",".c..ccii..c.","..c......c..","...cccccc..."],
+    ]},
+    { name:"CABLE RUN", cat:"floor", mode:"static", scale:9, frames:[
+      ["................","ss..............","sss.........mm..","..sss.....mmss..","....sssmmmsss...","...mmsssss......","..mss...ssss....","..ss.......sss.."],
+    ]},
+  ]},
+  { id:"E", title:"FURNITURE", note:"shared 'inhabited' kit", props:[
+    { name:"TABLE", cat:"furniture", mode:"static", scale:9, frames:[
+      ["wwwwwwwwwwww","WWWWWWWWWWWW",".W........W.",".W........W.",".W........W.",".W........W.",".W........W.","WW........WW"],
+    ]},
+    { name:"ANVIL", cat:"furniture", mode:"static", scale:10, frames:[
+      ["..sssssss..",".sSSSSSSSss","sSSSSSSSSSS",".SSSSSSSS..","...SSSS....","...SSSS....","..SSSSSS...",".GGGGGGGG..","GGGGGGGGGG."],
+    ]},
+    { name:"WEAPON RACK", cat:"furniture", mode:"static", scale:9, frames:[
+      ["s.s.s.s.","s.s.s.s.","s.x.s.s.","i.x.i.i.","i.x.i.i.","i.x.i.i.","wwwwwwww","WWWWWWWW",".W....W.","WW....WW"],
+    ]},
+    { name:"BOOKSHELF", cat:"furniture", mode:"static", scale:8, frames:[
+      ["wwwwwwwwwwww","wWWWWWWWWWWw","woOmoOpoMoOw","woOmoOpoMoOw","wWWWWWWWWWWw","wpoMooOmoOpw","wpoMooOmoOpw","wWWWWWWWWWWw","wOmoOpoOmoOw","wOmoOpoOmoOw","wWWWWWWWWWWw","WW........WW"],
+    ]},
+    { name:"CRATE", cat:"furniture", mode:"static", scale:9, frames:[
+      ["wwwwwwwwww","wkwwwwwwkw","wwWwwwWwww","wwwWWWwwww","wwwWWWwwww","wwWwwwWwww","wkwwwwwwkw","wwwwwwwwww"],
+    ]},
+  ]},
+];
+
+// ---- renderer ----
+function pad(frames) {
+  let w=0; frames.forEach(f=>f.forEach(l=>{ if(l.length>w) w=l.length; }));
+  return { frames:frames.map(f=>f.map(l=> l + ".".repeat(w-l.length))), w, h:frames[0].length };
+}
+function renderSVG(grid, scale) {
+  const h=grid.length, w=grid[0].length; let r="";
+  for(let y=0;y<h;y++){ const row=grid[y]; for(let x=0;x<row.length;x++){ const fill=PAL[row[x]]; if(!fill) continue; r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${fill}"/>`; } }
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w*scale}" height="${h*scale}" shape-rendering="crispEdges">${r}</svg>`;
+}
+
+// legend
+document.getElementById("legend").innerHTML = LEGEND.map(([c,label])=>
+  `<span class="leg"><span class="sw" style="background:${PAL[c]}"></span>${label}</span>`).join("");
+
+const ANIMLABEL = { flicker:"flicker", loop:"loop", sway:"sway", shimmer:"shimmer", pulse:"pulse", state:"idle \u2194 active" };
+const registry = [];
+const sectionsEl = document.getElementById("sections");
+
+SECTIONS.forEach(sec=>{
+  const hd = document.createElement("div");
+  hd.className="sec-h";
+  hd.innerHTML = `<span class="n">${sec.id}</span><span class="t">${sec.title}</span><span class="meta">${sec.note}</span>`;
+  sectionsEl.appendChild(hd);
+  const grid = document.createElement("div"); grid.className="grid"; sectionsEl.appendChild(grid);
+
+  sec.props.forEach(p=>{
+    const pd = pad(p.frames); const frames=pd.frames;
+    const animated = frames.length>1;
+    const card = document.createElement("div"); card.className="card";
+    const catColor = CAT[p.cat] || "#7D7D7D";
+    const animTag = animated ? `<span class="anim">▸ ${ANIMLABEL[p.mode]||"anim"}</span>` : "static";
+    card.innerHTML = `
+      <div class="stage">
+        <div class="tag"><span class="cdot" style="background:${catColor}"></span>${p.cat}</div>
+        ${animated ? `<div class="flag">${p.mode==="state"?'<b class="ff">IDLE</b>':'FRAME <b class="ff">A</b>'}</div>`:""}
+        <div class="spritebox"></div>
+      </div>
+      <div class="card-foot">
+        <div class="pname">${p.name}</div>
+        <div class="pmeta">${pd.w} × ${pd.h} px · ${animTag}</div>
+      </div>`;
+    const box = card.querySelector(".spritebox");
+    const ff = card.querySelector(".ff");
+    grid.appendChild(card);
+    registry.push({ box, ff, svgs:frames.map(g=>renderSVG(g,p.scale)), mode:p.mode });
+  });
+});
+
+// ---- animation ----
+let frameIdx=0, playing=true, timer=null;
+function paint(){
+  registry.forEach(r=>{
+    const i = frameIdx % r.svgs.length;
+    r.box.innerHTML = r.svgs[i];
+    if(r.ff){ r.ff.textContent = r.mode==="state" ? (i===0?"IDLE":"ACTIVE") : (i===0?"A":"B"); }
+  });
+}
+paint();
+function start(){ timer=setInterval(()=>{ frameIdx++; paint(); }, 520); }
+start();
+const playBtn=document.getElementById("playBtn"), playLbl=document.getElementById("playLbl");
+playBtn.addEventListener("click",()=>{
+  playing=!playing;
+  if(playing){ start(); playBtn.classList.remove("paused"); playLbl.textContent="PLAYING"; }
+  else { clearInterval(timer); timer=null; playBtn.classList.add("paused"); playLbl.textContent="PAUSED — click a prop to step"; }
+});
+registry.forEach(r=>{ r.box.style.cursor="pointer"; r.box.addEventListener("click",()=>{ if(!playing){ frameIdx++; paint(); } }); });
+</script>
+</body>
+</html>

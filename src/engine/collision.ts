@@ -47,7 +47,7 @@ export function getInteractableAt(
   botX: number,
   botY: number,
   chamber: ChamberConfig,
-): { kind: 'item'; type: 'challenge' | 'lore'; itemId: string } | { kind: 'npc'; npcId: string } | null {
+): { kind: 'item'; type: 'challenge' | 'lore' | 'practice'; itemId: string } | { kind: 'npc'; npcId: string } | null {
   // NPCs take priority — they don't sit on door tiles
   for (const npc of chamber.npcs) {
     const dx = Math.abs(botX - npc.x);

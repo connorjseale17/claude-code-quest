@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code Quest — Level 04: MCP SERVERS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{ --accent:#A972F0; --void:#1A1A1A; --bg:#0E0E0E; --text:#E8E8E8; --muted:#7D7D7D; --green:#3FB950; --line:#2A2A2A; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg); }
+  body{ font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; color:var(--text); -webkit-font-smoothing:antialiased; min-height:100vh; }
+  ::selection{ background:var(--accent); color:var(--void); }
+  .wrap{ max-width:1180px; margin:0 auto; padding:30px 24px 70px; }
+  header{ border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:20px; }
+  .cmd{ color:var(--muted); font-size:12.5px; } .cmd .tok{ color:var(--green); }
+  .titlerow{ display:flex; align-items:baseline; gap:16px; margin-top:10px; flex-wrap:wrap; }
+  h1{ font-size:27px; font-weight:700; margin:0; letter-spacing:0.02em; }
+  h1 .caret{ color:var(--accent); }
+  .lv{ color:var(--accent); font-size:13px; letter-spacing:0.14em; border:1px solid color-mix(in oklab,var(--accent) 45%,var(--line)); padding:3px 9px; }
+  .sub{ color:var(--muted); font-size:12.5px; margin-top:10px; line-height:1.7; max-width:840px; }
+  .sub b{ color:var(--text); font-weight:500; }
+  .toolbar{ display:flex; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  .btn{ font-family:inherit; font-size:11.5px; letter-spacing:0.04em; color:var(--text); background:var(--void); border:1px solid var(--line); padding:7px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .btn.on{ border-color:var(--accent); color:var(--accent); }
+  .btn .dot{ width:7px; height:7px; background:var(--green); display:inline-block; } .btn.paused .dot{ background:var(--muted); }
+  .crt{ position:relative; margin-top:18px; border:1px solid var(--line); background:#0b0b0b; padding:14px; overflow:hidden; }
+  .crt::after{ content:""; position:absolute; inset:0; background-image:repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,0.22) 2px 3px); pointer-events:none; z-index:5; }
+  .stage{ position:relative; width:100%; overflow:auto; }
+  svg.map{ display:block; image-rendering:pixelated; width:100%; height:auto; }
+  .chamlabel{ position:absolute; z-index:7; font-size:10px; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase; transform:translateX(-50%); }
+  .cols{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
+  @media(max-width:760px){ .cols{ grid-template-columns:1fr; } }
+  .panel{ border:1px solid var(--line); background:var(--void); padding:14px 16px; }
+  .panel h3{ margin:0 0 10px; font-size:12px; letter-spacing:0.1em; color:var(--accent); font-weight:700; }
+  .panel h3.late{ margin-top:18px; }
+  .row{ display:flex; gap:9px; font-size:11.5px; line-height:1.5; padding:6px 0; border-top:1px solid #1f1f1f; }
+  .row:first-of-type{ border-top:none; }
+  .row .ic{ flex:0 0 16px; height:16px; margin-top:1px; }
+  .row .k{ color:var(--text); } .row .d{ color:var(--muted); }
+  .cham{ font-size:11.5px; line-height:1.65; color:var(--muted); margin:0 0 12px; }
+  .cham b{ color:var(--text); } .cham .nm{ color:var(--accent); font-weight:600; }
+  .legend{ display:flex; flex-wrap:wrap; gap:10px 16px; }
+  .leg{ display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); }
+  .leg .sw{ width:14px; height:14px; }
+  footer{ color:var(--muted); font-size:11px; line-height:1.7; border-top:1px solid var(--line); padding-top:16px; margin-top:24px; }
+  footer .tok{ color:var(--green); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="cmd">$ <span class="tok">./play</span> --level <span id="lvCmd">02</span> --map</div>
+    <div class="titlerow"><h1><span class="caret">&gt;</span> <span id="lvName">THE CLAUDE.MD</span></h1><span class="lv">LEVEL <span id="lvNum">02</span></span></div>
+    <p class="sub"><span id="lvBlurb">A <b>descent</b>: drop in from the <b>north</b> into the Hub up top, weave past the connector and fall through
+      the south door into the Server Rack, then zig down-and-east into Integration at the bottom where <b>VORTHEX</b> waits. Only two
+      sprites are fixed — the <b>connector-bot</b> NPC and the ghost boss. Server stacks, cables and crystals get placed later.</span></p>
+    <div class="toolbar">
+      <button class="btn paused" id="playBtn"><span class="dot"></span><span id="playLbl">ANIMATE</span></button>
+      <button class="btn on" id="pathBtn">CRITICAL PATH</button>
+      <button class="btn on" id="labelBtn">LABELS</button>
+    </div>
+  </header>
+  <div class="crt"><div class="stage" id="stage"></div></div>
+  <div class="cols">
+    <div class="panel"><h3>FIXED SPRITES</h3><div id="castList"></div></div>
+    <div class="panel"><h3>THE JOURNEY</h3><div id="chamList"></div><h3 class="late">LEGEND</h3><div class="legend" id="legend"></div></div>
+  </div>
+  <footer><span class="tok">#</span> Each chamber is its own <b>fillRect</b> region; corridors bend between them and doors sit on
+    different walls so the route turns and climbs, not just slides right. Critical path is real BFS pathfinding. Only the NPC and boss are placed.</footer>
+</div>
+
+<script>
+// ===========================================================================
+// THEME  (appearance + copy)
+// ===========================================================================
+const THEME = {
+  name:"MCP SERVERS", num:"04", accent:"#6FD7C2",
+  tints:["#1F2E2E","#1D2C2D","#1B2A2B"],
+  npc:{ spr:"bot", color:"#86E6D3", id:"connector-bot", desc:"Hub — teal Claude-bot wired into the patch-panel. Teaches MCP (11-beat)." },
+  boss:{ spr:"ghost", id:"VORTHEX", desc:"Integration — VORTHEX the ghost boss at the bottom of the descent." },
+  chambers:[
+    { name:"HUB", note:"central switchboard up top. Drop IN from the north; weave past the connector; fall out the south." },
+    { name:"SERVER RACK", note:"humming towers, mid-left. Land from above, turn, and slip out east." },
+    { name:"INTEGRATION", note:"wired temple, lower-right. A short run to the VORTHEX battle at the bottom." },
+  ],
+};
+// ===========================================================================
+// LAYOUT  (geometry — the per-level journey)
+// ===========================================================================
+const LAYOUT = {
+  W:36, H:28,
+  chambers:[
+    { ox:8,  oy:0,  blockers:[{x:4,y:5,w:5,h:1},{x:7,y:8,w:5,h:1}] },   // A Hub         (↓)
+    { ox:4,  oy:14, blockers:[{x:6,y:5,w:1,h:4},{x:8,y:9,w:5,h:1}] },   // B Server Rack (↓ then →)
+    { ox:20, oy:16, blockers:[{x:5,y:5,w:1,h:3},{x:9,y:5,w:1,h:3}] },   // C Integration (→)
+  ],
+  corridors:[ {x:12,y:11,w:1,h:4}, {x:19,y:22,w:2,h:1} ],
+  entry:[16,0], exit:{x:28,y:27,state:"locked"},
+  npc:[16,6], boss:[27,22],
+};
+
+// ===========================================================================
+// ENGINE  (shared — geometry-agnostic)
+// ===========================================================================
+const PAL={ ".":null, "k":"#15181A" };
+const BOT=["..1111111..",".111111111.","11111111111","11331113311","11331113311","11111111111","11111111111","11111111111",".111111111.","..1.1.1.1.."];
+const SPR={
+  bot:{ s:[BOT], colors:()=>({ "1":THEME.npc.color, "3":"#16191B" }) },
+  warlock:{ colors:{"1":"#A972F0","2":"#5E37A6","3":"#16191B","5":"#FFD23F","4":"#FFFFFF"}, s:[[".......11.......","......1111......","......1111......",".....111111.....","....11111111....","...1111111111...","..111111111111..",".11111111111111.","1111111111111111","1112222222222111","1112255225522111","1112222222222111",".11222222222211.",".22222222222222.",".222..2222..222."]] },
+  goblin:{ colors:{"1":"#7FCB3F","2":"#3E7A22","3":"#16191B","4":"#E7F6C8"}, s:[["...11......11...","...11......11...","...111....111...","....11111111....","..111111111111..",".11111111111111.","1111111111111111","1111441111441111","1111441111441111","1111111111111111","1112222222222111",".11111111111111.","..11..1111..11.."]] },
+  ghost:{ colors:{"1":"#AEDDEC","2":"#6FAEC2","3":"#16191B","4":"#FFFFFF"}, s:[[".....111111.....","...1111111111...","..111111111111..",".11111111111111.","1111111111111111","1111331111331111","1111341111341111","1111111111111111","1111111111111111","1222222222222221","1111111111111111","11..11..11..11.."]] },
+};
+const CW=16, CH=12, TILE=22;
+const W=LAYOUT.W, H=LAYOUT.H;
+
+function build(){
+  const g=[]; for(let y=0;y<H;y++) g.push(new Array(W).fill("#"));
+  LAYOUT.chambers.forEach(c=>{
+    for(let y=1;y<CH-1;y++) for(let x=1;x<CW-1;x++) g[c.oy+y][c.ox+x]=".";
+    [[2,2],[3,2],[2,3],[3,3],[12,2],[13,2],[12,3],[13,3],[2,9],[3,9],[2,10],[3,10],[12,9],[13,9],[12,10],[13,10]].forEach(([x,y])=>g[c.oy+y][c.ox+x]="#");
+    (c.blockers||[]).forEach(b=>{ for(let y=b.y;y<b.y+b.h;y++) for(let x=b.x;x<b.x+b.w;x++) g[c.oy+y][c.ox+x]="#"; });
+  });
+  LAYOUT.corridors.forEach(c=>{ for(let y=c.y;y<c.y+c.h;y++) for(let x=c.x;x<c.x+c.w;x++) g[y][x]="."; });
+  g[LAYOUT.entry[1]][LAYOUT.entry[0]]="."; g[LAYOUT.exit.y][LAYOUT.exit.x]=".";
+  return g;
+}
+const GRID=build();
+
+function bfs(s,t){
+  const key=(x,y)=>x+","+y, prev={}, q=[s], seen={}; seen[key(...s)]=1;
+  while(q.length){ const [x,y]=q.shift(); if(x===t[0]&&y===t[1]) break;
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+dx,ny=y+dy;
+      if(nx<0||ny<0||nx>=W||ny>=H||GRID[ny][nx]!=="."||seen[key(nx,ny)]) continue;
+      seen[key(nx,ny)]=1; prev[key(nx,ny)]=[x,y]; q.push([nx,ny]); } }
+  const path=[]; let cur=t; let guard=0;
+  while(cur && guard++<5000){ path.push(cur); if(cur[0]===s[0]&&cur[1]===s[1]) break; cur=prev[key(...cur)]; }
+  return path.reverse();
+}
+function corners(p){ if(p.length<3) return p; const out=[p[0]];
+  for(let i=1;i<p.length-1;i++){ const a=p[i-1],b=p[i],c=p[i+1]; if((b[0]-a[0])!==(c[0]-b[0])||(b[1]-a[1])!==(c[1]-b[1])) out.push(b); }
+  out.push(p[p.length-1]); return out; }
+const PATH=corners(bfs(LAYOUT.entry, LAYOUT.boss));
+
+const ENTS=[
+  { spr:THEME.npc.spr, x:LAYOUT.npc[0], y:LAYOUT.npc[1], fit:[2,2], kind:"npc", id:THEME.npc.id, desc:THEME.npc.desc },
+  { spr:THEME.boss.spr, x:LAYOUT.boss[0], y:LAYOUT.boss[1], fit:[2,2], kind:"boss", id:THEME.boss.id, desc:THEME.boss.desc },
+];
+
+// ---- render ----
+const stage=document.getElementById("stage");
+let frame=0, playing=false, showPath=true, showLabels=true;
+function colorsFor(spr){ const c=SPR[spr].colors; return typeof c==="function"?c():(c||PAL); }
+function spriteRects(grid, cols, ox, oy, sc){ let r=""; for(let y=0;y<grid.length;y++){ const row=grid[y]; for(let x=0;x<row.length;x++){ const f=cols[row[x]]; if(!f) continue; r+=`<rect x="${(ox+x*sc).toFixed(2)}" y="${(oy+y*sc).toFixed(2)}" width="${sc.toFixed(2)}" height="${sc.toFixed(2)}" fill="${f}"/>`; } } return r; }
+function placeSprite(def){ const sp=SPR[def.spr], fr=sp.s[(def.anim&&playing)?frame%sp.s.length:0]; const gw=fr[0].length,gh=fr.length,[fw,fh]=def.fit; const bw=fw*TILE,bh=fh*TILE,sc=Math.min(bw/gw,bh/gh)*0.92; return spriteRects(fr,colorsFor(def.spr), def.x*TILE+(bw-gw*sc)/2, def.y*TILE+(bh-gh*sc)/2, sc); }
+function chamberIdx(x,y){ for(let i=0;i<LAYOUT.chambers.length;i++){ const c=LAYOUT.chambers[i]; if(x>=c.ox&&x<c.ox+CW&&y>=c.oy&&y<c.oy+CH) return i; } return -1; }
+function floorColor(x,y){ const i=chamberIdx(x,y); return i<0?"#221f23":THEME.tints[i]; }
+
+function render(){
+  let svg=`<svg class="map" viewBox="0 0 ${W*TILE} ${H*TILE}" width="${W*TILE}">`;
+  svg+=`<rect x="0" y="0" width="${W*TILE}" height="${H*TILE}" fill="#0c0b0a"/>`;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(GRID[y][x]!==".") continue; const px=x*TILE,py=y*TILE;
+    svg+=`<rect x="${px}" y="${py}" width="${TILE}" height="${TILE}" fill="${floorColor(x,y)}"/>`;
+    if((x+y)%2===0) svg+=`<rect x="${px+TILE/2-1}" y="${py+TILE/2-1}" width="2" height="2" fill="${THEME.accent}" opacity="0.3"/>`; }
+  const isWall=(x,y)=> x<0||y<0||x>=W||y>=H || GRID[y][x]!==".", ac=THEME.accent;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(GRID[y][x]!==".") continue; const px=x*TILE,py=y*TILE,t=2;
+    if(isWall(x,y-1)) svg+=`<rect x="${px}" y="${py}" width="${TILE}" height="${t}" fill="${ac}"/>`;
+    if(isWall(x,y+1)) svg+=`<rect x="${px}" y="${py+TILE-t}" width="${TILE}" height="${t}" fill="${ac}" opacity="0.6"/>`;
+    if(isWall(x-1,y)) svg+=`<rect x="${px}" y="${py}" width="${t}" height="${TILE}" fill="${ac}"/>`;
+    if(isWall(x+1,y)) svg+=`<rect x="${px+TILE-t}" y="${py}" width="${t}" height="${TILE}" fill="${ac}" opacity="0.6"/>`; }
+  // doors: entry + locked exit
+  const door=(x,y,locked)=>{ const px=x*TILE,py=y*TILE,col=locked?"#7D7D7D":ac;
+    svg+=`<rect x="${px+2}" y="${py+2}" width="${TILE-4}" height="${TILE-4}" fill="${locked?'#1c1a1e':'#231a2c'}" stroke="${col}" stroke-width="2"/>`;
+    if(locked) svg+=`<rect x="${px+TILE/2-3}" y="${py+TILE/2-3}" width="6" height="6" fill="#7D7D7D"/>`; };
+  door(LAYOUT.entry[0],LAYOUT.entry[1],false); door(LAYOUT.exit.x,LAYOUT.exit.y,true);
+  ENTS.filter(e=>e.kind==="boss").forEach(e=>{ svg+=`<circle cx="${(e.x+1)*TILE}" cy="${(e.y+1)*TILE}" r="${TILE*1.7}" fill="${ac}" opacity="0.12"/>`; });
+  ENTS.forEach(e=> svg+=placeSprite(e));
+  if(showPath && PATH.length>1){ const pts=PATH.map(([x,y])=>`${x*TILE+TILE/2},${y*TILE+TILE/2}`).join(" ");
+    svg+=`<polyline points="${pts}" fill="none" stroke="#FFE9A8" stroke-width="2.5" stroke-dasharray="2 5" stroke-linecap="round" opacity="0.92"/>`;
+    svg+=`<circle cx="${LAYOUT.entry[0]*TILE+TILE/2}" cy="${LAYOUT.entry[1]*TILE+TILE/2}" r="4" fill="#FFE9A8"/>`; }
+  svg+=`</svg>`; stage.innerHTML=svg;
+  document.querySelectorAll(".chamlabel").forEach(n=>n.remove());
+  if(showLabels){ const sc=stage.querySelector("svg").clientWidth/(W*TILE);
+    LAYOUT.chambers.forEach((c,i)=>{ const el=document.createElement("div"); el.className="chamlabel"; el.textContent=THEME.chambers[i].name;
+      el.style.left=((c.ox+8)*TILE*sc)+"px"; el.style.top=((c.oy)*TILE*sc+4)+"px"; stage.appendChild(el); }); }
+}
+function renderPanels(){
+  const ic=(spr)=>{ const g=SPR[spr].s[0],w=g[0].length,h=g.length; return `<svg class="ic" viewBox="0 0 ${w} ${h}">`+spriteRects(g,colorsFor(spr),0,0,1)+`</svg>`; };
+  const kn={npc:"NPC",boss:"BOSS"};
+  document.getElementById("castList").innerHTML=ENTS.map(e=>`<div class="row">${ic(e.spr)}<div><span class="k">${e.id}</span> <span class="d">· ${kn[e.kind]} (${e.x},${e.y})</span><br><span class="d">${e.desc}</span></div></div>`).join("");
+  document.getElementById("chamList").innerHTML=THEME.chambers.map(c=>`<p class="cham"><span class="nm">${c.name}</span> — ${c.note}</p>`).join("");
+  const LEG=[[THEME.tints[0],"chamber floor"],["#0c0b0a","wall / void"],[THEME.accent,"wall edge"],["#FFE9A8","critical path"],["#7D7D7D","locked door"]];
+  document.getElementById("legend").innerHTML=LEG.map(([c,l])=>`<span class="leg"><span class="sw" style="background:${c}"></span>${l}</span>`).join("");
+}
+document.getElementById("lvName").textContent=THEME.name;
+document.getElementById("lvNum").textContent=THEME.num;
+document.getElementById("lvCmd").textContent=THEME.num;
+document.documentElement.style.setProperty("--accent",THEME.accent);
+render(); renderPanels(); window.addEventListener("resize",()=>render());
+let timer=null; const playBtn=document.getElementById("playBtn"), playLbl=document.getElementById("playLbl");
+playBtn.addEventListener("click",()=>{ playing=!playing; if(playing){ playBtn.classList.remove("paused"); playLbl.textContent="PLAYING"; timer=setInterval(()=>{frame++;render();},480);} else { playBtn.classList.add("paused"); playLbl.textContent="ANIMATE"; clearInterval(timer); timer=null; render(); } });
+const tgl=(id,fn)=>{ const b=document.getElementById(id); b.addEventListener("click",()=>{ b.classList.toggle("on",fn()); render(); }); };
+tgl("pathBtn",()=>{ showPath=!showPath; return showPath; }); tgl("labelBtn",()=>{ showLabels=!showLabels; return showLabels; });
+</script>
+</body>
+</html>

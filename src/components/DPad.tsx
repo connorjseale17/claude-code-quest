@@ -64,6 +64,7 @@ export function DPad() {
 
   return (
     <div
+      className="cc-desktop-dpad"
       style={{
         position: 'absolute',
         bottom: 56,

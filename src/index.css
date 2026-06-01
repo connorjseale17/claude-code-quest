@@ -39,6 +39,85 @@
   animation: cc-pulse-glow 1.6s ease-in-out infinite;
 }
 
+/* Softer, slower pulse for non-primary interactables (lore / practice /
+   NPCs) — a gentle "you can interact here" cue that doesn't compete with
+   the strong active-objective glow. */
+@keyframes cc-guide-pulse {
+  0%, 100% { filter: drop-shadow(0 0 1px var(--glow-color, #E8633D)); }
+  50%      { filter: drop-shadow(0 0 4px var(--glow-color, #E8633D)); }
+}
+.cc-guide-glow {
+  animation: cc-guide-pulse 2.2s ease-in-out infinite;
+}
+
+/* Retro computer terminal — chassis arrival + power-on. */
+@keyframes cc-chassis-arrive {
+  0%   { opacity: 0; transform: scale(0.85); }
+  60%  { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1.00); }
+}
+
+@keyframes cc-crt-power-on {
+  0%   { background-color: #000000; box-shadow: inset 0 0 0 rgba(255,255,255,0); }
+  35%  { background-color: #FFFFFF; box-shadow: inset 0 0 80px rgba(255,255,255,0.9); }
+  55%  { background-color: #FFFFFF; box-shadow: inset 0 0 40px rgba(255,255,255,0.5); }
+  100% { background-color: #0A1810; box-shadow: inset 0 0 30px rgba(0,0,0,0.6); }
+}
+
+@keyframes cc-room-dim {
+  0%   { background: rgba(0,0,0,0); }
+  100% { background: rgba(0,0,0,0.95); }
+}
+
+@keyframes cc-led-pulse {
+  0%, 100% { opacity: 0.7; box-shadow: 0 0 6px var(--led-color, #3FB950); }
+  50%      { opacity: 1; box-shadow: 0 0 12px var(--led-color, #3FB950); }
+}
+
+.cc-chassis-arrive {
+  animation: cc-chassis-arrive 320ms steps(6, end);
+  animation-fill-mode: both;
+}
+
+.cc-crt-power-on {
+  animation: cc-crt-power-on 480ms ease-out;
+  animation-fill-mode: both;
+}
+
+.cc-led-pulse {
+  animation: cc-led-pulse 1.4s ease-in-out infinite;
+}
+
+/* Boss idle bob (image-based bosses). */
+@keyframes cc-boss-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* Boss-battle screen shake on damage. */
+@keyframes cc-shake {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-4px, 2px); }
+  50%  { transform: translate(3px, -2px); }
+  75%  { transform: translate(-2px, 3px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Classic "took damage" invuln blink — red/white flash, ~900ms. */
+@keyframes cc-hit-flash {
+  0%, 100% { filter: none; }
+  10%  { filter: brightness(3) saturate(0); }
+  20%  { filter: brightness(1) sepia(1) saturate(8) hue-rotate(-35deg); }
+  30%  { filter: brightness(3) saturate(0); }
+  45%  { filter: brightness(1) sepia(1) saturate(8) hue-rotate(-35deg); }
+  60%  { filter: brightness(3) saturate(0); }
+  75%  { filter: brightness(1) sepia(1) saturate(8) hue-rotate(-35deg); }
+  90%  { filter: brightness(2.4) saturate(0); }
+}
+.cc-hit-flash {
+  animation: cc-hit-flash 900ms linear 1;
+}
+
 ::selection {
   background: #E8633D;
   color: #1A1A1A;
@@ -62,11 +141,38 @@
 html, body, #root {
   margin: 0;
   padding: 0;
-  height: 100%;
+  /* Use small-viewport units so iOS Safari's URL bar doesn't shrink content on toggle. */
+  height: 100svh;
+  height: 100dvh;
+  width: 100vw;
   background: #0E0E0E;
   font-family: var(--font-mono);
   color: #E8E8E8;
   -webkit-font-smoothing: antialiased;
   image-rendering: pixelated;
   overflow: hidden;
+}
+
+/* Lock down all browser default touch gestures (scroll, overscroll bounce,
+   pinch, text selection, image-preview hold). The game owns every gesture. */
+body {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide the desktop-decorative DPad on touch devices — MobileControls replaces it. */
+@media (pointer: coarse) {
+  .cc-desktop-dpad { display: none !important; }
+}
+
+@keyframes cc-rotate-hint {
+  0%, 30%  { transform: rotate(0deg); }
+  60%      { transform: rotate(-90deg); }
+  100%     { transform: rotate(-90deg); }
 }

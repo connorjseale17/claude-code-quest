@@ -3,7 +3,8 @@ import { LEVEL_CONFIGS } from '../engine/roomConfigs';
 import { Bot } from './Bot';
 import { Item } from './Item';
 import { Door } from './Door';
-import { PixelSprite } from './PixelSprite';
+import { PixelSprite, PropSprite } from './PixelSprite';
+import { PROP_FRAMES } from '../assets/sprites';
 import { DPad } from './DPad';
 
 const TILE_SIZE = 40;
@@ -50,12 +51,25 @@ export function Room() {
         height: totalHeight,
       }}
     >
-      {/* Floor and walls */}
+      {/* Floor and walls — walls render as void-black; floor tiles adjacent
+          to walls get a 3px orange edge strip on each wall-facing side
+          (bright on top/left, dark on bottom/right). Matches the design
+          file aesthetic. */}
       {chamber.tiles.map((row, y) =>
         row.map((tile, x) => {
           const isWall = tile === 1;
           const isDoorTile = chamber.doors.some(d => d.x === x && d.y === y);
           if (isDoorTile) return null;
+
+          // For floor tiles only, check each neighbor for wall adjacency.
+          const isWallTile = (nx: number, ny: number) => {
+            if (nx < 0 || ny < 0 || nx >= chamber.width || ny >= chamber.height) return true;
+            return chamber.tiles[ny][nx] === 1;
+          };
+          const wallNorth = !isWall && isWallTile(x, y - 1);
+          const wallSouth = !isWall && isWallTile(x, y + 1);
+          const wallWest = !isWall && isWallTile(x - 1, y);
+          const wallEast = !isWall && isWallTile(x + 1, y);
 
           const isFloorDot =
             !isWall &&
@@ -64,6 +78,10 @@ export function Room() {
             x > 0 && y > 0 &&
             x < chamber.width - 1 &&
             y < chamber.height - 1;
+
+          const edgeLight = theme.accentColor;
+          const edgeDark = theme.wallShadow ?? theme.accentColor;
+          const stripT = 3;
 
           return (
             <div
@@ -74,9 +92,21 @@ export function Room() {
                 top: y * TILE_SIZE,
                 width: TILE_SIZE,
                 height: TILE_SIZE,
-                background: isWall ? theme.wallColor : theme.floorColor,
+                background: isWall ? '#0C0B0A' : theme.floorColor,
               }}
             >
+              {wallNorth && (
+                <div className="absolute" style={{ left: 0, top: 0, width: TILE_SIZE, height: stripT, background: edgeLight }} />
+              )}
+              {wallWest && (
+                <div className="absolute" style={{ left: 0, top: 0, width: stripT, height: TILE_SIZE, background: edgeLight }} />
+              )}
+              {wallSouth && (
+                <div className="absolute" style={{ left: 0, top: TILE_SIZE - stripT, width: TILE_SIZE, height: stripT, background: edgeDark }} />
+              )}
+              {wallEast && (
+                <div className="absolute" style={{ left: TILE_SIZE - stripT, top: 0, width: stripT, height: TILE_SIZE, background: edgeDark }} />
+              )}
               {isFloorDot && (
                 <div
                   className="absolute"
@@ -95,25 +125,37 @@ export function Room() {
         }),
       )}
 
-      {/* Decorations (non-interactive flavor sprites) */}
-      {chamber.decorations.map((dec, i) => (
-        <div
-          key={`dec-${i}`}
-          className="absolute pointer-events-none"
-          style={{
-            left: dec.x * TILE_SIZE,
-            top: dec.y * TILE_SIZE,
-            width: TILE_SIZE,
-            height: TILE_SIZE,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: 0.7,
-          }}
-        >
-          <PixelSprite frame={dec.sprite} scale={2} primaryColor={dec.tint} />
-        </div>
-      ))}
+      {/* Decorations (non-interactive flavor sprites). Props use their own
+          palette + frame table; other sprites fall back to the global FRAMES. */}
+      {chamber.decorations.map((dec, i) => {
+        const isProp = Boolean(PROP_FRAMES[dec.sprite]);
+        return (
+          <div
+            key={`dec-${i}`}
+            className="absolute pointer-events-none"
+            style={{
+              left: dec.x * TILE_SIZE,
+              top: dec.y * TILE_SIZE,
+              width: TILE_SIZE,
+              height: TILE_SIZE,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: 0.85,
+            }}
+          >
+            {isProp ? (
+              <PropSprite name={dec.sprite} scale={TILE_SIZE / Math.max(PROP_FRAMES[dec.sprite][0]?.length || 12, PROP_FRAMES[dec.sprite].length || 12)} />
+            ) : (
+              <PixelSprite
+                frame={dec.sprite}
+                scale={2}
+                primaryColor={dec.tint}
+              />
+            )}
+          </div>
+        );
+      })}
 
       {/* Doors */}
       {chamber.doors.map(door => {
@@ -144,7 +186,7 @@ export function Room() {
         return (
           <div
             key={item.id}
-            className={glowing ? 'cc-active-objective' : undefined}
+            className={glowing ? 'cc-active-objective' : 'cc-guide-glow'}
             style={{
               ['--glow-color' as string]: theme.accentColor,
             } as React.CSSProperties}
@@ -155,7 +197,7 @@ export function Room() {
               type={item.type}
               sprite={item.sprite}
               tileSize={TILE_SIZE}
-              tint={item.type === 'lore' ? theme.accentColor : undefined}
+              tint={item.type === 'lore' || item.type === 'practice' ? theme.accentColor : undefined}
             />
           </div>
         );
@@ -165,7 +207,7 @@ export function Room() {
       {chamber.npcs.map(npc => (
         <div
           key={npc.id}
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none cc-guide-glow"
           style={{
             left: npc.x * TILE_SIZE,
             top: npc.y * TILE_SIZE,
@@ -174,7 +216,8 @@ export function Room() {
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
-          }}
+            ['--glow-color' as string]: npc.color,
+          } as React.CSSProperties}
         >
           <PixelSprite frame={npc.sprite ?? 'idle_a'} scale={2.4} primaryColor={npc.color} />
         </div>

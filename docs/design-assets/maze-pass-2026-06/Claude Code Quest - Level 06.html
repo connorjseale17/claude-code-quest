@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code Quest — Level 06: THE THRONE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{ --accent:#D43A2A; --gold:#FFD23F; --void:#1A1A1A; --bg:#0E0E0E; --text:#E8E8E8; --muted:#7D7D7D; --green:#3FB950; --line:#2A2A2A; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:#0a0807; }
+  body{ font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; color:var(--text); -webkit-font-smoothing:antialiased; min-height:100vh; }
+  ::selection{ background:var(--accent); color:#000; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:30px 24px 70px; }
+  header{ border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:20px; }
+  .cmd{ color:var(--muted); font-size:12.5px; } .cmd .tok{ color:var(--accent); }
+  .titlerow{ display:flex; align-items:baseline; gap:14px; margin-top:10px; flex-wrap:wrap; }
+  h1{ font-size:30px; font-weight:700; margin:0; letter-spacing:0.04em; }
+  h1 .caret{ color:var(--accent); }
+  .lv{ color:#000; background:var(--accent); font-size:12px; letter-spacing:0.18em; padding:4px 10px; font-weight:700; }
+  .fin{ color:var(--gold); font-size:11px; letter-spacing:0.3em; border:1px solid color-mix(in oklab,var(--gold) 40%,var(--line)); padding:4px 9px; }
+  .sub{ color:var(--muted); font-size:12.5px; margin-top:10px; line-height:1.7; max-width:840px; }
+  .sub b{ color:var(--text); font-weight:500; } .sub .hot{ color:var(--accent); }
+  .toolbar{ display:flex; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  .btn{ font-family:inherit; font-size:11.5px; letter-spacing:0.04em; color:var(--text); background:var(--void); border:1px solid var(--line); padding:7px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .btn:hover, .btn.on{ border-color:var(--accent); color:var(--accent); }
+  .btn .dot{ width:7px; height:7px; background:var(--accent); display:inline-block; } .btn.paused .dot{ background:var(--muted); }
+  .crt{ position:relative; margin-top:18px; border:1px solid color-mix(in oklab,var(--accent) 30%,var(--line)); background:#070504; padding:14px; overflow:hidden; box-shadow:inset 0 0 90px rgba(180,40,20,0.18); }
+  .crt::after{ content:""; position:absolute; inset:0; background-image:repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,0.24) 2px 3px); pointer-events:none; z-index:5; }
+  .stage{ position:relative; width:100%; overflow:auto; }
+  svg.map{ display:block; image-rendering:pixelated; width:100%; height:auto; }
+  .glab{ position:absolute; z-index:7; font-size:10px; letter-spacing:0.24em; color:var(--muted); text-transform:uppercase; transform:translateX(-50%); }
+  .cols{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
+  @media(max-width:760px){ .cols{ grid-template-columns:1fr; } }
+  .panel{ border:1px solid var(--line); background:var(--void); padding:14px 16px; }
+  .panel h3{ margin:0 0 10px; font-size:12px; letter-spacing:0.1em; color:var(--accent); font-weight:700; }
+  .panel h3.late{ margin-top:18px; }
+  .row{ display:flex; gap:9px; font-size:11.5px; line-height:1.5; padding:6px 0; border-top:1px solid #1f1f1f; }
+  .row:first-of-type{ border-top:none; }
+  .row .ic{ flex:0 0 18px; height:18px; margin-top:1px; }
+  .row .k{ color:var(--text); } .row .d{ color:var(--muted); }
+  .cham{ font-size:11.5px; line-height:1.7; color:var(--muted); margin:0 0 10px; } .cham b{ color:var(--text); }
+  .legend{ display:flex; flex-wrap:wrap; gap:10px 16px; }
+  .leg{ display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); } .leg .sw{ width:14px; height:14px; }
+  footer{ color:var(--muted); font-size:11px; line-height:1.7; border-top:1px solid var(--line); padding-top:16px; margin-top:24px; } footer .tok{ color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="cmd">$ <span class="tok">./play</span> --level 06 --finale</div>
+    <div class="titlerow"><h1><span class="caret">&gt;</span> THE THRONE</h1><span class="lv">LEVEL 06</span><span class="fin">★ FINALE</span></div>
+    <p class="sub">The trophy room. <b>Not a maze — a stage.</b> One long ceremonial aisle runs east between two colonnades of
+      pillars and a gauntlet of braziers to the dais, where <span class="hot">THE OVERLORD</span> — the dragon — waits on its throne above a
+      crimson summoning circle. No NPCs, no lore. Every other room teaches; <b>this one judges.</b> Fall here and you respawn at the door.</p>
+    <div class="toolbar">
+      <button class="btn on" id="playBtn"><span class="dot"></span><span id="playLbl">FIRES LIT</span></button>
+      <button class="btn on" id="pathBtn">THE APPROACH</button>
+      <button class="btn on" id="labelBtn">LABELS</button>
+    </div>
+  </header>
+  <div class="crt"><div class="stage" id="stage"></div></div>
+  <div class="cols">
+    <div class="panel"><h3>THE STAGE</h3><div id="castList"></div></div>
+    <div class="panel"><h3>WHY IT&rsquo;S THE FINALE</h3>
+      <p class="cham"><b>One chamber, no branches.</b> The room funnels you down a single sacred corridor — colonnades narrow the
+        path, braziers light the march, and the dragon grows in your view with every step. The walk itself is the ceremony.</p>
+      <p class="cham"><b>A battlefield&rsquo;s afterimage.</b> Cracked bricks, rubble and the bones of failed heroes litter the floor; chains
+        hang from the rafters; crimson runes pulse behind the throne. <i>Ozymandias meets a server room.</i></p>
+      <p class="cham"><b>The end gate.</b> Beyond the throne, a gold-framed <b>END door</b> stays sealed until the Overlord falls and
+        drops the final key — the only locked door in the game that opens onto the credits.</p>
+      <h3 class="late">LEGEND</h3><div class="legend" id="legend"></div>
+    </div>
+  </div>
+  <footer><span class="tok">#</span> Single <b>fillRect</b> hall, ~28×16. Props are ceremonial decoration (placed); the dragon uses the bestiary&rsquo;s
+    largest sprite. The approach is a straight sacred aisle, not a puzzle — the difficulty is the gauntlet and the boss, wired later.</footer>
+</div>
+
+<script>
+const ACCENT="#D43A2A", GOLD="#FFD23F";
+const PAL={ ".":null,"o":"#E8633D","O":"#B84A28","r":"#D43A2A","R":"#8A241A","k":"#15181A","g":"#6A6A6A","G":"#454545","s":"#9AA4AD","S":"#566069","w":"#94602E","W":"#5E3C1C","b":"#E6E2CF","B":"#ADA589","f":"#FFD23F","F":"#F2842E","h":"#FFE9A8","m":"#3FB950","M":"#247A38","c":"#6FD7C2","i":"#E8E8E8","x":"#6E6E6E" };
+const SPR={
+  dragon:{ colors:{"1":"#E8633D","2":"#B84A28","3":"#16191B","4":"#FFE9A8","5":"#FFD23F","6":"#F39233","7":"#8A3A1E","8":"#E0A36B"}, s:[[
+    "...77..................77...","...77..................77...","...877................778...","....877..............778....",".....877............778.....","......877..........778......",".......7111111111117........","......1111111111111111......",".....111111111111111111.....",".....111555111111555111.....",".....111535111111535111.....",".....111555111111555111.....",".....111111111111111111.....","......1111111111111111......","......1113111111113111......",".......11111111111111.......",".......11111111111111.......",".......14433333333441.......",".......13333333333331.......",".......14333333333341.......","........133333333331........",".........1111111111.........","..........11111111.........."]] },
+  brazier:{ colors:PAL, anim:1, s:[["....ff......","...fhhf.....","..ffFFf.....","...fFFf.....","....FF......",".oooooooo...",".SsssssssS..","..SssssS....","...S..S.....","..S....S....",".S......S...","S........S.."],
+    ["...ff.f.....","..fhhhf.....",".ffFFff.....","..fFFFf.....","...fFf......",".oooooooo...",".SsssssssS..","..SssssS....","...S..S.....","..S....S....",".S......S...","S........S.."]] },
+  scircle:{ colors:{"o":"#D43A2A","O":"#8A241A","f":"#FFD23F","F":"#F2842E"}, anim:1, s:[["...oooooo...","..o......o..",".o..oooo..o.","o..o....o..o","o.o..oo..o.o","o.o..oo..o.o","o..o....o..o",".o..oooo..o.","..o......o..","...oooooo..."],
+    ["...ffffff...","..f......f..",".f..ffoo..f.","f..o.FF.o..f","f.o.foof.o.f","f.o.foof.o.f","f..o.FF.o..f",".f..ffoo..f.","..f......f..","...ffffff..."]] },
+  runes:{ colors:{"o":"#D43A2A","O":"#8A241A","c":"#FFD23F"}, anim:1, s:[["............",".o..o..o..o.","o.OoO.OoO...",".OoO..OoO...","o.o.o.o.o...","............"],
+    [".c..c..c..c.","o.coc.coc...",".coc..coc...","c.c.c.c.c...","..o..o..o...","............"]] },
+  chains:{ colors:PAL, s:[["x...x...","X...X...","x...x...","X...X...","x.x.x.x.",".xX...Xx.","x.x...x.x","X.......X","xx.....xx",".x.....x."]] },
+  bones:{ colors:PAL, s:[[".bbbb...........","bbbbbb..bb....bb","bkbbkb...bb..bb.","bbbbbb....bbbb..",".bkkb.....bbbb..",".b..b....bb..bb.","........bb....bb","................"]] },
+  rubble:{ colors:PAL, s:[["................","....gg....g.....","..gGGGg..gGg....",".gGGGGGggGGGg...","gGGkGGGGGGGGGg..",".gGGGGGkGGGGg.g.","..gGGGgggGgg.gGg",".g.ggg...g..gGGg"]] },
+  chest:{ colors:PAL, s:[["..wwwwwwwwww..",".wWWWWWWWWWWw.",".wWWWWWWWWWWw.","wsssssssssssw","wWWWWssWWWWWw","wWWWWssWWWWWw","wWWWWWWWWWWWw","wsssssssssssw",".wwwwwwwwww..","............."]] },
+  altar:{ colors:PAL, anim:1, s:[[".SSSSSSSSSSSS.","SssssssssssssS","Ssr kkkkkk rsS","Sr rkkkkkr rS ","SkkkkkkkkkksS","SssssssssssssS",".SSSSSSSSSSSS.","....SSSS......","..SSSSSSSS....",".RRRRRRRRRR..."],
+    [".SSSSSSSSSSSS.","SssssssssssssS","Ssrrkkkkkkrrs S","Srrrkkkkrrr rS","SkkkkkkkkkksS","SssssssssssssS",".SSSSSSSSSSSS.","....SSSS......","..SSSSSSSS....",".RRRRRRRRRR..."]] },
+  weaprack:{ colors:PAL, s:[["s.s.s.s.","s.s.s.s.","s.x.s.s.","i.x.i.i.","i.x.i.i.","i.x.i.i.","wwwwwwww","WWWWWWWW",".W....W.","WW....WW"]] },
+};
+
+// ---- the throne hall (single bespoke chamber) ----
+const W=28, H=16, TILE=24;
+function build(){
+  const g=[]; for(let y=0;y<H;y++) g.push(new Array(W).fill("#"));
+  for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++) g[y][x]=".";       // open hall
+  [5,9,13,17].forEach(x=>{ g[3][x]="#"; g[4][x]="#"; g[11][x]="#"; g[12][x]="#"; });  // colonnades
+  // throne dais: a raised back niche (wall frame around the dragon)
+  for(let y=2;y<=13;y++) g[y][22]="#";        // dais front wall
+  for(let y=3;y<=12;y++) g[y][22]=".";        // ...with a wide ceremonial opening
+  g[8][0]="."; g[8][27]=".";                  // entry (W) + end gate (E)
+  return g;
+}
+const GRID=build();
+const ENTRY=[1,8], ENDDOOR=[27,8];
+
+// ceremonial props (placed) + the dragon
+const ENTS=[
+  {spr:"chains",x:8,y:1,fit:[1,1]}, {spr:"chains",x:14,y:1,fit:[1,1]},
+  {spr:"rubble",x:3,y:13,fit:[2,1]}, {spr:"rubble",x:15,y:2,fit:[2,1]},
+  {spr:"bones",x:6,y:13,fit:[2,1]}, {spr:"bones",x:13,y:13,fit:[2,1]},
+  {spr:"chest",x:2,y:2,fit:[2,1]}, {spr:"weaprack",x:2,y:11,fit:[1,2]},
+  {spr:"brazier",x:4,y:5,fit:[2,2],anim:1}, {spr:"brazier",x:4,y:9,fit:[2,2],anim:1},
+  {spr:"brazier",x:9,y:5,fit:[2,2],anim:1}, {spr:"brazier",x:9,y:9,fit:[2,2],anim:1},
+  {spr:"brazier",x:14,y:5,fit:[2,2],anim:1}, {spr:"brazier",x:14,y:9,fit:[2,2],anim:1},
+  {spr:"runes",x:23,y:1,fit:[2,1],anim:1}, {spr:"runes",x:23,y:13,fit:[2,1],anim:1},
+  {spr:"altar",x:18,y:9,fit:[2,2],anim:1,kind:"altar",id:"overlord-altar",desc:"The altar at the throne's foot — interact to begin the OVERLORD's judgement."},
+  {spr:"dragon",x:21,y:5,fit:[5,5],anim:1,kind:"boss",id:"THE OVERLORD",desc:"The dragon — largest sprite in the bestiary. Pulls a question from every prior level, then synthesis."},
+];
+const PATH=[[1,8],[19,8]]; // the straight sacred approach
+
+const stage=document.getElementById("stage");
+let frame=0, playing=true, showPath=true, showLabels=true, timer=null;
+function colorsFor(spr){ const c=SPR[spr].colors; return c||PAL; }
+function spriteRects(grid, cols, ox, oy, sc){ let r=""; for(let y=0;y<grid.length;y++){ const row=grid[y]; for(let x=0;x<row.length;x++){ const f=cols[row[x]]; if(!f) continue; r+=`<rect x="${(ox+x*sc).toFixed(2)}" y="${(oy+y*sc).toFixed(2)}" width="${sc.toFixed(2)}" height="${sc.toFixed(2)}" fill="${f}"/>`; } } return r; }
+function placeSprite(def){ const sp=SPR[def.spr], fr=sp.s[(def.anim&&playing)?frame%sp.s.length:0]; const gw=fr[0].length,gh=fr.length,[fw,fh]=def.fit; const bw=fw*TILE,bh=fh*TILE,sc=Math.min(bw/gw,bh/gh)*0.78; return spriteRects(fr,colorsFor(def.spr), def.x*TILE+(bw-gw*sc)/2, def.y*TILE+(bh-gh*sc)/2, sc); }
+
+function render(){
+  let svg=`<svg class="map" viewBox="0 0 ${W*TILE} ${H*TILE}" width="${W*TILE}">`;
+  svg+=`<defs><radialGradient id="thr" cx="78%" cy="50%" r="70%"><stop offset="0%" stop-color="#3a1410"/><stop offset="100%" stop-color="#0c0807"/></radialGradient></defs>`;
+  svg+=`<rect x="0" y="0" width="${W*TILE}" height="${H*TILE}" fill="url(#thr)"/>`;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(GRID[y][x]!==".") continue; const px=x*TILE,py=y*TILE;
+    const aisle = (y>=7&&y<=9);
+    svg+=`<rect x="${px}" y="${py}" width="${TILE}" height="${TILE}" fill="${aisle?'#36211d':'#2a1c19'}"/>`;
+    if((x+y)%2===0) svg+=`<rect x="${px+TILE/2-1}" y="${py+TILE/2-1}" width="2" height="2" fill="${ACCENT}" opacity="${aisle?0.5:0.28}"/>`; }
+  const isWall=(x,y)=> x<0||y<0||x>=W||y>=H || GRID[y][x]!==".";
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(GRID[y][x]!==".") continue; const px=x*TILE,py=y*TILE,t=2;
+    if(isWall(x,y-1)) svg+=`<rect x="${px}" y="${py}" width="${TILE}" height="${t}" fill="${ACCENT}"/>`;
+    if(isWall(x,y+1)) svg+=`<rect x="${px}" y="${py+TILE-t}" width="${TILE}" height="${t}" fill="#8A241A"/>`;
+    if(isWall(x-1,y)) svg+=`<rect x="${px}" y="${py}" width="${t}" height="${TILE}" fill="${ACCENT}"/>`;
+    if(isWall(x+1,y)) svg+=`<rect x="${px+TILE-t}" y="${py}" width="${t}" height="${TILE}" fill="#8A241A"/>`; }
+  // entry door + END gate (gold)
+  const dr=(x,y,c,fill)=>{ svg+=`<rect x="${x*TILE+2}" y="${y*TILE+2}" width="${TILE-4}" height="${TILE-4}" fill="${fill}" stroke="${c}" stroke-width="2"/>`; };
+  dr(ENTRY[0]-1,ENTRY[1],ACCENT,"#231311");
+  svg+=`<rect x="${ENDDOOR[0]*TILE+1}" y="${(ENDDOOR[1]-1)*TILE+2}" width="${TILE-2}" height="${TILE*3-4}" fill="#1a1408" stroke="${GOLD}" stroke-width="2"/>`;
+  svg+=`<text x="${ENDDOOR[0]*TILE+TILE/2}" y="${ENDDOOR[1]*TILE+TILE/2+3}" fill="${GOLD}" font-size="8" font-family="monospace" text-anchor="middle">END</text>`;
+  // boss aura
+  ENTS.filter(e=>e.kind==="boss").forEach(e=>{ svg+=`<circle cx="${(e.x+e.fit[0]/2)*TILE}" cy="${(e.y+e.fit[1]/2)*TILE}" r="${TILE*2.3}" fill="${ACCENT}" opacity="0.10"/>`; });
+  ENTS.filter(e=>e.kind!=="decal").forEach(e=> svg+=placeSprite(e));
+  if(showPath){ const pts=PATH.map(([x,y])=>`${x*TILE+TILE/2},${y*TILE+TILE/2}`).join(" ");
+    svg+=`<polyline points="${pts}" fill="none" stroke="${GOLD}" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round" opacity="0.9"/>`;
+    svg+=`<circle cx="${ENTRY[0]*TILE+TILE/2}" cy="${ENTRY[1]*TILE+TILE/2}" r="4" fill="${GOLD}"/>`; }
+  svg+=`</svg>`; stage.innerHTML=svg;
+  document.querySelectorAll(".glab").forEach(n=>n.remove());
+  if(showLabels){ const sc=stage.querySelector("svg").clientWidth/(W*TILE);
+    const mk=(t,x,y)=>{ const el=document.createElement("div"); el.className="glab"; el.textContent=t; el.style.left=(x*TILE*sc)+"px"; el.style.top=(y*TILE*sc)+"px"; stage.appendChild(el); };
+    mk("THE APPROACH",9,0.2); mk("THE THRONE",24,0.2); }
+}
+function renderPanels(){
+  const ic=(spr)=>{ const g=SPR[spr].s[0],w=g[0].length,h=g.length; return `<svg class="ic" viewBox="0 0 ${w} ${h}">`+spriteRects(g,colorsFor(spr),0,0,1)+`</svg>`; };
+  const rows=[
+    ["dragon","THE OVERLORD","BOSS (21,5)","Dragon — the bestiary's largest sprite, on the throne. One question from every prior level + synthesis."],
+    ["altar","overlord-altar","ALTAR (18,9)","At the throne's foot — interact to begin judgement."],
+    ["brazier","brazier gauntlet","×6 LIGHTS","Three pairs flank the aisle, flickering the march toward the dais."],
+  ];
+  document.getElementById("castList").innerHTML=rows.map(([s,k,m,d])=>`<div class="row">${ic(s)}<div><span class="k">${k}</span> <span class="d">· ${m}</span><br><span class="d">${d}</span></div></div>`).join("");
+  const LEG=[["#36211d","sacred aisle"],["#2a1c19","hall floor"],[ACCENT,"crimson edge"],[GOLD,"the approach / END gate"],["#2a1c19","colonnade"]];
+  document.getElementById("legend").innerHTML=LEG.map(([c,l])=>`<span class="leg"><span class="sw" style="background:${c}"></span>${l}</span>`).join("");
+}
+render(); renderPanels(); window.addEventListener("resize",()=>render());
+function start(){ timer=setInterval(()=>{frame++;render();},460); } start();
+const playBtn=document.getElementById("playBtn"), playLbl=document.getElementById("playLbl");
+playBtn.addEventListener("click",()=>{ playing=!playing; if(playing){ playBtn.classList.add("on"); playBtn.classList.remove("paused"); playLbl.textContent="FIRES LIT"; start(); } else { playBtn.classList.remove("on"); playBtn.classList.add("paused"); playLbl.textContent="FIRES OUT"; clearInterval(timer); timer=null; render(); } });
+const tgl=(id,fn)=>{ const b=document.getElementById(id); b.addEventListener("click",()=>{ b.classList.toggle("on",fn()); render(); }); };
+tgl("pathBtn",()=>{ showPath=!showPath; return showPath; }); tgl("labelBtn",()=>{ showLabels=!showLabels; return showLabels; });
+</script>
+</body>
+</html>

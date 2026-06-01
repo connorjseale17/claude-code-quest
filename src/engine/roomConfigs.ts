@@ -1,3 +1,5 @@
+import { LAYOUT_OVERRIDES } from './layoutOverrides';
+
 // ============================================================================
 // Level / Chamber data model
 //
@@ -12,7 +14,8 @@ export type LevelId =
   | 'claudemd'
   | 'slash'
   | 'mcp'
-  | 'subagents';
+  | 'subagents'
+  | 'final-boss';
 
 export type ChamberId = string;
 
@@ -71,12 +74,10 @@ export type DecorationConfig = {
 
 export type ItemConfig = {
   id: string;
-  type: 'challenge' | 'lore';
+  type: 'challenge' | 'lore' | 'practice';
   x: number;
   y: number;
   sprite: string;
-  /** For lore items: the text shown when interacted with */
-  loreText?: string;
 };
 
 export type KeySpawnConfig = {
@@ -114,6 +115,22 @@ export type LevelConfig = {
   startingChamber: ChamberId;
   /** The chamber that contains the boss challenge + key spawn */
   challengeChamber: ChamberId;
+};
+
+/** The editable subset of a ChamberConfig that Layout Mode serializes and that
+ *  layout overrides replace. `id` / `level` / `name` stay stable from the
+ *  builder and are intentionally excluded. */
+export type SerializedChamber = {
+  width: number;
+  height: number;
+  tiles: number[][];
+  items: ItemConfig[];
+  doors: DoorConfig[];
+  npcs: NPCConfig[];
+  decorations: DecorationConfig[];
+  spawnX: number;
+  spawnY: number;
+  keySpawn?: KeySpawnConfig;
 };
 
 // ============================================================================
@@ -161,35 +178,43 @@ const THEME_ORANGE: Theme = {
 };
 
 const THEME_PURPLE: Theme = {
-  wallColor: '#D94DFF',
-  wallShadow: '#7A2A99',
-  floorColor: '#2A1A33',
-  floorDot: '#FFE066',
-  accentColor: '#FFE066',
+  wallColor: '#0C0B0A',
+  wallShadow: '#5E37A6',
+  floorColor: '#2E2A36',
+  floorDot: '#A972F0',
+  accentColor: '#A972F0',
 };
 
 const THEME_GREEN: Theme = {
-  wallColor: '#3FB950',
+  wallColor: '#0C0B0A',
   wallShadow: '#1F7028',
-  floorColor: '#152A1A',
-  floorDot: '#E8E8E8',
-  accentColor: '#E8E8E8',
+  floorColor: '#22302A',
+  floorDot: '#3FB950',
+  accentColor: '#3FB950',
 };
 
 const THEME_TEAL: Theme = {
-  wallColor: '#00D4AA',
-  wallShadow: '#007A5F',
-  floorColor: '#0F2A28',
-  floorDot: '#F0C040',
-  accentColor: '#F0C040',
+  wallColor: '#0C0B0A',
+  wallShadow: '#3D8E80',
+  floorColor: '#1D2C2D',
+  floorDot: '#6FD7C2',
+  accentColor: '#6FD7C2',
 };
 
 const THEME_PINK: Theme = {
-  wallColor: '#FF6B8A',
+  wallColor: '#0C0B0A',
   wallShadow: '#A03050',
-  floorColor: '#2A1218',
-  floorDot: '#00D4AA',
-  accentColor: '#00D4AA',
+  floorColor: '#2F2A2E',
+  floorDot: '#FF6FA5',
+  accentColor: '#FF6FA5',
+};
+
+const THEME_CRIMSON: Theme = {
+  wallColor: '#0C0B0A',
+  wallShadow: '#8A241A',
+  floorColor: '#2A1C19',
+  floorDot: '#D43A2A',
+  accentColor: '#D43A2A',
 };
 
 // ============================================================================
@@ -197,11 +222,27 @@ const THEME_PINK: Theme = {
 // ============================================================================
 
 function buildWelcomeLevel(): LevelConfig {
-  // ----- Chamber A: Antechamber (20×12) -----
-  const aW = 20, aH = 12;
+  // ----- Chamber A: Antechamber (19×12) -----
+  // New maze: a spine wall at col 9 with a 1-tile pinch at row 6 splits the
+  // chamber in two. The player weaves up over the col-5 center pillar, through
+  // the pinch past guide-bot, then up over the col-14 center pillar to the
+  // east door. Items / lore / decorations are intentionally not placed here
+  // yet — they come in a later pass.
+  const aW = 19, aH = 12;
   const aTiles = blankTileMap(aW, aH);
   // East door opens (unlocked) to Sanctum
   aTiles[6][aW - 1] = 2;
+  // Crate clusters in the four corners
+  fillRect(aTiles, 3, 2, 4, 3, 1);
+  fillRect(aTiles, 3, 8, 4, 9, 1);
+  fillRect(aTiles, 13, 2, 14, 3, 1);
+  fillRect(aTiles, 13, 8, 14, 9, 1);
+  // Center pillars left + right of the spine
+  fillRect(aTiles, 5, 5, 5, 7, 1);
+  fillRect(aTiles, 14, 5, 14, 7, 1);
+  // Spine wall at col 9, gap at row 6 = the central pinch
+  fillRect(aTiles, 9, 1, 9, 5, 1);
+  fillRect(aTiles, 9, 7, 9, 10, 1);
 
   const antechamber: ChamberConfig = {
     id: 'welcome-antechamber',
@@ -212,24 +253,7 @@ function buildWelcomeLevel(): LevelConfig {
     tiles: aTiles,
     spawnX: 2,
     spawnY: 6,
-    items: [
-      {
-        id: 'manual',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'book',
-        loreText: '[PLACEHOLDER LORE] The manual reads: "If you\'re reading this, you\'ve already started. Good."',
-      },
-      {
-        id: 'sticky-note',
-        type: 'lore',
-        x: 14,
-        y: 4,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] A sticky note pinned to the wall: "Read first. Ask second. Edit third."',
-      },
-    ],
+    items: [],
     doors: [
       {
         id: 'to-sanctum',
@@ -244,32 +268,40 @@ function buildWelcomeLevel(): LevelConfig {
     npcs: [
       {
         id: 'guide-bot',
-        x: 10,
+        x: 11,
         y: 6,
         color: '#3FB950',
         name: 'Guide-bot',
         dialog: [
-          'Hey. New here?',
-          'This is the antechamber. Just orientation.',
-          'Through the east door is the sanctum. Glowing terminal in there has your first challenge.',
-          'Read the lore on the way. Some of it actually matters.',
+          "Hey, operator. Fresh session? Good. Let's set you up before you wreck something.",
+          'Four permission modes. PLAN — read-only, drafts an approach. ACCEPT-EDITS — writes for you, review by diff. AUTO — runs free, a classifier watches. ASK — confirms each step.',
+          "Shift+Tab cycles them. Default to PLAN when you're walking into unfamiliar code. ACCEPT-EDITS when you're iterating. AUTO for long boring loops you trust the direction on.",
+          "Building a one-pager for a client? Describe what you want in English. Review the plan. Approve. Vercel hosts it for free. Same as briefing a junior consultant — except this one types.",
         ],
       },
     ],
     decorations: [],
   };
 
-  // ----- Chamber B: Sanctum (18×12) -----
-  const bW = 18, bH = 12;
+  // ----- Chamber B: Sanctum (19×12) -----
+  // Boss hall: a single 1×3 approach blocker at col 5 forces the player to
+  // weave north before entering the chamber's open east half, where the
+  // EMBERLING altar waits at (9, 5). Four corner crate clusters frame the
+  // hall as a colonnade. Lore / decorations are not placed here yet — they
+  // come in a later pass alongside the bestiary boss-sprite swap.
+  const bW = 19, bH = 12;
   const bTiles = blankTileMap(bW, bH);
   // West door (unlocked, back to antechamber)
   bTiles[6][0] = 2;
   // East door (locked, to next level)
   bTiles[6][bW - 1] = 2;
-  // Interior wall columns forming an L-path
-  fillRect(bTiles, 7, 2, 7, 7, 1);   // vertical wall col 7 rows 2-7
-  fillRect(bTiles, 8, 7, 11, 7, 1);  // horizontal wall row 7 cols 8-11
-  fillRect(bTiles, 12, 3, 12, 6, 1); // vertical wall col 12 rows 3-6 — creates dead-end pocket
+  // Corner crate clusters
+  fillRect(bTiles, 3, 2, 4, 3, 1);
+  fillRect(bTiles, 3, 9, 4, 10, 1);
+  fillRect(bTiles, 12, 2, 13, 3, 1);
+  fillRect(bTiles, 12, 9, 13, 10, 1);
+  // Approach blocker pillar (1×3) on the entry side
+  fillRect(bTiles, 5, 5, 5, 7, 1);
 
   const sanctum: ChamberConfig = {
     id: 'welcome-sanctum',
@@ -281,15 +313,9 @@ function buildWelcomeLevel(): LevelConfig {
     spawnX: 1,
     spawnY: 6,
     items: [
-      { id: 'terminal', type: 'challenge', x: 14, y: 3, sprite: 'crt_monitor' },
-      {
-        id: 'side-note',
-        type: 'lore',
-        x: 14,
-        y: 9,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Pinned beneath the terminal: "When in doubt, just ask the bot. Out loud helps."',
-      },
+      // The EMBERLING boss visual — bestiary slime sprite, animated 2-frame
+      // bounce. Interacting opens the boss battle.
+      { id: 'terminal', type: 'challenge', x: 9, y: 5, sprite: 'slime_a' },
     ],
     doors: [
       {
@@ -337,12 +363,25 @@ function buildWelcomeLevel(): LevelConfig {
 // ============================================================================
 
 function buildClaudemdLevel(): LevelConfig {
-  // ----- Chamber A: Archives (22×12) -----
-  const aW = 22, aH = 12;
+  // ----- Chamber A: Archives (16×12) -----
+  // Reading room. West door enters from Welcome; east door exits to Stacks.
+  // Two 1×3 vertical pillars (cols 5 and 10) flank the spine; archivist-bot
+  // stands on the spine between them at (8, 6). Lore intentionally not
+  // placed yet — re-attaches in the items pass.
+  const aW = 16, aH = 12;
   const aTiles = blankTileMap(aW, aH);
-  // North door (open) to Stacks
-  aTiles[0][11] = 2;
-  // East door (closed corridor to nowhere — purely decorative break)
+  // West door (back to Welcome sanctum)
+  aTiles[6][0] = 2;
+  // East door (open) to Stacks
+  aTiles[6][aW - 1] = 2;
+  // Corner crate clusters
+  fillRect(aTiles, 2, 2, 3, 3, 1);
+  fillRect(aTiles, 2, 9, 3, 10, 1);
+  fillRect(aTiles, 12, 2, 13, 3, 1);
+  fillRect(aTiles, 12, 9, 13, 10, 1);
+  // Flanking vertical pillars on the spine
+  fillRect(aTiles, 5, 5, 5, 7, 1);
+  fillRect(aTiles, 10, 5, 10, 7, 1);
 
   const archives: ChamberConfig = {
     id: 'claudemd-archives',
@@ -351,70 +390,67 @@ function buildClaudemdLevel(): LevelConfig {
     width: aW,
     height: aH,
     tiles: aTiles,
-    spawnX: 2,
+    spawnX: 1,
     spawnY: 6,
-    items: [
-      {
-        id: 'old-note',
-        type: 'lore',
-        x: 5,
-        y: 3,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Scrawled on the note: "I once shipped without a CLAUDE.md. Never again."',
-      },
-      {
-        id: 'log',
-        type: 'lore',
-        x: 17,
-        y: 4,
-        sprite: 'scroll',
-        loreText: '[PLACEHOLDER LORE] Audit log: "Project context lives in CLAUDE.md. Treat it like a treaty."',
-      },
-    ],
+    items: [],
     doors: [
       {
+        id: 'back-to-welcome',
+        x: 0,
+        y: 6,
+        target: { kind: 'chamber', chamber: 'welcome-sanctum' },
+        spawnX: 17,
+        spawnY: 6,
+        locked: false,
+      },
+      {
         id: 'to-stacks',
-        x: 11,
-        y: 0,
+        x: aW - 1,
+        y: 6,
         target: { kind: 'chamber', chamber: 'claudemd-stacks' },
-        spawnX: 9,
-        spawnY: 12,
+        spawnX: 1,
+        spawnY: 6,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'archivist-bot',
-        x: 11,
-        y: 8,
+        x: 8,
+        y: 6,
         sprite: 'owl',
         color: '#D94DFF',
         name: 'Archivist Owl',
         dialog: [
-          'Hoo. The Archives. Everything we know lives here.',
-          'A CLAUDE.md is a contract. You tell Claude how to behave in your repo; it reads it before every task.',
-          'Through the north door — the Stacks. Mind the maze.',
-          'The Vault holds today\'s challenge. Bring the key when you find it.',
+          'Hoo. The Archives. Every engagement lives or dies by the contract in here.',
+          'CLAUDE.md is the contract. Build commands. Test commands. Naming. Repository etiquette. The non-obvious things a new consultant on the project would need on day one.',
+          "Keep it tight. Bloated CLAUDE.md gets ignored — important rules get lost in the noise. Prune like it's your billable hours.",
+          '/compact when the window fills. /clear between unrelated tasks. /rewind if Claude wandered. Tools are sharp, operator. Use them.',
         ],
       },
     ],
     decorations: [],
   };
 
-  // ----- Chamber B: The Stacks (16×14) — maze -----
-  const sW = 16, sH = 14;
+  // ----- Chamber B: The Stacks (16×12) -----
+  // West entry from Archives, NORTH exit to Vault (the level turns the
+  // corner here). A single col-5 pillar on the spine + a horizontal wall
+  // row 3 cols 9-12 push the player up and around toward the north door.
+  const sW = 16, sH = 12;
   const sTiles = blankTileMap(sW, sH);
-  // South door back to archives
-  sTiles[sH - 1][7] = 2;
-  // East door to vault
-  sTiles[7][sW - 1] = 2;
-  // Bookshelf columns forming a maze
-  fillRect(sTiles, 3, 2, 3, 5, 1);   // shelf
-  fillRect(sTiles, 3, 8, 3, 11, 1);  // shelf
-  fillRect(sTiles, 6, 4, 6, 9, 1);   // shelf
-  fillRect(sTiles, 9, 2, 9, 5, 1);   // shelf
-  fillRect(sTiles, 9, 8, 9, 11, 1);  // shelf
-  fillRect(sTiles, 12, 4, 12, 9, 1); // shelf
+  // West door (back to Archives)
+  sTiles[6][0] = 2;
+  // North door (to Vault)
+  sTiles[0][8] = 2;
+  // Corner crate clusters
+  fillRect(sTiles, 2, 2, 3, 3, 1);
+  fillRect(sTiles, 2, 9, 3, 10, 1);
+  fillRect(sTiles, 12, 2, 13, 3, 1);
+  fillRect(sTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar on the spine
+  fillRect(sTiles, 5, 5, 5, 7, 1);
+  // Horizontal wall row 3, cols 9-12 — forces the climb out north
+  fillRect(sTiles, 9, 3, 12, 3, 1);
 
   const stacks: ChamberConfig = {
     id: 'claudemd-stacks',
@@ -423,51 +459,26 @@ function buildClaudemdLevel(): LevelConfig {
     width: sW,
     height: sH,
     tiles: sTiles,
-    spawnX: 7,
-    spawnY: 12,
-    items: [
-      {
-        id: 'fragment-a',
-        type: 'lore',
-        x: 1,
-        y: 1,
-        sprite: 'book',
-        loreText: '[PLACEHOLDER LORE] Fragment: "Good CLAUDE.md describes intent, not implementation."',
-      },
-      {
-        id: 'fragment-b',
-        type: 'lore',
-        x: 14,
-        y: 1,
-        sprite: 'book',
-        loreText: '[PLACEHOLDER LORE] Fragment: "List the commands you actually use. Skip the ones you don\'t."',
-      },
-      {
-        id: 'fragment-c',
-        type: 'lore',
-        x: 1,
-        y: 12,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Fragment: "If your README is the front porch, CLAUDE.md is the kitchen."',
-      },
-    ],
+    spawnX: 1,
+    spawnY: 6,
+    items: [],
     doors: [
       {
         id: 'back',
-        x: 7,
-        y: sH - 1,
+        x: 0,
+        y: 6,
         target: { kind: 'chamber', chamber: 'claudemd-archives' },
-        spawnX: 11,
-        spawnY: 1,
+        spawnX: aW - 2,
+        spawnY: 6,
         locked: false,
       },
       {
         id: 'to-vault',
-        x: sW - 1,
-        y: 7,
+        x: 8,
+        y: 0,
         target: { kind: 'chamber', chamber: 'claudemd-vault' },
-        spawnX: 1,
-        spawnY: 6,
+        spawnX: 8,
+        spawnY: 10,
         locked: false,
       },
     ],
@@ -475,13 +486,25 @@ function buildClaudemdLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber C: Vault (16×11) -----
-  const vW = 16, vH = 11;
+  // ----- Chamber C: Vault (16×12) -----
+  // South entry from Stacks; east locked exit to Slash (preserved from
+  // existing wiring — slash-foyer expects a west entry).
+  // Two staggered horizontal wall rows (3-8, row 8) and (7-12, row 5)
+  // force a zigzag approach toward MORDRANG at (8, 3).
+  const vW = 16, vH = 12;
   const vTiles = blankTileMap(vW, vH);
-  // West door back to stacks
-  vTiles[6][0] = 2;
-  // East door to next level
+  // South door (back to Stacks)
+  vTiles[vH - 1][8] = 2;
+  // East door (locked) to next level
   vTiles[6][vW - 1] = 2;
+  // Corner crate clusters
+  fillRect(vTiles, 2, 2, 3, 3, 1);
+  fillRect(vTiles, 2, 9, 3, 10, 1);
+  fillRect(vTiles, 12, 2, 13, 3, 1);
+  fillRect(vTiles, 12, 9, 13, 10, 1);
+  // Staggered horizontal walls — zigzag approach
+  fillRect(vTiles, 3, 8, 8, 8, 1);
+  fillRect(vTiles, 7, 5, 12, 5, 1);
 
   const vault: ChamberConfig = {
     id: 'claudemd-vault',
@@ -490,19 +513,20 @@ function buildClaudemdLevel(): LevelConfig {
     width: vW,
     height: vH,
     tiles: vTiles,
-    spawnX: 1,
-    spawnY: 6,
+    spawnX: 8,
+    spawnY: 10,
     items: [
-      { id: 'scroll', type: 'challenge', x: 11, y: 4, sprite: 'scroll' },
+      // MORDRANG boss visual — bestiary warlock sprite, animated.
+      { id: 'scroll', type: 'challenge', x: 8, y: 3, sprite: 'warlock_a' },
     ],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 6,
+        x: 8,
+        y: vH - 1,
         target: { kind: 'chamber', chamber: 'claudemd-stacks' },
-        spawnX: sW - 2,
-        spawnY: 7,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
       {
@@ -542,10 +566,25 @@ function buildClaudemdLevel(): LevelConfig {
 // ============================================================================
 
 function buildSlashLevel(): LevelConfig {
-  // ----- Chamber A: Prompt Foyer (18×11) -----
-  const aW = 18, aH = 11;
+  // ----- Chamber A: Prompt Foyer (16×12) -----
+  // West entry from claudemd-vault. SOUTH exit to Registry — the level turns
+  // the corner the same way L02 did. Clerk Cat NPC on the spine, two interior
+  // blockers force a weave.
+  const aW = 16, aH = 12;
   const aTiles = blankTileMap(aW, aH);
-  aTiles[5][aW - 1] = 2; // east door to registry
+  // West entry door (from claudemd-vault)
+  aTiles[6][0] = 2;
+  // South exit door to Registry
+  aTiles[aH - 1][8] = 2;
+  // Corner crates
+  fillRect(aTiles, 2, 2, 3, 3, 1);
+  fillRect(aTiles, 2, 9, 3, 10, 1);
+  fillRect(aTiles, 12, 2, 13, 3, 1);
+  fillRect(aTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar on spine
+  fillRect(aTiles, 5, 5, 5, 7, 1);
+  // Horizontal wall row 7 cols 9-12 — pushes the player south
+  fillRect(aTiles, 9, 7, 12, 7, 1);
 
   const foyer: ChamberConfig = {
     id: 'slash-foyer',
@@ -554,68 +593,65 @@ function buildSlashLevel(): LevelConfig {
     width: aW,
     height: aH,
     tiles: aTiles,
-    spawnX: 2,
-    spawnY: 5,
-    items: [
-      {
-        id: 'command-sheet',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] A slash command is a custom prompt. Write once, summon many times.',
-      },
-      {
-        id: 'index',
-        type: 'lore',
-        x: 12,
-        y: 7,
-        sprite: 'scroll',
-        loreText: '[PLACEHOLDER LORE] Commands live in `.claude/commands/*.md`. Markdown is the spec.',
-      },
-    ],
+    spawnX: 1,
+    spawnY: 6,
+    items: [],
     doors: [
       {
+        id: 'back-to-claudemd',
+        x: 0,
+        y: 6,
+        target: { kind: 'chamber', chamber: 'claudemd-vault' },
+        spawnX: 14,
+        spawnY: 6,
+        locked: false,
+      },
+      {
         id: 'to-registry',
-        x: aW - 1,
-        y: 5,
+        x: 8,
+        y: aH - 1,
         target: { kind: 'chamber', chamber: 'slash-registry' },
-        spawnX: 1,
-        spawnY: 5,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'clerk-bot',
-        x: 9,
-        y: 5,
+        x: 6,
+        y: 6,
         sprite: 'cat',
         color: '#3FB950',
         name: 'Clerk Cat',
         dialog: [
-          'Mrrow. Slash command country. Welcome.',
-          'These let you bottle a prompt. You type `/review` and it expands into your full review brief.',
-          'Registry next door if you want to see them filed.',
-          'Execution chamber past that. Boss terminal lives there.',
+          'Mrrow. Welcome to the Registry. Three drawers: commands, skills, hooks.',
+          "Type a slash, get a recipe. /review-pr expands into your full review brief. No more 'remind me what we check for race conditions?'",
+          'Hooks fire automatically. Format on save. Lint before commit. Block writes to /client-data. Set once. Trust always.',
+          'Most useful for a firm? Bottle the deliverables. One skill per: /draft-proposal, /summarize-call, /qbr-deck. Your library of moves, executable on demand.',
         ],
       },
     ],
     decorations: [],
   };
 
-  // ----- Chamber B: The Registry (18×13) — filing cabinets -----
-  const rW = 18, rH = 13;
+  // ----- Chamber B: The Registry (16×12) -----
+  // North entry from Foyer; east exit to Execution. Filing-cabinet maze:
+  // horizontal wall row 4 cols 4-8 and vertical wall col 10 rows 5-8.
+  const rW = 16, rH = 12;
   const rTiles = blankTileMap(rW, rH);
-  rTiles[6][0] = 2;           // west back to foyer
-  rTiles[6][rW - 1] = 2;      // east to execution
-  // Filing-cabinet wall columns
-  fillRect(rTiles, 4, 2, 4, 4, 1);
-  fillRect(rTiles, 4, 8, 4, 10, 1);
-  fillRect(rTiles, 8, 2, 8, 4, 1);
-  fillRect(rTiles, 8, 8, 8, 10, 1);
-  fillRect(rTiles, 12, 2, 12, 4, 1);
-  fillRect(rTiles, 12, 8, 12, 10, 1);
+  // North door (back to Foyer)
+  rTiles[0][8] = 2;
+  // East door to Execution
+  rTiles[6][rW - 1] = 2;
+  // Corner crates
+  fillRect(rTiles, 2, 2, 3, 3, 1);
+  fillRect(rTiles, 2, 9, 3, 10, 1);
+  fillRect(rTiles, 12, 2, 13, 3, 1);
+  fillRect(rTiles, 12, 9, 13, 10, 1);
+  // Interior blockers
+  fillRect(rTiles, 4, 4, 8, 4, 1);
+  fillRect(rTiles, 10, 5, 10, 8, 1);
 
   const registry: ChamberConfig = {
     id: 'slash-registry',
@@ -624,42 +660,17 @@ function buildSlashLevel(): LevelConfig {
     width: rW,
     height: rH,
     tiles: rTiles,
-    spawnX: 1,
-    spawnY: 6,
-    items: [
-      {
-        id: 'card-a',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'database',
-        loreText: '[PLACEHOLDER LORE] Card #001: /review — runs a full code review pass on the staged diff.',
-      },
-      {
-        id: 'card-b',
-        type: 'lore',
-        x: 10,
-        y: 11,
-        sprite: 'database',
-        loreText: '[PLACEHOLDER LORE] Card #027: /commit — writes a conventional-commit message from the diff.',
-      },
-      {
-        id: 'card-c',
-        type: 'lore',
-        x: 14,
-        y: 3,
-        sprite: 'database',
-        loreText: '[PLACEHOLDER LORE] Card #054: /ship — runs checks, opens PR, and pings the reviewer.',
-      },
-    ],
+    spawnX: 8,
+    spawnY: 1,
+    items: [],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 6,
+        x: 8,
+        y: 0,
         target: { kind: 'chamber', chamber: 'slash-foyer' },
-        spawnX: aW - 2,
-        spawnY: 5,
+        spawnX: 8,
+        spawnY: aH - 2,
         locked: false,
       },
       {
@@ -668,7 +679,7 @@ function buildSlashLevel(): LevelConfig {
         y: 6,
         target: { kind: 'chamber', chamber: 'slash-execution' },
         spawnX: 1,
-        spawnY: 5,
+        spawnY: 6,
         locked: false,
       },
     ],
@@ -676,11 +687,22 @@ function buildSlashLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber C: Execution (16×11) -----
-  const eW = 16, eH = 11;
+  // ----- Chamber C: Execution (16×12) -----
+  // West entry from Registry; east locked exit to MCP Hub.
+  // Single vertical pillar at col 5 rows 5-7; goblin altar at (8, 6).
+  const eW = 16, eH = 12;
   const eTiles = blankTileMap(eW, eH);
-  eTiles[5][0] = 2;
-  eTiles[5][eW - 1] = 2;
+  // West door (back to Registry)
+  eTiles[6][0] = 2;
+  // East door (locked) to MCP
+  eTiles[6][eW - 1] = 2;
+  // Corner crates
+  fillRect(eTiles, 2, 2, 3, 3, 1);
+  fillRect(eTiles, 2, 9, 3, 10, 1);
+  fillRect(eTiles, 12, 2, 13, 3, 1);
+  fillRect(eTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar
+  fillRect(eTiles, 5, 5, 5, 7, 1);
 
   const execution: ChamberConfig = {
     id: 'slash-execution',
@@ -690,15 +712,16 @@ function buildSlashLevel(): LevelConfig {
     height: eH,
     tiles: eTiles,
     spawnX: 1,
-    spawnY: 5,
+    spawnY: 6,
     items: [
-      { id: 'terminal', type: 'challenge', x: 11, y: 4, sprite: 'crt_monitor' },
+      // GRIST boss — bestiary goblin sprite.
+      { id: 'terminal', type: 'challenge', x: 8, y: 6, sprite: 'goblin_a' },
     ],
     doors: [
       {
         id: 'back',
         x: 0,
-        y: 5,
+        y: 6,
         target: { kind: 'chamber', chamber: 'slash-registry' },
         spawnX: rW - 2,
         spawnY: 6,
@@ -707,17 +730,17 @@ function buildSlashLevel(): LevelConfig {
       {
         id: 'exit',
         x: eW - 1,
-        y: 5,
+        y: 6,
         target: { kind: 'level', level: 'mcp', chamber: 'mcp-hub' },
-        spawnX: 1,
-        spawnY: 6,
+        spawnX: 8,
+        spawnY: 1,
         locked: true,
         requiresLevelKey: true,
       },
     ],
     npcs: [],
     decorations: [],
-    keySpawn: { x: 8, y: 7 },
+    keySpawn: { x: 8, y: 9 },
   };
 
   return {
@@ -741,10 +764,24 @@ function buildSlashLevel(): LevelConfig {
 // ============================================================================
 
 function buildMcpLevel(): LevelConfig {
-  // ----- Chamber A: Hub (22×12) -----
-  const aW = 22, aH = 12;
+  // ----- Chamber A: Hub (16×12) -----
+  // NORTH entry from slash (the level drops in from above). South exit to
+  // Server Rack. Two horizontal walls (cols 4-8 row 5, cols 7-11 row 8)
+  // stagger the descent past the Connector Duck.
+  const aW = 16, aH = 12;
   const aTiles = blankTileMap(aW, aH);
-  aTiles[6][aW - 1] = 2;
+  // North entry door (from slash-execution)
+  aTiles[0][8] = 2;
+  // South exit door to Server Rack
+  aTiles[aH - 1][4] = 2;
+  // Corner crates
+  fillRect(aTiles, 2, 2, 3, 3, 1);
+  fillRect(aTiles, 2, 9, 3, 10, 1);
+  fillRect(aTiles, 12, 2, 13, 3, 1);
+  fillRect(aTiles, 12, 9, 13, 10, 1);
+  // Staggered horizontal walls
+  fillRect(aTiles, 4, 5, 8, 5, 1);
+  fillRect(aTiles, 7, 8, 11, 8, 1);
 
   const hub: ChamberConfig = {
     id: 'mcp-hub',
@@ -753,69 +790,66 @@ function buildMcpLevel(): LevelConfig {
     width: aW,
     height: aH,
     tiles: aTiles,
-    spawnX: 2,
-    spawnY: 6,
-    items: [
-      {
-        id: 'broadcast',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'database',
-        loreText: '[PLACEHOLDER LORE] Broadcast log: "An MCP server exposes tools, resources, and prompts over a standard protocol."',
-      },
-      {
-        id: 'connection-log',
-        type: 'lore',
-        x: 16,
-        y: 8,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Connection log: "stdio transport for local; HTTP for remote. Pick your shape."',
-      },
-    ],
+    spawnX: 8,
+    spawnY: 1,
+    items: [],
     doors: [
       {
+        id: 'back-to-slash',
+        x: 8,
+        y: 0,
+        target: { kind: 'chamber', chamber: 'slash-execution' },
+        spawnX: 14,
+        spawnY: 6,
+        locked: false,
+      },
+      {
         id: 'to-rack',
-        x: aW - 1,
-        y: 6,
+        x: 4,
+        y: aH - 1,
         target: { kind: 'chamber', chamber: 'mcp-rack' },
-        spawnX: 1,
-        spawnY: 7,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'connector-bot',
-        x: 11,
+        x: 8,
         y: 6,
         sprite: 'duck',
         color: '#00D4AA',
         name: 'Connector Duck',
         dialog: [
           'Quack. Welcome to the Hub. We trade in connections.',
-          'MCP — Model Context Protocol — is how Claude reaches anywhere outside its own walls.',
-          'Filesystem, GitHub, your custom API, your database. Any of them. All of them.',
-          'Yes, I\'m a debugging duck. Why do you ask?',
-          'Through the racks, into Integration. The terminal awaits.',
+          'MCP — Model Context Protocol — is how Claude reaches anything outside its own walls.',
+          'Slack. GitHub. Google Drive. Your CRM. Your warehouse. Any of them. All of them.',
+          "Add with `claude mcp add <name>`. Authorize once. Use forever. Yes — I'm a debugging duck. Why do you ask?",
+          "But — every server is a new attack surface. Default-deny. Audit the source. Don't ship the kingdom keys to a server you found in someone's gist.",
         ],
       },
     ],
     decorations: [],
   };
 
-  // ----- Chamber B: Server Rack (16×14) — maze -----
-  const rW = 16, rH = 14;
+  // ----- Chamber B: Server Rack (16×12) -----
+  // North entry from Hub; east exit to Integration. Vertical + horizontal
+  // wall stack carves a turn through the rack.
+  const rW = 16, rH = 12;
   const rTiles = blankTileMap(rW, rH);
-  rTiles[7][0] = 2;
-  rTiles[7][rW - 1] = 2;
-  // Rack columns
-  fillRect(rTiles, 3, 1, 3, 5, 1);
-  fillRect(rTiles, 3, 9, 3, 12, 1);
-  fillRect(rTiles, 6, 3, 6, 10, 1);
-  fillRect(rTiles, 9, 1, 9, 5, 1);
-  fillRect(rTiles, 9, 9, 9, 12, 1);
-  fillRect(rTiles, 12, 3, 12, 10, 1);
+  // North entry (back to Hub)
+  rTiles[0][8] = 2;
+  // East exit door to Integration (row 8 per design corridor location)
+  rTiles[8][rW - 1] = 2;
+  // Corner crates
+  fillRect(rTiles, 2, 2, 3, 3, 1);
+  fillRect(rTiles, 2, 9, 3, 10, 1);
+  fillRect(rTiles, 12, 2, 13, 3, 1);
+  fillRect(rTiles, 12, 9, 13, 10, 1);
+  // Interior racks: vertical col 6 rows 5-8 + horizontal row 9 cols 8-12
+  fillRect(rTiles, 6, 5, 6, 8, 1);
+  fillRect(rTiles, 8, 9, 12, 9, 1);
 
   const rack: ChamberConfig = {
     id: 'mcp-rack',
@@ -824,51 +858,26 @@ function buildMcpLevel(): LevelConfig {
     width: rW,
     height: rH,
     tiles: rTiles,
-    spawnX: 1,
-    spawnY: 7,
-    items: [
-      {
-        id: 'rack-a',
-        type: 'lore',
-        x: 1,
-        y: 1,
-        sprite: 'hint_token',
-        loreText: '[PLACEHOLDER LORE] Token A: "Tools are functions Claude can call. Each one returns structured data."',
-      },
-      {
-        id: 'rack-b',
-        type: 'lore',
-        x: 14,
-        y: 1,
-        sprite: 'hint_token',
-        loreText: '[PLACEHOLDER LORE] Token B: "Resources are read-only. Prompts are reusable templates."',
-      },
-      {
-        id: 'rack-c',
-        type: 'lore',
-        x: 14,
-        y: 12,
-        sprite: 'hint_token',
-        loreText: '[PLACEHOLDER LORE] Token C: "Auth via OAuth. Permissions per resource. Default-deny."',
-      },
-    ],
+    spawnX: 8,
+    spawnY: 1,
+    items: [],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 7,
+        x: 8,
+        y: 0,
         target: { kind: 'chamber', chamber: 'mcp-hub' },
-        spawnX: aW - 2,
-        spawnY: 6,
+        spawnX: 4,
+        spawnY: aH - 2,
         locked: false,
       },
       {
         id: 'to-integration',
         x: rW - 1,
-        y: 7,
+        y: 8,
         target: { kind: 'chamber', chamber: 'mcp-integration' },
         spawnX: 1,
-        spawnY: 5,
+        spawnY: 8,
         locked: false,
       },
     ],
@@ -876,11 +885,26 @@ function buildMcpLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber C: Integration (16×11) -----
-  const iW = 16, iH = 11;
+  // ----- Chamber C: Integration (16×12) -----
+  // West entry from Rack; east locked exit to Subagents (preserves cross-level
+  // wiring even though the design has a south exit — subagents-lobby still
+  // expects a west entry).
+  // Two vertical pillars (cols 5 and 9, rows 5-7) flank a central aisle where
+  // VORTHEX/ghost waits at (7, 6).
+  const iW = 16, iH = 12;
   const iTiles = blankTileMap(iW, iH);
-  iTiles[5][0] = 2;
-  iTiles[5][iW - 1] = 2;
+  // West entry door (from Rack)
+  iTiles[8][0] = 2;
+  // East locked door to Subagents
+  iTiles[6][iW - 1] = 2;
+  // Corner crates
+  fillRect(iTiles, 2, 2, 3, 3, 1);
+  fillRect(iTiles, 2, 9, 3, 10, 1);
+  fillRect(iTiles, 12, 2, 13, 3, 1);
+  fillRect(iTiles, 12, 9, 13, 10, 1);
+  // Twin vertical pillars
+  fillRect(iTiles, 5, 5, 5, 7, 1);
+  fillRect(iTiles, 9, 5, 9, 7, 1);
 
   const integration: ChamberConfig = {
     id: 'mcp-integration',
@@ -890,24 +914,25 @@ function buildMcpLevel(): LevelConfig {
     height: iH,
     tiles: iTiles,
     spawnX: 1,
-    spawnY: 5,
+    spawnY: 8,
     items: [
-      { id: 'terminal', type: 'challenge', x: 11, y: 4, sprite: 'crt_monitor' },
+      // VORTHEX boss — bestiary ghost sprite.
+      { id: 'terminal', type: 'challenge', x: 7, y: 6, sprite: 'ghost_a' },
     ],
     doors: [
       {
         id: 'back',
         x: 0,
-        y: 5,
+        y: 8,
         target: { kind: 'chamber', chamber: 'mcp-rack' },
         spawnX: rW - 2,
-        spawnY: 7,
+        spawnY: 8,
         locked: false,
       },
       {
         id: 'exit',
         x: iW - 1,
-        y: 5,
+        y: 6,
         target: { kind: 'level', level: 'subagents', chamber: 'subagents-lobby' },
         spawnX: 1,
         spawnY: 6,
@@ -917,7 +942,7 @@ function buildMcpLevel(): LevelConfig {
     ],
     npcs: [],
     decorations: [],
-    keySpawn: { x: 8, y: 7 },
+    keySpawn: { x: 7, y: 9 },
   };
 
   return {
@@ -941,10 +966,23 @@ function buildMcpLevel(): LevelConfig {
 // ============================================================================
 
 function buildSubagentsLevel(): LevelConfig {
-  // ----- Chamber A: Mission Lobby (20×12) -----
-  const aW = 20, aH = 12;
+  // ----- Chamber A: Mission Lobby (16×12) -----
+  // West entry from mcp-integration; NORTH exit to Agent Pool. Scout +
+  // Planner flank the entrance on the spine. A 4-wide horizontal blocker
+  // at row 8 cols 8-11 pushes the path back north toward the exit.
+  const aW = 16, aH = 12;
   const aTiles = blankTileMap(aW, aH);
-  aTiles[6][aW - 1] = 2;
+  // West entry door
+  aTiles[6][0] = 2;
+  // North exit door to Pool
+  aTiles[0][8] = 2;
+  // Corner crates
+  fillRect(aTiles, 2, 2, 3, 3, 1);
+  fillRect(aTiles, 2, 9, 3, 10, 1);
+  fillRect(aTiles, 12, 2, 13, 3, 1);
+  fillRect(aTiles, 12, 9, 13, 10, 1);
+  // Horizontal blocker
+  fillRect(aTiles, 8, 8, 11, 8, 1);
 
   const lobby: ChamberConfig = {
     id: 'subagents-lobby',
@@ -953,80 +991,73 @@ function buildSubagentsLevel(): LevelConfig {
     width: aW,
     height: aH,
     tiles: aTiles,
-    spawnX: 2,
+    spawnX: 1,
     spawnY: 6,
-    items: [
-      {
-        id: 'roster',
-        type: 'lore',
-        x: 6,
-        y: 3,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] Roster: "Spawn a subagent when you can hand off the whole task with a self-contained prompt."',
-      },
-      {
-        id: 'mission-brief',
-        type: 'lore',
-        x: 14,
-        y: 8,
-        sprite: 'scroll',
-        loreText: '[PLACEHOLDER LORE] Briefing: "Independent work in parallel. The orchestrator keeps the plot."',
-      },
-    ],
+    items: [],
     doors: [
       {
-        id: 'to-pool',
-        x: aW - 1,
+        id: 'back-to-mcp',
+        x: 0,
         y: 6,
-        target: { kind: 'chamber', chamber: 'subagents-pool' },
-        spawnX: 1,
+        target: { kind: 'chamber', chamber: 'mcp-integration' },
+        spawnX: 14,
         spawnY: 6,
+        locked: false,
+      },
+      {
+        id: 'to-pool',
+        x: 8,
+        y: 0,
+        target: { kind: 'chamber', chamber: 'subagents-pool' },
+        spawnX: 8,
+        spawnY: 10,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'scout-bot',
-        x: 8,
-        y: 5,
+        x: 5,
+        y: 6,
         color: '#3FB950',
         name: 'Scout-bot',
         dialog: [
-          'I run the explore lane. Big repos, fuzzy questions. Read-only.',
-          'When the parent agent doesn\'t know where something is — they spawn me.',
+          'I run the Explore lane. Read-only — I never touch anything.',
+          "Send me into a 500-file repo with 'find every place we touch client billing'. I come back with paths and line numbers.",
         ],
       },
       {
         id: 'planner-bot',
-        x: 10,
-        y: 7,
+        x: 11,
+        y: 6,
         color: '#6BA8DD',
         name: 'Planner-bot',
         dialog: [
-          'I plan. Architecture, file structure, the boring part.',
-          'Send me ahead with a goal and constraints. I come back with steps.',
-        ],
-      },
-      {
-        id: 'reviewer-bot',
-        x: 12,
-        y: 5,
-        color: '#F0C040',
-        name: 'Reviewer-bot',
-        dialog: [
-          'Code reviewer. Independent second-opinion energy.',
-          'Hand me a diff and I\'ll tell you what\'s shaky. No conversation context — fresh eyes.',
+          'I plan. Architecture, file structure, deliverable outlines. The boring-but-load-bearing part.',
+          'Hand me a goal and the constraints. I come back with steps. Use me before any big build — saves you the rewrite.',
         ],
       },
     ],
     decorations: [],
   };
 
-  // ----- Chamber B: Agent Pool (18×14) -----
-  const pW = 18, pH = 14;
+  // ----- Chamber B: Agent Pool (16×12) -----
+  // South entry from Lobby; east exit to Briefing. Reviewer + Debugger man
+  // the upper pods. A vertical pillar at col 6 rows 5-7 splits the central
+  // walkway between them.
+  const pW = 16, pH = 12;
   const pTiles = blankTileMap(pW, pH);
-  pTiles[7][0] = 2;
-  pTiles[7][pW - 1] = 2;
+  // South entry door (back to Lobby)
+  pTiles[pH - 1][8] = 2;
+  // East exit door to Briefing
+  pTiles[6][pW - 1] = 2;
+  // Corner crates
+  fillRect(pTiles, 2, 2, 3, 3, 1);
+  fillRect(pTiles, 2, 9, 3, 10, 1);
+  fillRect(pTiles, 12, 2, 13, 3, 1);
+  fillRect(pTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar
+  fillRect(pTiles, 6, 5, 6, 7, 1);
 
   const pool: ChamberConfig = {
     id: 'subagents-pool',
@@ -1035,100 +1066,72 @@ function buildSubagentsLevel(): LevelConfig {
     width: pW,
     height: pH,
     tiles: pTiles,
-    spawnX: 1,
-    spawnY: 7,
-    items: [
-      {
-        id: 'fragment-x',
-        type: 'lore',
-        x: 4,
-        y: 2,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] "Subagents start fresh. No memory of the parent conversation. Brief them like a stranger."',
-      },
-      {
-        id: 'fragment-y',
-        type: 'lore',
-        x: 14,
-        y: 11,
-        sprite: 'paper',
-        loreText: '[PLACEHOLDER LORE] "Parallelism is real. Spawn N agents in one message; they run concurrently."',
-      },
-    ],
+    spawnX: 8,
+    spawnY: 10,
+    items: [],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 7,
+        x: 8,
+        y: pH - 1,
         target: { kind: 'chamber', chamber: 'subagents-lobby' },
-        spawnX: aW - 2,
-        spawnY: 6,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
       {
         id: 'to-briefing',
         x: pW - 1,
-        y: 7,
+        y: 6,
         target: { kind: 'chamber', chamber: 'subagents-briefing' },
-        spawnX: 1,
-        spawnY: 5,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
     ],
     npcs: [
       {
-        id: 'doc-bot',
-        x: 6,
-        y: 4,
-        color: '#D94DFF',
-        name: 'Doc-bot',
+        id: 'reviewer-bot',
+        x: 3,
+        y: 5,
+        color: '#F0C040',
+        name: 'Reviewer-bot',
         dialog: [
-          'I write docs and walkthroughs. Long-form is my specialty.',
-          'Hand me a feature, I come back with the README.',
+          'Code reviewer. Independent second-opinion energy. Fresh eyes — no conversation context.',
+          "Hand me a diff. I'll tell you what's shaky. I see what your main agent missed.",
         ],
       },
       {
         id: 'debugger-bot',
-        x: 11,
-        y: 4,
+        x: 10,
+        y: 5,
         color: '#FF6B8A',
         name: 'Debugger-bot',
         dialog: [
-          'I chase bugs through stack traces. Scientific method only.',
-          'Hand me a repro, I bring back the root cause.',
-        ],
-      },
-      {
-        id: 'security-bot',
-        x: 6,
-        y: 10,
-        color: '#00D4AA',
-        name: 'Security-bot',
-        dialog: [
-          'Threat models. Vulnerability sweeps. Default suspicious.',
-          'I scan diffs for secrets, injection, and footguns.',
-        ],
-      },
-      {
-        id: 'tester-bot',
-        x: 11,
-        y: 10,
-        color: '#FFE066',
-        name: 'Tester-bot',
-        dialog: [
-          'I write tests. Edge cases especially.',
-          'If it can break, I will find the input that breaks it.',
+          'I chase bugs through stack traces. Scientific method only — hypothesize, instrument, verify.',
+          'Hand me a repro, I bring back the root cause. No band-aids.',
         ],
       },
     ],
     decorations: [],
   };
 
-  // ----- Chamber C: Briefing Room (16×11) -----
-  const bW = 16, bH = 11;
+  // ----- Chamber C: Briefing Room (16×12) -----
+  // North entry from Pool's east-bridge corridor; east locked exit to the
+  // final boss throne. Skeleton (LICH QUORUM) altar at (8, 6).
+  const bW = 16, bH = 12;
   const bTiles = blankTileMap(bW, bH);
-  bTiles[5][0] = 2;
-  bTiles[5][bW - 1] = 2;
+  // North entry door (from Pool)
+  bTiles[0][8] = 2;
+  // East locked exit door to Throne
+  bTiles[6][bW - 1] = 2;
+  // Corner crates
+  fillRect(bTiles, 2, 2, 3, 3, 1);
+  fillRect(bTiles, 2, 9, 3, 10, 1);
+  fillRect(bTiles, 12, 2, 13, 3, 1);
+  fillRect(bTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar
+  fillRect(bTiles, 6, 5, 6, 7, 1);
 
   const briefing: ChamberConfig = {
     id: 'subagents-briefing',
@@ -1137,35 +1140,36 @@ function buildSubagentsLevel(): LevelConfig {
     width: bW,
     height: bH,
     tiles: bTiles,
-    spawnX: 1,
-    spawnY: 5,
+    spawnX: 8,
+    spawnY: 1,
     items: [
-      { id: 'terminal', type: 'challenge', x: 11, y: 4, sprite: 'crt_monitor' },
+      // LICH QUORUM boss — bestiary skeleton sprite.
+      { id: 'terminal', type: 'challenge', x: 8, y: 6, sprite: 'skeleton_a' },
     ],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 5,
+        x: 8,
+        y: 0,
         target: { kind: 'chamber', chamber: 'subagents-pool' },
         spawnX: pW - 2,
-        spawnY: 7,
+        spawnY: 6,
         locked: false,
       },
       {
         id: 'exit',
         x: bW - 1,
-        y: 5,
-        target: { kind: 'end' },
-        spawnX: 0,
-        spawnY: 0,
+        y: 6,
+        target: { kind: 'level', level: 'final-boss', chamber: 'final-boss-throne' },
+        spawnX: 1,
+        spawnY: 8,
         locked: true,
         requiresLevelKey: true,
       },
     ],
     npcs: [],
     decorations: [],
-    keySpawn: { x: 8, y: 7 },
+    keySpawn: { x: 8, y: 9 },
   };
 
   return {
@@ -1185,20 +1189,155 @@ function buildSubagentsLevel(): LevelConfig {
 }
 
 // ============================================================================
+// Level 06: Final Boss — single walkable throne room
+// ============================================================================
+
+function buildFinalBossLevel(): LevelConfig {
+  // ----- Throne Room (28×16) — the ceremonial approach. -----
+  // Single bespoke chamber. The player enters west at (0, 8), walks the
+  // straight sacred aisle east past 4 colonnade pillar pairs at cols 5/9/13/17,
+  // crosses the dais opening at col 22, and reaches the OVERLORD altar at
+  // (18, 9) with the dragon sprite waiting on the throne dais.
+  const tW = 28, tH = 16;
+  const tTiles = blankTileMap(tW, tH);
+  // West entry door (from subagents-briefing)
+  tTiles[8][0] = 2;
+  // East end-game door (locked until dragon falls)
+  tTiles[8][tW - 1] = 2;
+  // Colonnade pillars — 4 pairs flanking the central aisle.
+  fillRect(tTiles, 5, 3, 5, 4, 1);
+  fillRect(tTiles, 9, 3, 9, 4, 1);
+  fillRect(tTiles, 13, 3, 13, 4, 1);
+  fillRect(tTiles, 17, 3, 17, 4, 1);
+  fillRect(tTiles, 5, 11, 5, 12, 1);
+  fillRect(tTiles, 9, 11, 9, 12, 1);
+  fillRect(tTiles, 13, 11, 13, 12, 1);
+  fillRect(tTiles, 17, 11, 17, 12, 1);
+  // Throne dais endcap walls at col 22 (single-tile walls at top + bottom).
+  fillRect(tTiles, 22, 2, 22, 2, 1);
+  fillRect(tTiles, 22, 13, 22, 13, 1);
+
+  const throne: ChamberConfig = {
+    id: 'final-boss-throne',
+    level: 'final-boss',
+    name: 'Throne Room',
+    width: tW,
+    height: tH,
+    tiles: tTiles,
+    spawnX: 1,
+    spawnY: 8,
+    items: [
+      // OVERLORD altar — bestiary dragon sprite (largest in the set).
+      // Interact to start the final boss fight.
+      { id: 'overlord-altar', type: 'challenge', x: 18, y: 9, sprite: 'dragon_a' },
+    ],
+    doors: [
+      {
+        id: 'back',
+        x: 0,
+        y: 8,
+        target: { kind: 'chamber', chamber: 'subagents-briefing' },
+        spawnX: 14,
+        spawnY: 6,
+        locked: false,
+      },
+      {
+        id: 'exit',
+        x: tW - 1,
+        y: 8,
+        target: { kind: 'end' },
+        spawnX: 0,
+        spawnY: 0,
+        locked: true,
+        requiresLevelKey: true,
+      },
+    ],
+    npcs: [],
+    decorations: [],
+    keySpawn: { x: 20, y: 9 },
+  };
+
+  return {
+    id: 'final-boss',
+    number: 6,
+    title: 'THE THRONE',
+    subtitle: 'final confrontation',
+    theme: THEME_CRIMSON,
+    chambers: {
+      [throne.id]: throne,
+    },
+    startingChamber: throne.id,
+    challengeChamber: throne.id,
+  };
+}
+
+// ============================================================================
 // Export
 // ============================================================================
 
-export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
+/** Pull the editable subset out of a full ChamberConfig (deep-copied). */
+export function serializeChamber(c: ChamberConfig): SerializedChamber {
+  return JSON.parse(JSON.stringify({
+    width: c.width,
+    height: c.height,
+    tiles: c.tiles,
+    items: c.items,
+    doors: c.doors,
+    npcs: c.npcs,
+    decorations: c.decorations,
+    spawnX: c.spawnX,
+    spawnY: c.spawnY,
+    keySpawn: c.keySpawn,
+  }));
+}
+
+/** If a committed override exists for this chamber, replace its editable
+ *  fields (deep-copied so callers can't mutate the override constant). */
+function applyOverride(c: ChamberConfig): ChamberConfig {
+  const o = LAYOUT_OVERRIDES[c.id];
+  if (!o) return c;
+  return { ...c, ...(JSON.parse(JSON.stringify(o)) as SerializedChamber) };
+}
+
+function withOverrides(level: LevelConfig): LevelConfig {
+  const chambers: Record<ChamberId, ChamberConfig> = {};
+  for (const [id, ch] of Object.entries(level.chambers)) {
+    chambers[id] = applyOverride(ch);
+  }
+  return { ...level, chambers };
+}
+
+/** Hand-authored levels BEFORE any layout overrides — used by getBaseChamber()
+ *  so Layout Mode's "Reset to source" can restore the builder geometry. */
+const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   welcome: buildWelcomeLevel(),
   claudemd: buildClaudemdLevel(),
   slash: buildSlashLevel(),
   mcp: buildMcpLevel(),
   subagents: buildSubagentsLevel(),
+  'final-boss': buildFinalBossLevel(),
+};
+
+export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
+  welcome: withOverrides(BASE_LEVEL_CONFIGS.welcome),
+  claudemd: withOverrides(BASE_LEVEL_CONFIGS.claudemd),
+  slash: withOverrides(BASE_LEVEL_CONFIGS.slash),
+  mcp: withOverrides(BASE_LEVEL_CONFIGS.mcp),
+  subagents: withOverrides(BASE_LEVEL_CONFIGS.subagents),
+  'final-boss': withOverrides(BASE_LEVEL_CONFIGS['final-boss']),
 };
 
 /** Convenience: lookup a chamber by ID across all levels. */
 export function getChamber(chamberId: ChamberId): ChamberConfig | null {
   for (const level of Object.values(LEVEL_CONFIGS)) {
+    if (level.chambers[chamberId]) return level.chambers[chamberId];
+  }
+  return null;
+}
+
+/** The hand-authored (pre-override) chamber, for Layout Mode "Reset to source". */
+export function getBaseChamber(chamberId: ChamberId): ChamberConfig | null {
+  for (const level of Object.values(BASE_LEVEL_CONFIGS)) {
     if (level.chambers[chamberId]) return level.chambers[chamberId];
   }
   return null;

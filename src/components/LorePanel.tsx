@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useGame, useGameDispatch } from '../engine/GameContext';
 import { LEVEL_CONFIGS } from '../engine/roomConfigs';
+import { CONTENT } from '../content';
 import { Cursor } from './TerminalFrame';
 
 export function LorePanel() {
@@ -8,10 +9,8 @@ export function LorePanel() {
   const dispatch = useGameDispatch();
 
   const level = LEVEL_CONFIGS[state.currentLevel];
-  const chamber = level.chambers[state.currentChamber];
-  const loreItem = chamber.items.find(
-    i => i.type === 'lore' && i.id === state.activePanel?.itemId,
-  );
+  const lesson = CONTENT[state.currentLevel];
+  const loreEntry = lesson.lore.find(l => l.id === state.activePanel?.itemId);
   const accent = level.theme.accentColor;
 
   useEffect(() => {
@@ -26,9 +25,9 @@ export function LorePanel() {
     return () => window.removeEventListener('keydown', handler);
   }, [dispatch]);
 
-  if (!loreItem) return null;
+  if (!loreEntry) return null;
 
-  const text = loreItem.loreText ?? 'A fragment of forgotten lore.';
+  const text = loreEntry.text;
 
   return (
     <div
