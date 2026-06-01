@@ -33,6 +33,13 @@ function getAnimationPair(sprite: string): [string, string] | null {
   return null;
 }
 
+// Sprite names that should render as a real image (PNG) instead of a
+// palette-grid frame. Used for hand-authored item art that doesn't fit the
+// 16-wide pixel-grid format we use for everything else.
+export const IMAGE_SPRITES: Record<string, string> = {
+  paper: '/sprites/book.png', // Minecraft-style book — used for every lore item
+};
+
 export function Item({ x, y, sprite, tileSize, tint }: ItemProps) {
   const pair = getAnimationPair(sprite);
   const [phase, setPhase] = useState(0);
@@ -45,6 +52,7 @@ export function Item({ x, y, sprite, tileSize, tint }: ItemProps) {
 
   const frame = pair ? pair[phase] : sprite;
   const scale = BESTIARY_SCALES[sprite] ?? 3;
+  const imgSrc = IMAGE_SPRITES[sprite];
 
   return (
     <div
@@ -56,7 +64,21 @@ export function Item({ x, y, sprite, tileSize, tint }: ItemProps) {
         height: tileSize,
       }}
     >
-      <PixelSprite frame={frame} scale={scale} primaryColor={tint} />
+      {imgSrc ? (
+        <img
+          src={imgSrc}
+          alt=""
+          draggable={false}
+          style={{
+            width: tileSize * 0.85,
+            height: tileSize * 0.85,
+            imageRendering: 'pixelated',
+            pointerEvents: 'none',
+          }}
+        />
+      ) : (
+        <PixelSprite frame={frame} scale={scale} primaryColor={tint} />
+      )}
     </div>
   );
 }

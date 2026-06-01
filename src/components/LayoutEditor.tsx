@@ -17,6 +17,7 @@ import {
 import { CONTENT } from '../content';
 import { PixelSprite, PropSprite } from './PixelSprite';
 import { FRAMES, PROP_FRAMES, PROP_PALETTE, PROP_LIST } from '../assets/sprites';
+import { IMAGE_SPRITES } from './Item';
 
 const DRAFT_KEY = 'ccq-layout-draft';
 
@@ -562,7 +563,9 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
             {/* items */}
             {ch.items.map((it, i) => (
               <EntityBox key={`item-${i}`} x={it.x} y={it.y} cell={cell} onPointerDown={startEntityDrag('items', i)} style={selOutline(!!isSel('items', i))}>
-                {FRAMES[it.sprite] && <PixelSprite frame={it.sprite} scale={fitScale(FRAMES[it.sprite], cell)} primaryColor={it.type !== 'challenge' ? theme.accentColor : undefined} />}
+                {IMAGE_SPRITES[it.sprite]
+                  ? <img src={IMAGE_SPRITES[it.sprite]} alt="" draggable={false} style={{ width: cell * 0.85, height: cell * 0.85, imageRendering: 'pixelated', pointerEvents: 'none' }} />
+                  : FRAMES[it.sprite] && <PixelSprite frame={it.sprite} scale={fitScale(FRAMES[it.sprite], cell)} primaryColor={it.type !== 'challenge' ? theme.accentColor : undefined} />}
               </EntityBox>
             ))}
 
