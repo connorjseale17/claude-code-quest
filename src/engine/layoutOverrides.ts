@@ -5,11 +5,12 @@ import type { SerializedChamber } from './roomConfigs';
 // Layout Mode. A chamber id here REPLACES the hand-authored builder geometry
 // at module load. Delete an entry to revert that chamber to its builder layout.
 //
-// Level 01 (welcome)    authored 2026-06-01
-// Level 02 (claudemd)   authored 2026-06-01
-// Level 03 (slash)      authored 2026-06-01
-// Level 04 (mcp)        authored 2026-06-01
-// Level 05 (subagents)  authored 2026-06-01
+// Level 01 (welcome)     authored 2026-06-01
+// Level 02 (claudemd)    authored 2026-06-01
+// Level 03 (slash)       authored 2026-06-01
+// Level 04 (mcp)         authored 2026-06-01
+// Level 05 (subagents)   authored 2026-06-01
+// Level 06 (final-boss)  authored 2026-06-01  — GAME COMPLETE
 // ============================================================================
 
 export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
@@ -1691,6 +1692,242 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     "keySpawn": {
       "x": 13,
       "y": 9
+    }
+  },
+  "final-boss-throne": {
+    "width": 28,
+    "height": 16,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "overlord-altar",
+        "type": "challenge",
+        "x": 22,
+        "y": 7,
+        "sprite": "dragon_a"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back",
+        "x": 0,
+        "y": 8,
+        "target": {
+          "kind": "chamber",
+          "chamber": "subagents-briefing"
+        },
+        "spawnX": 14,
+        "spawnY": 6,
+        "locked": false
+      },
+      {
+        "id": "exit",
+        "x": 27,
+        "y": 8,
+        "target": {
+          "kind": "end"
+        },
+        "spawnX": 0,
+        "spawnY": 0,
+        "locked": true,
+        "requiresLevelKey": true
+      }
+    ],
+    "npcs": [],
+    "decorations": [
+      {
+        "x": 3,
+        "y": 12,
+        "sprite": "brazier"
+      },
+      {
+        "x": 3,
+        "y": 3,
+        "sprite": "brazier"
+      },
+      {
+        "x": 7,
+        "y": 4,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 10,
+        "y": 11,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 7,
+        "y": 11,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 19,
+        "y": 4,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 16,
+        "y": 4,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 13,
+        "y": 4,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 10,
+        "y": 4,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 19,
+        "y": 11,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 16,
+        "y": 11,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 13,
+        "y": 11,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 25,
+        "y": 5,
+        "sprite": "bones"
+      },
+      {
+        "x": 24,
+        "y": 2,
+        "sprite": "bones"
+      },
+      {
+        "x": 10,
+        "y": 6,
+        "sprite": "bones"
+      },
+      {
+        "x": 24,
+        "y": 13,
+        "sprite": "bones"
+      },
+      {
+        "x": 4,
+        "y": 10,
+        "sprite": "bones"
+      },
+      {
+        "x": 20,
+        "y": 13,
+        "sprite": "bones"
+      },
+      {
+        "x": 11,
+        "y": 14,
+        "sprite": "cobweb"
+      },
+      {
+        "x": 5,
+        "y": 14,
+        "sprite": "cobweb"
+      },
+      {
+        "x": 8,
+        "y": 1,
+        "sprite": "cobweb"
+      },
+      {
+        "x": 20,
+        "y": 1,
+        "sprite": "cobweb"
+      },
+      {
+        "x": 18,
+        "y": 1,
+        "sprite": "chains"
+      },
+      {
+        "x": 16,
+        "y": 8,
+        "sprite": "bones"
+      },
+      {
+        "x": 16,
+        "y": 9,
+        "sprite": "rubble"
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "sprite": "rubble"
+      },
+      {
+        "x": 20,
+        "y": 14,
+        "sprite": "rubble"
+      },
+      {
+        "x": 1,
+        "y": 14,
+        "sprite": "banner"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "sprite": "banner"
+      },
+      {
+        "x": 26,
+        "y": 12,
+        "sprite": "banner"
+      },
+      {
+        "x": 26,
+        "y": 10,
+        "sprite": "banner"
+      },
+      {
+        "x": 26,
+        "y": 5,
+        "sprite": "banner"
+      },
+      {
+        "x": 26,
+        "y": 3,
+        "sprite": "banner"
+      },
+      {
+        "x": 12,
+        "y": 1,
+        "sprite": "cable_run"
+      }
+    ],
+    "spawnX": 1,
+    "spawnY": 8,
+    "keySpawn": {
+      "x": 25,
+      "y": 8
     }
   }
 };
