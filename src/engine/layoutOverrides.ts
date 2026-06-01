@@ -8,6 +8,7 @@ import type { SerializedChamber } from './roomConfigs';
 // Level 01 (welcome)   authored 2026-06-01
 // Level 02 (claudemd)  authored 2026-06-01
 // Level 03 (slash)     authored 2026-06-01
+// Level 04 (mcp)       authored 2026-06-01
 // ============================================================================
 
 export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
@@ -955,6 +956,340 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     ],
     "spawnX": 1,
     "spawnY": 6,
+    "keySpawn": {
+      "x": 13,
+      "y": 6
+    }
+  },
+  "mcp-hub": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+      [1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+      [1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1],
+      [1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "broadcast",
+        "type": "lore",
+        "x": 10,
+        "y": 6,
+        "sprite": "paper"
+      },
+      {
+        "id": "connection-log",
+        "type": "lore",
+        "x": 5,
+        "y": 9,
+        "sprite": "paper"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back-to-slash",
+        "x": 8,
+        "y": 0,
+        "target": {
+          "kind": "chamber",
+          "chamber": "slash-execution"
+        },
+        "spawnX": 14,
+        "spawnY": 6,
+        "locked": false
+      },
+      {
+        "id": "to-rack",
+        "x": 4,
+        "y": 11,
+        "target": {
+          "kind": "chamber",
+          "chamber": "mcp-rack"
+        },
+        "spawnX": 8,
+        "spawnY": 1,
+        "locked": false
+      }
+    ],
+    "npcs": [
+      {
+        "id": "connector-bot",
+        "x": 7,
+        "y": 4,
+        "sprite": "duck",
+        "color": "#00D4AA",
+        "name": "Connector Duck",
+        "dialog": [
+          "Quack. Welcome to the Hub. We trade in connections.",
+          "MCP — Model Context Protocol — is how Claude reaches anything outside its own walls.",
+          "Slack. GitHub. Google Drive. Your CRM. Your warehouse. Any of them. All of them.",
+          "Add with `claude mcp add <name>`. Authorize once. Use forever. Yes — I'm a debugging duck. Why do you ask?",
+          "But — every server is a new attack surface. Default-deny. Audit the source. Don't ship the kingdom keys to a server you found in someone's gist."
+        ]
+      }
+    ],
+    "decorations": [
+      {
+        "x": 13,
+        "y": 8,
+        "sprite": "mana_crystal"
+      },
+      {
+        "x": 8,
+        "y": 7,
+        "sprite": "floor_lever"
+      },
+      {
+        "x": 2,
+        "y": 6,
+        "sprite": "anvil"
+      }
+    ],
+    "spawnX": 8,
+    "spawnY": 1
+  },
+  "mcp-rack": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1],
+      [1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "rack-a",
+        "type": "lore",
+        "x": 6,
+        "y": 2,
+        "sprite": "paper"
+      },
+      {
+        "id": "rack-b",
+        "type": "lore",
+        "x": 5,
+        "y": 9,
+        "sprite": "paper"
+      },
+      {
+        "id": "integrations-engineer-practice",
+        "type": "practice",
+        "x": 3,
+        "y": 6,
+        "sprite": "hint_token"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back",
+        "x": 8,
+        "y": 0,
+        "target": {
+          "kind": "chamber",
+          "chamber": "mcp-hub"
+        },
+        "spawnX": 4,
+        "spawnY": 10,
+        "locked": false
+      },
+      {
+        "id": "to-integration",
+        "x": 15,
+        "y": 8,
+        "target": {
+          "kind": "chamber",
+          "chamber": "mcp-integration"
+        },
+        "spawnX": 1,
+        "spawnY": 8,
+        "locked": false
+      }
+    ],
+    "npcs": [],
+    "decorations": [
+      {
+        "x": 2,
+        "y": 5,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 2,
+        "y": 6,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 2,
+        "y": 7,
+        "sprite": "bookshelf"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "sprite": "hanging_lantern"
+      },
+      {
+        "x": 1,
+        "y": 10,
+        "sprite": "brazier"
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "sprite": "chains"
+      },
+      {
+        "x": 11,
+        "y": 10,
+        "sprite": "cobweb"
+      },
+      {
+        "x": 2,
+        "y": 3,
+        "sprite": "cable_run"
+      },
+      {
+        "x": 10,
+        "y": 10,
+        "sprite": "cable_run"
+      },
+      {
+        "x": 12,
+        "y": 5,
+        "sprite": "cable_run"
+      }
+    ],
+    "spawnX": 8,
+    "spawnY": 1
+  },
+  "mcp-integration": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1],
+      [1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1],
+      [1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [2, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1],
+      [1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+      [1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      {
+        "id": "terminal",
+        "type": "challenge",
+        "x": 11,
+        "y": 6,
+        "sprite": "ghost_a"
+      },
+      {
+        "id": "rack-c",
+        "type": "lore",
+        "x": 3,
+        "y": 8,
+        "sprite": "paper"
+      }
+    ],
+    "doors": [
+      {
+        "id": "back",
+        "x": 0,
+        "y": 8,
+        "target": {
+          "kind": "chamber",
+          "chamber": "mcp-rack"
+        },
+        "spawnX": 14,
+        "spawnY": 8,
+        "locked": false
+      },
+      {
+        "id": "exit",
+        "x": 15,
+        "y": 6,
+        "target": {
+          "kind": "level",
+          "level": "subagents",
+          "chamber": "subagents-lobby"
+        },
+        "spawnX": 1,
+        "spawnY": 6,
+        "locked": true,
+        "requiresLevelKey": true
+      }
+    ],
+    "npcs": [],
+    "decorations": [
+      {
+        "x": 4,
+        "y": 2,
+        "sprite": "floor_lever"
+      },
+      {
+        "x": 9,
+        "y": 8,
+        "sprite": "brazier"
+      },
+      {
+        "x": 8,
+        "y": 1,
+        "sprite": "treasure_chest"
+      },
+      {
+        "x": 11,
+        "y": 10,
+        "sprite": "crt_terminal"
+      },
+      {
+        "x": 2,
+        "y": 10,
+        "sprite": "server_stack"
+      },
+      {
+        "x": 12,
+        "y": 1,
+        "sprite": "chains"
+      },
+      {
+        "x": 14,
+        "y": 10,
+        "sprite": "cobweb"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "sprite": "bones"
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "sprite": "hanging_lantern"
+      }
+    ],
+    "spawnX": 1,
+    "spawnY": 8,
     "keySpawn": {
       "x": 13,
       "y": 6
