@@ -18,6 +18,25 @@ export const PIXEL_PALETTE: Record<string, string | null> = {
   'e': '#A972F0', // body purple
   'f': '#5E37A6', // shadow purple
   'h': '#FFD23F', // gold eyes
+  // Goblin
+  'i': '#7FCB3F', // body bright green
+  'j': '#3E7A22', // shadow
+  'k': '#16191B', // shared bestiary dark (also ghost / skeleton / dragon)
+  'l': '#E7F6C8', // highlight cream
+  // Ghost
+  'm': '#AEDDEC', // body cyan
+  'n': '#6FAEC2', // shadow cyan
+  // Skeleton
+  'p': '#ECECEC', // body off-white
+  'q': '#9C9C9C', // shadow grey
+  // Dragon
+  'r': '#E8633D', // body
+  's': '#B84A28', // shadow
+  't': '#FFE9A8', // highlight
+  'u': '#FFD23F', // gold
+  'v': '#F39233', // flame orange
+  'w': '#8A3A1E', // deep shadow horn
+  'x': '#E0A36B', // light shading
 };
 
 const W = 16;
@@ -27,6 +46,7 @@ const fixWidths = (arr: string[]) => arr.map(r => (r + '................').slice
 const padTo = (w: number) => (arr: string[]) =>
   arr.map(r => (r + '.'.repeat(w)).slice(0, w));
 const W32 = padTo(32);
+const W28 = padTo(28);
 
 const BODY_TOP   = '....11111111....';
 const EYES       = '....13111131....';
@@ -1057,6 +1077,161 @@ FRAMES.warlock_b = fixWidths([
   '.eeffffffffffee.',
   '.ffffffffffffff.',
   'fff..ffff..fff..',
+]);
+
+// GOBLIN (Grist visual) — antenna-eared scrapper, frame B twitches the ears.
+FRAMES.goblin_a = fixWidths([
+  '...ii......ii...',
+  '...ii......ii...',
+  '...iii....iii...',
+  '....iiiiiiii....',
+  '..iiiiiiiiiiii..',
+  '.iiiiiiiiiiiiii.',
+  'iiiiiiiiiiiiiiii',
+  'iiiilliiiilliiii',
+  'iiiilliiiilliiii',
+  'iiiiiiiiiiiiiiii',
+  'iiijjjjjjjjjjiii',
+  '.iiiiiiiiiiiiii.',
+  '..ii..iiii..ii..',
+]);
+FRAMES.goblin_b = fixWidths([
+  '..ii........ii..',
+  '...ii......ii...',
+  '...iii....iii...',
+  '....iiiiiiii....',
+  '..iiiiiiiiiiii..',
+  '.iiiiiiiiiiiiii.',
+  'iiiiiiiiiiiiiiii',
+  'iiiilliiiilliiii',
+  'iiiilliiiilliiii',
+  'iiiiiiiiiiiiiiii',
+  'iiijjjjjjjjjjiii',
+  '.iiiiiiiiiiiiii.',
+  '.ii..ii..ii..ii.',
+]);
+
+// GHOST (Vorthex visual) — pale wraith, frame B drops the eyes for a hover.
+FRAMES.ghost_a = fixWidths([
+  '.....mmmmmm.....',
+  '...mmmmmmmmmm...',
+  '..mmmmmmmmmmmm..',
+  '.mmmmmmmmmmmmmm.',
+  'mmmmmmmmmmmmmmmm',
+  'mmmmkkmmmmkkmmmm',
+  'mmmm4kmmmm4kmmmm',
+  'mmmmmmmmmmmmmmmm',
+  'mmmmmmmmmmmmmmmm',
+  'mnnnnnnnnnnnnnnm',
+  'mmmmmmmmmmmmmmmm',
+  'mm..mm..mm..mm..',
+]);
+FRAMES.ghost_b = fixWidths([
+  '.....mmmmmm.....',
+  '...mmmmmmmmmm...',
+  '..mmmmmmmmmmmm..',
+  '.mmmmmmmmmmmmmm.',
+  'mmmmmmmmmmmmmmmm',
+  'mmmmmmmmmmmmmmmm',
+  'mmmmkkmmmmkkmmmm',
+  'mmmm4kmmmm4kmmmm',
+  'mmmmmmmmmmmmmmmm',
+  'mnnnnnnnnnnnnnnm',
+  'mmmmmmmmmmmmmmmm',
+  '..mm..mm..mm..mm',
+]);
+
+// SKELETON (Lich Quorum visual) — angular undead, frame B clenches + rattles.
+FRAMES.skeleton_a = fixWidths([
+  '....pppppppp....',
+  '..pppppppppppp..',
+  '.pppppppppppppp.',
+  'pppppppppppppppp',
+  'pppkkkppppkkkppp',
+  'pppkkkppppkkkppp',
+  'pppppppppppppppp',
+  '.pppppppppppppp.',
+  '.p.p.p.p.p.p.p..',
+  '......pppp......',
+  '..pppppppppp.p..',
+  'pp.pppppppppp.pp',
+  'p.p.p.p.p.p.p.p.',
+  '...pp......pp...',
+]);
+FRAMES.skeleton_b = fixWidths([
+  '....pppppppp....',
+  '..pppppppppppp..',
+  '.pppppppppppppp.',
+  'pppppppppppppppp',
+  'pppkkkppppkkkppp',
+  'pppkkkppppkkkppp',
+  'pppppppppppppppp',
+  '.pppppppppppppp.',
+  '.pp.pp.pp.pp.pp.',
+  '......pppp......',
+  'p.pppppppppp.p.p',
+  'p.pppppppppp.p.p',
+  '.p.p.p.p.p.p.p.p',
+  '..pp........pp..',
+]);
+
+// DRAGON (Overlord visual) — final-boss head, frame B ignites the eyes + breathes fire.
+// 28-wide grid (largest bestiary sprite).
+FRAMES.dragon_a = W28([
+  '...ww..................ww...',
+  '...ww..................ww...',
+  '...xww................wwx...',
+  '....xww..............wwx....',
+  '.....xww............wwx.....',
+  '......xww..........wwx......',
+  '.......wrrrrrrrrrrrw........',
+  '......rrrrrrrrrrrrrrrr......',
+  '.....rrrrrrrrrrrrrrrrrr.....',
+  '.....rrruuurrrrrruuurrr.....',
+  '.....rrrukurrrrrrukurrr.....',
+  '.....rrruuurrrrrruuurrr.....',
+  '.....rrrrrrrrrrrrrrrrrr.....',
+  '......rrrrrrrrrrrrrrrr......',
+  '......rrrkrrrrrrrrkrrr......',
+  '.......rrrrrrrrrrrrrr.......',
+  '.......rrrrrrrrrrrrrr.......',
+  '.......rttkkkkkkkkttr.......',
+  '.......rkkkkkkkkkkkkr.......',
+  '.......rtkkkkkkkkkktr.......',
+  '........rkkkkkkkkkkr........',
+  '.........rrrrrrrrrr.........',
+  '..........rrrrrrrr..........',
+  '............................',
+  '............................',
+  '............................',
+]);
+FRAMES.dragon_b = W28([
+  '...ww..................ww...',
+  '...ww..................ww...',
+  '...xww................wwx...',
+  '....xww..............wwx....',
+  '.....xww............wwx.....',
+  '......xww..........wwx......',
+  '.......wrrrrrrrrrrrw........',
+  '......rrrrrrrrrrrrrrrr......',
+  '.....rrrrrrrrrrrrrrrrrr.....',
+  '.....rrruuurrrrrruuurrr.....',
+  '.....rrrutkurrrrrutkurrr....',
+  '.....rrruuurrrrrruuurrr.....',
+  '.....rrrrrrrrrrrrrrrrrr.....',
+  '......rrrrrrrrrrrrrrrr......',
+  '......rrrkrrrrrrrrkrrr......',
+  '.......rrrrrrrrrrrrrr.......',
+  '.......rrrrrrrrrrrrrr.......',
+  '.......rttkkkkkkkkttr.......',
+  '.......rkkvvvvvvvvkkr.......',
+  '.......rtvvvvvvvvvvtr.......',
+  '........rkvvvvvvvvkr........',
+  '.........uvvvvvvvvu.........',
+  '..........uvvvvvvu..........',
+  '...........utttu............',
+  '............utu.............',
+  '............................',
 ]);
 
 // SLIME (Emberling visual) — bouncing green blob, frame B is the squash.

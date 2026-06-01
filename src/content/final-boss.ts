@@ -12,7 +12,7 @@ export const finalBossContent: LessonContent = {
   lore: [],
   battle: {
     name: 'THE OVERLORD',
-    spriteKey: 'overlord',
+    spriteKey: 'dragon',
     maxHP: 6,
     playerHP: 6,
     phases: 3,

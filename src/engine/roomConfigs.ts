@@ -168,35 +168,35 @@ const THEME_PURPLE: Theme = {
 };
 
 const THEME_GREEN: Theme = {
-  wallColor: '#3FB950',
+  wallColor: '#0C0B0A',
   wallShadow: '#1F7028',
-  floorColor: '#152A1A',
-  floorDot: '#E8E8E8',
-  accentColor: '#E8E8E8',
+  floorColor: '#22302A',
+  floorDot: '#3FB950',
+  accentColor: '#3FB950',
 };
 
 const THEME_TEAL: Theme = {
-  wallColor: '#00D4AA',
-  wallShadow: '#007A5F',
-  floorColor: '#0F2A28',
-  floorDot: '#F0C040',
-  accentColor: '#F0C040',
+  wallColor: '#0C0B0A',
+  wallShadow: '#3D8E80',
+  floorColor: '#1D2C2D',
+  floorDot: '#6FD7C2',
+  accentColor: '#6FD7C2',
 };
 
 const THEME_PINK: Theme = {
-  wallColor: '#FF6B8A',
+  wallColor: '#0C0B0A',
   wallShadow: '#A03050',
-  floorColor: '#2A1218',
-  floorDot: '#00D4AA',
-  accentColor: '#00D4AA',
+  floorColor: '#2F2A2E',
+  floorDot: '#FF6FA5',
+  accentColor: '#FF6FA5',
 };
 
 const THEME_CRIMSON: Theme = {
-  wallColor: '#A0142F',
-  wallShadow: '#5A0A1A',
-  floorColor: '#1A0A0F',
-  floorDot: '#F85149',
-  accentColor: '#F85149',
+  wallColor: '#0C0B0A',
+  wallShadow: '#8A241A',
+  floorColor: '#2A1C19',
+  floorDot: '#D43A2A',
+  accentColor: '#D43A2A',
 };
 
 // ============================================================================
@@ -548,20 +548,25 @@ function buildClaudemdLevel(): LevelConfig {
 // ============================================================================
 
 function buildSlashLevel(): LevelConfig {
-  // ----- Chamber A: Prompt Foyer (18×11) -----
-  const aW = 18, aH = 11;
+  // ----- Chamber A: Prompt Foyer (16×12) -----
+  // West entry from claudemd-vault. SOUTH exit to Registry — the level turns
+  // the corner the same way L02 did. Clerk Cat NPC on the spine, two interior
+  // blockers force a weave.
+  const aW = 16, aH = 12;
   const aTiles = blankTileMap(aW, aH);
-  aTiles[5][aW - 1] = 2; // east door to registry
-  // Queue-stanchion switchback: N alcove holds command-sheet, S alcove holds index.
-  // Critical path along row 5 past Clerk Cat.
-  fillRect(aTiles, 4, 1, 4, 3, 1);
-  fillRect(aTiles, 8, 1, 8, 3, 1);
-  fillRect(aTiles, 11, 1, 11, 3, 1);
-  fillRect(aTiles, 14, 1, 14, 3, 1);
-  fillRect(aTiles, 4, 7, 4, 9, 1);
-  fillRect(aTiles, 7, 7, 7, 9, 1);
-  fillRect(aTiles, 10, 7, 10, 9, 1);
-  fillRect(aTiles, 14, 7, 14, 9, 1);
+  // West entry door (from claudemd-vault)
+  aTiles[6][0] = 2;
+  // South exit door to Registry
+  aTiles[aH - 1][8] = 2;
+  // Corner crates
+  fillRect(aTiles, 2, 2, 3, 3, 1);
+  fillRect(aTiles, 2, 9, 3, 10, 1);
+  fillRect(aTiles, 12, 2, 13, 3, 1);
+  fillRect(aTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar on spine
+  fillRect(aTiles, 5, 5, 5, 7, 1);
+  // Horizontal wall row 7 cols 9-12 — pushes the player south
+  fillRect(aTiles, 9, 7, 12, 7, 1);
 
   const foyer: ChamberConfig = {
     id: 'slash-foyer',
@@ -570,28 +575,34 @@ function buildSlashLevel(): LevelConfig {
     width: aW,
     height: aH,
     tiles: aTiles,
-    spawnX: 2,
-    spawnY: 5,
-    items: [
-      { id: 'command-sheet', type: 'lore', x: 6, y: 3, sprite: 'paper' },
-      { id: 'index', type: 'lore', x: 12, y: 7, sprite: 'scroll' },
-    ],
+    spawnX: 1,
+    spawnY: 6,
+    items: [],
     doors: [
       {
+        id: 'back-to-claudemd',
+        x: 0,
+        y: 6,
+        target: { kind: 'chamber', chamber: 'claudemd-vault' },
+        spawnX: 14,
+        spawnY: 6,
+        locked: false,
+      },
+      {
         id: 'to-registry',
-        x: aW - 1,
-        y: 5,
+        x: 8,
+        y: aH - 1,
         target: { kind: 'chamber', chamber: 'slash-registry' },
-        spawnX: 1,
-        spawnY: 5,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'clerk-bot',
-        x: 9,
-        y: 5,
+        x: 6,
+        y: 6,
         sprite: 'cat',
         color: '#3FB950',
         name: 'Clerk Cat',
@@ -606,18 +617,23 @@ function buildSlashLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber B: The Registry (18×13) — filing cabinets -----
-  const rW = 18, rH = 13;
+  // ----- Chamber B: The Registry (16×12) -----
+  // North entry from Foyer; east exit to Execution. Filing-cabinet maze:
+  // horizontal wall row 4 cols 4-8 and vertical wall col 10 rows 5-8.
+  const rW = 16, rH = 12;
   const rTiles = blankTileMap(rW, rH);
-  rTiles[6][0] = 2;           // west back to foyer
-  rTiles[6][rW - 1] = 2;      // east to execution
-  // Filing-cabinet wall columns
-  fillRect(rTiles, 4, 2, 4, 4, 1);
-  fillRect(rTiles, 4, 8, 4, 10, 1);
-  fillRect(rTiles, 8, 2, 8, 4, 1);
-  fillRect(rTiles, 8, 8, 8, 10, 1);
-  fillRect(rTiles, 12, 2, 12, 4, 1);
-  fillRect(rTiles, 12, 8, 12, 10, 1);
+  // North door (back to Foyer)
+  rTiles[0][8] = 2;
+  // East door to Execution
+  rTiles[6][rW - 1] = 2;
+  // Corner crates
+  fillRect(rTiles, 2, 2, 3, 3, 1);
+  fillRect(rTiles, 2, 9, 3, 10, 1);
+  fillRect(rTiles, 12, 2, 13, 3, 1);
+  fillRect(rTiles, 12, 9, 13, 10, 1);
+  // Interior blockers
+  fillRect(rTiles, 4, 4, 8, 4, 1);
+  fillRect(rTiles, 10, 5, 10, 8, 1);
 
   const registry: ChamberConfig = {
     id: 'slash-registry',
@@ -626,22 +642,17 @@ function buildSlashLevel(): LevelConfig {
     width: rW,
     height: rH,
     tiles: rTiles,
-    spawnX: 1,
-    spawnY: 6,
-    items: [
-      { id: 'card-a', type: 'lore', x: 6, y: 3, sprite: 'database' },
-      { id: 'card-b', type: 'lore', x: 10, y: 11, sprite: 'database' },
-      { id: 'card-c', type: 'lore', x: 14, y: 3, sprite: 'database' },
-      { id: 'command-architect-practice', type: 'practice', x: 2, y: 11, sprite: 'hint_token' },
-    ],
+    spawnX: 8,
+    spawnY: 1,
+    items: [],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 6,
+        x: 8,
+        y: 0,
         target: { kind: 'chamber', chamber: 'slash-foyer' },
-        spawnX: aW - 2,
-        spawnY: 5,
+        spawnX: 8,
+        spawnY: aH - 2,
         locked: false,
       },
       {
@@ -650,7 +661,7 @@ function buildSlashLevel(): LevelConfig {
         y: 6,
         target: { kind: 'chamber', chamber: 'slash-execution' },
         spawnX: 1,
-        spawnY: 5,
+        spawnY: 6,
         locked: false,
       },
     ],
@@ -658,17 +669,22 @@ function buildSlashLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber C: Execution (16×11) -----
-  const eW = 16, eH = 11;
+  // ----- Chamber C: Execution (16×12) -----
+  // West entry from Registry; east locked exit to MCP Hub.
+  // Single vertical pillar at col 5 rows 5-7; goblin altar at (8, 6).
+  const eW = 16, eH = 12;
   const eTiles = blankTileMap(eW, eH);
-  eTiles[5][0] = 2;
-  eTiles[5][eW - 1] = 2;
-  // Stage approach: flanking control booths frame a central aisle.
-  fillRect(eTiles, 4, 1, 4, 3, 1);
-  fillRect(eTiles, 4, 7, 4, 9, 1);
-  fillRect(eTiles, 7, 7, 7, 9, 1);
-  fillRect(eTiles, 13, 1, 13, 3, 1);
-  fillRect(eTiles, 13, 7, 13, 9, 1);
+  // West door (back to Registry)
+  eTiles[6][0] = 2;
+  // East door (locked) to MCP
+  eTiles[6][eW - 1] = 2;
+  // Corner crates
+  fillRect(eTiles, 2, 2, 3, 3, 1);
+  fillRect(eTiles, 2, 9, 3, 10, 1);
+  fillRect(eTiles, 12, 2, 13, 3, 1);
+  fillRect(eTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar
+  fillRect(eTiles, 5, 5, 5, 7, 1);
 
   const execution: ChamberConfig = {
     id: 'slash-execution',
@@ -678,15 +694,16 @@ function buildSlashLevel(): LevelConfig {
     height: eH,
     tiles: eTiles,
     spawnX: 1,
-    spawnY: 5,
+    spawnY: 6,
     items: [
-      { id: 'terminal', type: 'challenge', x: 11, y: 4, sprite: 'crt_monitor' },
+      // GRIST boss — bestiary goblin sprite.
+      { id: 'terminal', type: 'challenge', x: 8, y: 6, sprite: 'goblin_a' },
     ],
     doors: [
       {
         id: 'back',
         x: 0,
-        y: 5,
+        y: 6,
         target: { kind: 'chamber', chamber: 'slash-registry' },
         spawnX: rW - 2,
         spawnY: 6,
@@ -695,17 +712,17 @@ function buildSlashLevel(): LevelConfig {
       {
         id: 'exit',
         x: eW - 1,
-        y: 5,
+        y: 6,
         target: { kind: 'level', level: 'mcp', chamber: 'mcp-hub' },
-        spawnX: 1,
-        spawnY: 6,
+        spawnX: 8,
+        spawnY: 1,
         locked: true,
         requiresLevelKey: true,
       },
     ],
     npcs: [],
     decorations: [],
-    keySpawn: { x: 8, y: 7 },
+    keySpawn: { x: 8, y: 9 },
   };
 
   return {
@@ -729,20 +746,24 @@ function buildSlashLevel(): LevelConfig {
 // ============================================================================
 
 function buildMcpLevel(): LevelConfig {
-  // ----- Chamber A: Hub (22×12) -----
-  const aW = 22, aH = 12;
+  // ----- Chamber A: Hub (16×12) -----
+  // NORTH entry from slash (the level drops in from above). South exit to
+  // Server Rack. Two horizontal walls (cols 4-8 row 5, cols 7-11 row 8)
+  // stagger the descent past the Connector Duck.
+  const aW = 16, aH = 12;
   const aTiles = blankTileMap(aW, aH);
-  aTiles[6][aW - 1] = 2;
-  // Patch-panel switchboard: equipment racks carve a serpentine path past Duck.
-  // NW alcove holds broadcast, SE alcove holds connection-log.
-  fillRect(aTiles, 4, 1, 4, 4, 1);
-  fillRect(aTiles, 4, 8, 4, 10, 1);
-  fillRect(aTiles, 8, 1, 8, 3, 1);
-  fillRect(aTiles, 8, 7, 8, 10, 1);
-  fillRect(aTiles, 13, 1, 13, 4, 1);
-  fillRect(aTiles, 13, 8, 13, 10, 1);
-  fillRect(aTiles, 17, 1, 17, 3, 1);
-  fillRect(aTiles, 17, 7, 17, 10, 1);
+  // North entry door (from slash-execution)
+  aTiles[0][8] = 2;
+  // South exit door to Server Rack
+  aTiles[aH - 1][4] = 2;
+  // Corner crates
+  fillRect(aTiles, 2, 2, 3, 3, 1);
+  fillRect(aTiles, 2, 9, 3, 10, 1);
+  fillRect(aTiles, 12, 2, 13, 3, 1);
+  fillRect(aTiles, 12, 9, 13, 10, 1);
+  // Staggered horizontal walls
+  fillRect(aTiles, 4, 5, 8, 5, 1);
+  fillRect(aTiles, 7, 8, 11, 8, 1);
 
   const hub: ChamberConfig = {
     id: 'mcp-hub',
@@ -751,27 +772,33 @@ function buildMcpLevel(): LevelConfig {
     width: aW,
     height: aH,
     tiles: aTiles,
-    spawnX: 2,
-    spawnY: 6,
-    items: [
-      { id: 'broadcast', type: 'lore', x: 6, y: 3, sprite: 'database' },
-      { id: 'connection-log', type: 'lore', x: 16, y: 8, sprite: 'paper' },
-    ],
+    spawnX: 8,
+    spawnY: 1,
+    items: [],
     doors: [
       {
+        id: 'back-to-slash',
+        x: 8,
+        y: 0,
+        target: { kind: 'chamber', chamber: 'slash-execution' },
+        spawnX: 14,
+        spawnY: 6,
+        locked: false,
+      },
+      {
         id: 'to-rack',
-        x: aW - 1,
-        y: 6,
+        x: 4,
+        y: aH - 1,
         target: { kind: 'chamber', chamber: 'mcp-rack' },
-        spawnX: 1,
-        spawnY: 7,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'connector-bot',
-        x: 11,
+        x: 8,
         y: 6,
         sprite: 'duck',
         color: '#00D4AA',
@@ -788,18 +815,23 @@ function buildMcpLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber B: Server Rack (16×14) — maze -----
-  const rW = 16, rH = 14;
+  // ----- Chamber B: Server Rack (16×12) -----
+  // North entry from Hub; east exit to Integration. Vertical + horizontal
+  // wall stack carves a turn through the rack.
+  const rW = 16, rH = 12;
   const rTiles = blankTileMap(rW, rH);
-  rTiles[7][0] = 2;
-  rTiles[7][rW - 1] = 2;
-  // Rack columns
-  fillRect(rTiles, 3, 1, 3, 5, 1);
-  fillRect(rTiles, 3, 9, 3, 12, 1);
-  fillRect(rTiles, 6, 3, 6, 10, 1);
-  fillRect(rTiles, 9, 1, 9, 5, 1);
-  fillRect(rTiles, 9, 9, 9, 12, 1);
-  fillRect(rTiles, 12, 3, 12, 10, 1);
+  // North entry (back to Hub)
+  rTiles[0][8] = 2;
+  // East exit door to Integration (row 8 per design corridor location)
+  rTiles[8][rW - 1] = 2;
+  // Corner crates
+  fillRect(rTiles, 2, 2, 3, 3, 1);
+  fillRect(rTiles, 2, 9, 3, 10, 1);
+  fillRect(rTiles, 12, 2, 13, 3, 1);
+  fillRect(rTiles, 12, 9, 13, 10, 1);
+  // Interior racks: vertical col 6 rows 5-8 + horizontal row 9 cols 8-12
+  fillRect(rTiles, 6, 5, 6, 8, 1);
+  fillRect(rTiles, 8, 9, 12, 9, 1);
 
   const rack: ChamberConfig = {
     id: 'mcp-rack',
@@ -808,31 +840,26 @@ function buildMcpLevel(): LevelConfig {
     width: rW,
     height: rH,
     tiles: rTiles,
-    spawnX: 1,
-    spawnY: 7,
-    items: [
-      { id: 'rack-a', type: 'lore', x: 1, y: 1, sprite: 'hint_token' },
-      { id: 'rack-b', type: 'lore', x: 14, y: 1, sprite: 'hint_token' },
-      { id: 'rack-c', type: 'lore', x: 14, y: 12, sprite: 'hint_token' },
-      { id: 'integrations-engineer-practice', type: 'practice', x: 8, y: 12, sprite: 'database' },
-    ],
+    spawnX: 8,
+    spawnY: 1,
+    items: [],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 7,
+        x: 8,
+        y: 0,
         target: { kind: 'chamber', chamber: 'mcp-hub' },
-        spawnX: aW - 2,
-        spawnY: 6,
+        spawnX: 4,
+        spawnY: aH - 2,
         locked: false,
       },
       {
         id: 'to-integration',
         x: rW - 1,
-        y: 7,
+        y: 8,
         target: { kind: 'chamber', chamber: 'mcp-integration' },
         spawnX: 1,
-        spawnY: 5,
+        spawnY: 8,
         locked: false,
       },
     ],
@@ -840,19 +867,26 @@ function buildMcpLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber C: Integration (16×11) -----
-  const iW = 16, iH = 11;
+  // ----- Chamber C: Integration (16×12) -----
+  // West entry from Rack; east locked exit to Subagents (preserves cross-level
+  // wiring even though the design has a south exit — subagents-lobby still
+  // expects a west entry).
+  // Two vertical pillars (cols 5 and 9, rows 5-7) flank a central aisle where
+  // VORTHEX/ghost waits at (7, 6).
+  const iW = 16, iH = 12;
   const iTiles = blankTileMap(iW, iH);
-  iTiles[5][0] = 2;
-  iTiles[5][iW - 1] = 2;
-  // Twin server cabinets framing the integration aisle.
-  fillRect(iTiles, 4, 1, 4, 3, 1);
-  fillRect(iTiles, 4, 7, 4, 9, 1);
-  fillRect(iTiles, 7, 1, 7, 3, 1);
-  fillRect(iTiles, 9, 1, 9, 3, 1);
-  fillRect(iTiles, 7, 7, 7, 9, 1);
-  fillRect(iTiles, 13, 1, 13, 3, 1);
-  fillRect(iTiles, 13, 7, 13, 9, 1);
+  // West entry door (from Rack)
+  iTiles[8][0] = 2;
+  // East locked door to Subagents
+  iTiles[6][iW - 1] = 2;
+  // Corner crates
+  fillRect(iTiles, 2, 2, 3, 3, 1);
+  fillRect(iTiles, 2, 9, 3, 10, 1);
+  fillRect(iTiles, 12, 2, 13, 3, 1);
+  fillRect(iTiles, 12, 9, 13, 10, 1);
+  // Twin vertical pillars
+  fillRect(iTiles, 5, 5, 5, 7, 1);
+  fillRect(iTiles, 9, 5, 9, 7, 1);
 
   const integration: ChamberConfig = {
     id: 'mcp-integration',
@@ -862,24 +896,25 @@ function buildMcpLevel(): LevelConfig {
     height: iH,
     tiles: iTiles,
     spawnX: 1,
-    spawnY: 5,
+    spawnY: 8,
     items: [
-      { id: 'terminal', type: 'challenge', x: 11, y: 4, sprite: 'crt_monitor' },
+      // VORTHEX boss — bestiary ghost sprite.
+      { id: 'terminal', type: 'challenge', x: 7, y: 6, sprite: 'ghost_a' },
     ],
     doors: [
       {
         id: 'back',
         x: 0,
-        y: 5,
+        y: 8,
         target: { kind: 'chamber', chamber: 'mcp-rack' },
         spawnX: rW - 2,
-        spawnY: 7,
+        spawnY: 8,
         locked: false,
       },
       {
         id: 'exit',
         x: iW - 1,
-        y: 5,
+        y: 6,
         target: { kind: 'level', level: 'subagents', chamber: 'subagents-lobby' },
         spawnX: 1,
         spawnY: 6,
@@ -889,7 +924,7 @@ function buildMcpLevel(): LevelConfig {
     ],
     npcs: [],
     decorations: [],
-    keySpawn: { x: 8, y: 7 },
+    keySpawn: { x: 7, y: 9 },
   };
 
   return {
@@ -913,19 +948,23 @@ function buildMcpLevel(): LevelConfig {
 // ============================================================================
 
 function buildSubagentsLevel(): LevelConfig {
-  // ----- Chamber A: Mission Lobby (20×12) -----
-  const aW = 20, aH = 12;
+  // ----- Chamber A: Mission Lobby (16×12) -----
+  // West entry from mcp-integration; NORTH exit to Agent Pool. Scout +
+  // Planner flank the entrance on the spine. A 4-wide horizontal blocker
+  // at row 8 cols 8-11 pushes the path back north toward the exit.
+  const aW = 16, aH = 12;
   const aTiles = blankTileMap(aW, aH);
-  aTiles[6][aW - 1] = 2;
-  // Cubicle dividers: N alcove holds roster, S alcove holds mission-brief.
-  // Scout and Planner sit between dividers; critical path threads past them.
-  fillRect(aTiles, 4, 1, 4, 3, 1);
-  fillRect(aTiles, 4, 8, 4, 10, 1);
-  fillRect(aTiles, 8, 1, 8, 3, 1);
-  fillRect(aTiles, 11, 1, 11, 3, 1);
-  fillRect(aTiles, 13, 7, 13, 10, 1);
-  fillRect(aTiles, 16, 1, 16, 3, 1);
-  fillRect(aTiles, 16, 7, 16, 10, 1);
+  // West entry door
+  aTiles[6][0] = 2;
+  // North exit door to Pool
+  aTiles[0][8] = 2;
+  // Corner crates
+  fillRect(aTiles, 2, 2, 3, 3, 1);
+  fillRect(aTiles, 2, 9, 3, 10, 1);
+  fillRect(aTiles, 12, 2, 13, 3, 1);
+  fillRect(aTiles, 12, 9, 13, 10, 1);
+  // Horizontal blocker
+  fillRect(aTiles, 8, 8, 11, 8, 1);
 
   const lobby: ChamberConfig = {
     id: 'subagents-lobby',
@@ -934,28 +973,34 @@ function buildSubagentsLevel(): LevelConfig {
     width: aW,
     height: aH,
     tiles: aTiles,
-    spawnX: 2,
+    spawnX: 1,
     spawnY: 6,
-    items: [
-      { id: 'roster', type: 'lore', x: 6, y: 3, sprite: 'paper' },
-      { id: 'mission-brief', type: 'lore', x: 14, y: 8, sprite: 'scroll' },
-    ],
+    items: [],
     doors: [
       {
-        id: 'to-pool',
-        x: aW - 1,
+        id: 'back-to-mcp',
+        x: 0,
         y: 6,
-        target: { kind: 'chamber', chamber: 'subagents-pool' },
-        spawnX: 1,
+        target: { kind: 'chamber', chamber: 'mcp-integration' },
+        spawnX: 14,
         spawnY: 6,
+        locked: false,
+      },
+      {
+        id: 'to-pool',
+        x: 8,
+        y: 0,
+        target: { kind: 'chamber', chamber: 'subagents-pool' },
+        spawnX: 8,
+        spawnY: 10,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'scout-bot',
-        x: 8,
-        y: 5,
+        x: 5,
+        y: 6,
         color: '#3FB950',
         name: 'Scout-bot',
         dialog: [
@@ -965,8 +1010,8 @@ function buildSubagentsLevel(): LevelConfig {
       },
       {
         id: 'planner-bot',
-        x: 10,
-        y: 7,
+        x: 11,
+        y: 6,
         color: '#6BA8DD',
         name: 'Planner-bot',
         dialog: [
@@ -978,20 +1023,23 @@ function buildSubagentsLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber B: Agent Pool (18×14) -----
-  const pW = 18, pH = 14;
+  // ----- Chamber B: Agent Pool (16×12) -----
+  // South entry from Lobby; east exit to Briefing. Reviewer + Debugger man
+  // the upper pods. A vertical pillar at col 6 rows 5-7 splits the central
+  // walkway between them.
+  const pW = 16, pH = 12;
   const pTiles = blankTileMap(pW, pH);
-  pTiles[7][0] = 2;
-  pTiles[7][pW - 1] = 2;
-  // Workstation pods: corner alcoves hold fragment-x (NW), fragment-y (SE),
-  // practice (S-center). A spine block forces a north detour past Reviewer + Debugger.
-  fillRect(pTiles, 2, 3, 5, 3, 1);     // NW alcove S boundary (fragment-x at 4,2)
-  fillRect(pTiles, 12, 3, 15, 3, 1);   // NE alcove S boundary
-  fillRect(pTiles, 5, 10, 5, 12, 1);   // practice alcove W boundary
-  fillRect(pTiles, 7, 10, 11, 10, 1);  // practice alcove N boundary (open at col 6)
-  fillRect(pTiles, 12, 9, 15, 9, 1);   // SE alcove N boundary (entry via col 16; fragment-y at 14,11)
-  fillRect(pTiles, 12, 10, 12, 12, 1); // SE alcove W boundary
-  fillRect(pTiles, 8, 6, 9, 8, 1);     // spine pinch — forces detour north past bots
+  // South entry door (back to Lobby)
+  pTiles[pH - 1][8] = 2;
+  // East exit door to Briefing
+  pTiles[6][pW - 1] = 2;
+  // Corner crates
+  fillRect(pTiles, 2, 2, 3, 3, 1);
+  fillRect(pTiles, 2, 9, 3, 10, 1);
+  fillRect(pTiles, 12, 2, 13, 3, 1);
+  fillRect(pTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar
+  fillRect(pTiles, 6, 5, 6, 7, 1);
 
   const pool: ChamberConfig = {
     id: 'subagents-pool',
@@ -1000,38 +1048,34 @@ function buildSubagentsLevel(): LevelConfig {
     width: pW,
     height: pH,
     tiles: pTiles,
-    spawnX: 1,
-    spawnY: 7,
-    items: [
-      { id: 'fragment-x', type: 'lore', x: 4, y: 2, sprite: 'paper' },
-      { id: 'fragment-y', type: 'lore', x: 14, y: 11, sprite: 'paper' },
-      { id: 'orchestrator-practice', type: 'practice', x: 8, y: 11, sprite: 'hint_token' },
-    ],
+    spawnX: 8,
+    spawnY: 10,
+    items: [],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 7,
+        x: 8,
+        y: pH - 1,
         target: { kind: 'chamber', chamber: 'subagents-lobby' },
-        spawnX: aW - 2,
-        spawnY: 6,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
       {
         id: 'to-briefing',
         x: pW - 1,
-        y: 7,
+        y: 6,
         target: { kind: 'chamber', chamber: 'subagents-briefing' },
-        spawnX: 1,
-        spawnY: 5,
+        spawnX: 8,
+        spawnY: 1,
         locked: false,
       },
     ],
     npcs: [
       {
         id: 'reviewer-bot',
-        x: 6,
-        y: 4,
+        x: 3,
+        y: 5,
         color: '#F0C040',
         name: 'Reviewer-bot',
         dialog: [
@@ -1041,8 +1085,8 @@ function buildSubagentsLevel(): LevelConfig {
       },
       {
         id: 'debugger-bot',
-        x: 11,
-        y: 4,
+        x: 10,
+        y: 5,
         color: '#FF6B8A',
         name: 'Debugger-bot',
         dialog: [
@@ -1054,19 +1098,22 @@ function buildSubagentsLevel(): LevelConfig {
     decorations: [],
   };
 
-  // ----- Chamber C: Briefing Room (16×11) -----
-  const bW = 16, bH = 11;
+  // ----- Chamber C: Briefing Room (16×12) -----
+  // North entry from Pool's east-bridge corridor; east locked exit to the
+  // final boss throne. Skeleton (LICH QUORUM) altar at (8, 6).
+  const bW = 16, bH = 12;
   const bTiles = blankTileMap(bW, bH);
-  bTiles[5][0] = 2;
-  bTiles[5][bW - 1] = 2;
-  // Ops room — single inner ring with openings at row 5 (W + E spine).
-  // Terminal sits in the N inner alcove, key in the S inner alcove.
-  fillRect(bTiles, 3, 2, 3, 4, 1);   // W wall upper
-  fillRect(bTiles, 3, 6, 3, 7, 1);   // W wall lower
-  fillRect(bTiles, 4, 2, 12, 2, 1);  // N wall
-  fillRect(bTiles, 12, 3, 12, 4, 1); // E wall upper
-  fillRect(bTiles, 12, 6, 12, 7, 1); // E wall lower
-  fillRect(bTiles, 4, 8, 12, 8, 1);  // S wall
+  // North entry door (from Pool)
+  bTiles[0][8] = 2;
+  // East locked exit door to Throne
+  bTiles[6][bW - 1] = 2;
+  // Corner crates
+  fillRect(bTiles, 2, 2, 3, 3, 1);
+  fillRect(bTiles, 2, 9, 3, 10, 1);
+  fillRect(bTiles, 12, 2, 13, 3, 1);
+  fillRect(bTiles, 12, 9, 13, 10, 1);
+  // Vertical pillar
+  fillRect(bTiles, 6, 5, 6, 7, 1);
 
   const briefing: ChamberConfig = {
     id: 'subagents-briefing',
@@ -1075,35 +1122,36 @@ function buildSubagentsLevel(): LevelConfig {
     width: bW,
     height: bH,
     tiles: bTiles,
-    spawnX: 1,
-    spawnY: 5,
+    spawnX: 8,
+    spawnY: 1,
     items: [
-      { id: 'terminal', type: 'challenge', x: 11, y: 4, sprite: 'crt_monitor' },
+      // LICH QUORUM boss — bestiary skeleton sprite.
+      { id: 'terminal', type: 'challenge', x: 8, y: 6, sprite: 'skeleton_a' },
     ],
     doors: [
       {
         id: 'back',
-        x: 0,
-        y: 5,
+        x: 8,
+        y: 0,
         target: { kind: 'chamber', chamber: 'subagents-pool' },
         spawnX: pW - 2,
-        spawnY: 7,
+        spawnY: 6,
         locked: false,
       },
       {
         id: 'exit',
         x: bW - 1,
-        y: 5,
+        y: 6,
         target: { kind: 'level', level: 'final-boss', chamber: 'final-boss-throne' },
         spawnX: 1,
-        spawnY: 6,
+        spawnY: 8,
         locked: true,
         requiresLevelKey: true,
       },
     ],
     npcs: [],
     decorations: [],
-    keySpawn: { x: 8, y: 7 },
+    keySpawn: { x: 8, y: 9 },
   };
 
   return {
@@ -1127,20 +1175,29 @@ function buildSubagentsLevel(): LevelConfig {
 // ============================================================================
 
 function buildFinalBossLevel(): LevelConfig {
-  const tW = 22, tH = 13;
+  // ----- Throne Room (28×16) — the ceremonial approach. -----
+  // Single bespoke chamber. The player enters west at (0, 8), walks the
+  // straight sacred aisle east past 4 colonnade pillar pairs at cols 5/9/13/17,
+  // crosses the dais opening at col 22, and reaches the OVERLORD altar at
+  // (18, 9) with the dragon sprite waiting on the throne dais.
+  const tW = 28, tH = 16;
   const tTiles = blankTileMap(tW, tH);
-  // West door (entry from subagents-briefing)
-  tTiles[6][0] = 2;
-  // Extra colonnade pillars for ceremonial approach.
-  fillRect(tTiles, 10, 4, 10, 5, 1);
-  fillRect(tTiles, 10, 8, 10, 9, 1);
-  // East door (game end, locked until boss falls)
-  tTiles[6][tW - 1] = 2;
-  // Throne platform — two columns of "pillar" walls flanking center
-  fillRect(tTiles, 5, 2, 5, 3, 1);
-  fillRect(tTiles, tW - 6, 2, tW - 6, 3, 1);
-  fillRect(tTiles, 5, tH - 4, 5, tH - 3, 1);
-  fillRect(tTiles, tW - 6, tH - 4, tW - 6, tH - 3, 1);
+  // West entry door (from subagents-briefing)
+  tTiles[8][0] = 2;
+  // East end-game door (locked until dragon falls)
+  tTiles[8][tW - 1] = 2;
+  // Colonnade pillars — 4 pairs flanking the central aisle.
+  fillRect(tTiles, 5, 3, 5, 4, 1);
+  fillRect(tTiles, 9, 3, 9, 4, 1);
+  fillRect(tTiles, 13, 3, 13, 4, 1);
+  fillRect(tTiles, 17, 3, 17, 4, 1);
+  fillRect(tTiles, 5, 11, 5, 12, 1);
+  fillRect(tTiles, 9, 11, 9, 12, 1);
+  fillRect(tTiles, 13, 11, 13, 12, 1);
+  fillRect(tTiles, 17, 11, 17, 12, 1);
+  // Throne dais endcap walls at col 22 (single-tile walls at top + bottom).
+  fillRect(tTiles, 22, 2, 22, 2, 1);
+  fillRect(tTiles, 22, 13, 22, 13, 1);
 
   const throne: ChamberConfig = {
     id: 'final-boss-throne',
@@ -1150,25 +1207,26 @@ function buildFinalBossLevel(): LevelConfig {
     height: tH,
     tiles: tTiles,
     spawnX: 1,
-    spawnY: 6,
+    spawnY: 8,
     items: [
-      // The "challenge" item triggers the final battle.
-      { id: 'overlord-altar', type: 'challenge', x: tW - 5, y: 6, sprite: 'crt_monitor' },
+      // OVERLORD altar — bestiary dragon sprite (largest in the set).
+      // Interact to start the final boss fight.
+      { id: 'overlord-altar', type: 'challenge', x: 18, y: 9, sprite: 'dragon_a' },
     ],
     doors: [
       {
         id: 'back',
         x: 0,
-        y: 6,
+        y: 8,
         target: { kind: 'chamber', chamber: 'subagents-briefing' },
-        spawnX: 1,
-        spawnY: 5,
+        spawnX: 14,
+        spawnY: 6,
         locked: false,
       },
       {
         id: 'exit',
         x: tW - 1,
-        y: 6,
+        y: 8,
         target: { kind: 'end' },
         spawnX: 0,
         spawnY: 0,
@@ -1178,7 +1236,7 @@ function buildFinalBossLevel(): LevelConfig {
     ],
     npcs: [],
     decorations: [],
-    keySpawn: { x: tW - 5, y: 9 },
+    keySpawn: { x: 20, y: 9 },
   };
 
   return {

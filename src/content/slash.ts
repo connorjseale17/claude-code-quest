@@ -163,7 +163,7 @@ export const slashContent: LessonContent = {
   },
   battle: {
     name: 'GRIST',
-    spriteKey: 'grist',
+    spriteKey: 'goblin',
     maxHP: 4,
     playerHP: 5,
     phases: 1,

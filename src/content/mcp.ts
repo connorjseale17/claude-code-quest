@@ -164,7 +164,7 @@ export const mcpContent: LessonContent = {
   },
   battle: {
     name: 'VORTHEX',
-    spriteKey: 'vorthex',
+    spriteKey: 'ghost',
     maxHP: 4,
     playerHP: 5,
     phases: 2,

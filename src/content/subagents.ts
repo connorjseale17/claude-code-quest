@@ -242,7 +242,7 @@ export const subagentsContent: LessonContent = {
   },
   battle: {
     name: 'THE LICH QUORUM',
-    spriteKey: 'lich',
+    spriteKey: 'skeleton',
     maxHP: 5,
     playerHP: 5,
     phases: 2,
