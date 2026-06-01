@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useGame, useGameDispatch } from '../engine/GameContext';
 import { CONTENT } from '../content';
 
@@ -199,13 +199,84 @@ function renderBook(canvas: HTMLCanvasElement) {
   ctx.putImageData(img, 0, 0);
 }
 
+// ---------- Lore markup parsing ----------
+// Lightweight markup encoded in the `text` string (see plan):
+//   **first line**  → main header (chapter title, spans the top)
+//   **other line**  → section sub-header (bold, flows in the columns)
+//   > line          → takeaway callout (italic, pinned at the bottom)
+//   *word* / `code` → inline italic / monospace
+// Plain text with none of these (L2–L6) parses to all paragraphs — unchanged.
+type LoreBlock = { kind: 'section' | 'para'; text: string };
+interface ParsedLore { mainHeader?: string; blocks: LoreBlock[]; takeaway?: string }
+
+function parseLore(text: string): ParsedLore {
+  const chunks = text.split(/\n\n+/).map(s => s.trim()).filter(Boolean);
+  let mainHeader: string | undefined;
+  let takeaway: string | undefined;
+  const blocks: LoreBlock[] = [];
+  for (const c of chunks) {
+    const boldLine = c.match(/^\*\*(.+)\*\*$/);
+    if (boldLine) {
+      // First bold line (before any body) is the chapter title; the rest are sections.
+      if (mainHeader === undefined && blocks.length === 0) mainHeader = boldLine[1];
+      else blocks.push({ kind: 'section', text: boldLine[1] });
+      continue;
+    }
+    if (/^>\s?/.test(c)) { takeaway = c.replace(/^>\s?/, ''); continue; }
+    blocks.push({ kind: 'para', text: c });
+  }
+  return { mainHeader, blocks, takeaway };
+}
+
+/** Render inline `*italic*` and `` `code` `` spans within a body string. */
+function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
+  const nodes: React.ReactNode[] = [];
+  const re = /(`[^`]+`)|(\*[^*]+\*)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let k = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) nodes.push(text.slice(last, m.index));
+    const tok = m[0];
+    if (tok.startsWith('`')) {
+      nodes.push(
+        <code
+          key={`${keyPrefix}-${k}`}
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.86em',
+            background: 'rgba(90,60,30,0.10)',
+            padding: '0 2px',
+            borderRadius: 2,
+          }}
+        >
+          {tok.slice(1, -1)}
+        </code>,
+      );
+    } else {
+      nodes.push(<em key={`${keyPrefix}-${k}`}>{tok.slice(1, -1)}</em>);
+    }
+    last = m.index + tok.length;
+    k++;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return nodes;
+}
+
+// Auto-fit bounds (px). Long structured lore shrinks toward MIN to stay on one spread.
+const MAX_FONT = 13;
+const MIN_FONT = 8;
+
 export function LorePanel() {
   const state = useGame();
   const dispatch = useGameDispatch();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const [fontPx, setFontPx] = useState(MAX_FONT);
 
   const lesson = CONTENT[state.currentLevel];
   const loreEntry = lesson.lore.find(l => l.id === state.activePanel?.itemId);
+  const parsed = loreEntry ? parseLore(loreEntry.text) : null;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -225,10 +296,29 @@ export function LorePanel() {
     }
   }, [loreEntry]);
 
-  if (!loreEntry) return null;
-  // Lore text can come as one paragraph or several separated by \n\n.
-  // Render as <p> blocks so the columns can break between paragraphs cleanly.
-  const paragraphs = loreEntry.text.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
+  // Auto-fit: shrink the body font until the two columns stop spilling into a
+  // third (overflowing column => scrollWidth > clientWidth). Keeps every item
+  // on a single spread. Re-runs per item and again once the webfont loads.
+  useLayoutEffect(() => {
+    if (!loreEntry) return;
+    const el = bodyRef.current;
+    if (!el) return;
+    const fit = () => {
+      let size = MAX_FONT;
+      el.style.fontSize = size + 'px';
+      // Force reflow + measure; step down until the columns fit the width.
+      while (size > MIN_FONT && el.scrollWidth > el.clientWidth + 2) {
+        size -= 0.5;
+        el.style.fontSize = size + 'px';
+      }
+      setFontPx(size);
+    };
+    fit();
+    // Spectral may still be loading on first open — re-fit when fonts settle.
+    document.fonts?.ready.then(fit).catch(() => {});
+  }, [loreEntry]);
+
+  if (!loreEntry || !parsed) return null;
 
   return (
     <div
@@ -260,40 +350,95 @@ export function LorePanel() {
           }}
         />
 
-        {/* Text container — spans both pages, uses CSS multi-column to flow
-            text across the spine. column-gap matches the spine width (~15% of
-            the text area = ~13% of book width). */}
+        {/* Text area — header band (spans the top), body (two columns across
+            the spine, auto-fit), and takeaway callout (pinned at the bottom). */}
         <div
           style={{
             position: 'absolute',
             left: '7.5%',
             right: '7.5%',
-            top: '12%',
-            height: '74%',
+            top: '9%',
+            bottom: '8.5%',
+            display: 'flex',
+            flexDirection: 'column',
             color: '#3a2c18',
             fontFamily: "'Spectral', Georgia, serif",
-            fontSize: 13,
-            lineHeight: 1.6,
-            columnCount: 2,
-            columnGap: '15.3%',
-            columnFill: 'auto',
-            textAlign: 'justify',
-            hyphens: 'auto',
-            overflow: 'hidden',
             textShadow: '0 1px 0 rgba(255,255,255,0.18)',
           }}
         >
-          {paragraphs.map((p, i) => (
-            <p
-              key={i}
+          {parsed.mainHeader && (
+            <div
               style={{
-                margin: i === 0 ? '0 0 0.8em 0' : '0.6em 0 0.8em 0',
-                textIndent: i === 0 ? 0 : '1.2em',
+                flex: '0 0 auto',
+                textAlign: 'center',
+                fontWeight: 600,
+                fontSize: Math.round(fontPx * 1.32),
+                lineHeight: 1.25,
+                marginBottom: '0.5em',
+                paddingBottom: '0.4em',
+                borderBottom: '1px solid rgba(120,90,50,0.35)',
               }}
             >
-              {p}
-            </p>
-          ))}
+              {parsed.mainHeader}
+            </div>
+          )}
+
+          <div
+            ref={bodyRef}
+            style={{
+              flex: '1 1 auto',
+              minHeight: 0,
+              fontSize: fontPx,
+              lineHeight: 1.5,
+              columnCount: 2,
+              columnGap: '15.3%',
+              columnFill: 'auto',
+              textAlign: 'justify',
+              hyphens: 'auto',
+              overflow: 'hidden',
+            }}
+          >
+            {parsed.blocks.map((b, i) =>
+              b.kind === 'section' ? (
+                <p
+                  key={i}
+                  style={{
+                    margin: i === 0 ? '0 0 0.2em 0' : '0.7em 0 0.2em 0',
+                    fontWeight: 600,
+                    breakInside: 'avoid',
+                  }}
+                >
+                  {renderInline(b.text, `s${i}`)}
+                </p>
+              ) : (
+                <p
+                  key={i}
+                  style={{
+                    margin: '0 0 0.55em 0',
+                    textIndent: 0,
+                  }}
+                >
+                  {renderInline(b.text, `p${i}`)}
+                </p>
+              ),
+            )}
+          </div>
+
+          {parsed.takeaway && (
+            <div
+              style={{
+                flex: '0 0 auto',
+                marginTop: '0.5em',
+                paddingTop: '0.45em',
+                borderTop: '1px solid rgba(120,90,50,0.35)',
+                fontStyle: 'italic',
+                fontSize: Math.max(MIN_FONT, Math.round(fontPx * 0.96)),
+                lineHeight: 1.4,
+              }}
+            >
+              {renderInline(parsed.takeaway, 'tk')}
+            </div>
+          )}
         </div>
 
         {/* Bottom-left close button (`<` built into the book) */}

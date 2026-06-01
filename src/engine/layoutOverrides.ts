@@ -78,8 +78,8 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "dialog": [
           "Hey. Fresh session? Good. Let's set you up before you wreck something.",
           "The terminal is text-mode chat with your computer. `cd`, `ls`, `git status` — those are the keys. Claude Code lives in there, and it can text the computer too.",
-          "Four permission modes. PLAN reads. ACCEPT-EDITS writes. AUTO runs free with a safety classifier. ASK confirms each step. Shift+Tab cycles.",
-          "Brief me in three parts. WHY — who + problem. WHAT — stack + key files. HOW — build, test, ship commands. Then Vercel auto-deploys on every push."
+          "Four permission modes. Default confirms every action. Accept Edits writes, you review the diff after. Plan reads and proposes but changes nothing. Auto decides per-action with a safety check. Shift+Tab cycles them live.",
+          "Brief me like a new hire: name the deliverable, the client, the stack. And share by sensitivity — a live link for demos, a sealed zip for anything client-confidential."
         ]
       }
     ],
@@ -173,7 +173,7 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "paper"
       },
       {
-        "id": "briefing-formula",
+        "id": "from-gpts",
         "type": "lore",
         "x": 10,
         "y": 4,
