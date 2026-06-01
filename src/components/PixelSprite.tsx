@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FRAMES, PIXEL_PALETTE } from '../assets/sprites';
+import { FRAMES, IMAGE_FRAMES, PIXEL_PALETTE } from '../assets/sprites';
 
 interface PixelSpriteProps {
   frame: string | string[];
@@ -9,7 +9,32 @@ interface PixelSpriteProps {
   className?: string;
 }
 
+// All sprites are authored on a 16×16 logical grid, so an image-backed sprite
+// renders at the same physical footprint as a string-pixel sprite at the same scale.
+const SPRITE_GRID = 16;
+
 export function PixelSprite({ frame, scale = 4, primaryColor, style, className }: PixelSpriteProps) {
+  // Image-backed frames take priority over string-pixel frames.
+  if (typeof frame === 'string' && IMAGE_FRAMES[frame]) {
+    const size = SPRITE_GRID * scale;
+    return (
+      <img
+        src={IMAGE_FRAMES[frame]}
+        alt={frame}
+        className={className}
+        draggable={false}
+        style={{
+          width: size,
+          height: size,
+          imageRendering: 'pixelated',
+          flexShrink: 0,
+          objectFit: 'contain',
+          ...style,
+        }}
+      />
+    );
+  }
+
   const f = typeof frame === 'string' ? FRAMES[frame] : frame;
   if (!f) return null;
   const rows = f.length;

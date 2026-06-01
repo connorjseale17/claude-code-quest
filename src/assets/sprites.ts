@@ -1,3 +1,5 @@
+import bookImg from './book.png';
+
 export const PIXEL_PALETTE: Record<string, string | null> = {
   '.': null,
   '1': '#E8633D',
@@ -7,6 +9,18 @@ export const PIXEL_PALETTE: Record<string, string | null> = {
   '5': '#3FB950',
   '7': '#E8E8E8',
   '8': '#6BA8DD',
+};
+
+/**
+ * Image-backed sprite frames. When PixelSprite is asked for one of these
+ * frame names, it renders an <img> (pixelated) instead of the palette grid.
+ * Takes priority over FRAMES (string pixel-art) when both exist.
+ *
+ * Use this for sprites that are best authored as a real image rather than
+ * a palette grid — e.g. richly shaded items.
+ */
+export const IMAGE_FRAMES: Record<string, string> = {
+  book: bookImg,
 };
 
 const W = 16;
