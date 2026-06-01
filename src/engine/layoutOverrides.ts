@@ -537,13 +537,6 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "hint_token"
       },
       {
-        "id": "fragment-b",
-        "type": "lore",
-        "x": 5,
-        "y": 9,
-        "sprite": "paper"
-      },
-      {
         "id": "fragment-c",
         "type": "lore",
         "x": 3,
@@ -864,13 +857,6 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 11,
         "y": 6,
         "sprite": "goblin_a"
-      },
-      {
-        "id": "card-b",
-        "type": "lore",
-        "x": 4,
-        "y": 4,
-        "sprite": "paper"
       },
       {
         "id": "card-c",

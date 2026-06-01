@@ -3,8 +3,8 @@ import { LEVEL_CONFIGS } from '../engine/roomConfigs';
 import { Bot } from './Bot';
 import { Item } from './Item';
 import { Door } from './Door';
-import { PixelSprite } from './PixelSprite';
-import { PROP_FRAMES, PROP_PALETTE } from '../assets/sprites';
+import { PixelSprite, PropSprite } from './PixelSprite';
+import { PROP_FRAMES } from '../assets/sprites';
 import { DPad } from './DPad';
 
 const TILE_SIZE = 40;
@@ -144,12 +144,15 @@ export function Room() {
               opacity: 0.85,
             }}
           >
-            <PixelSprite
-              frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite}
-              scale={isProp ? TILE_SIZE / Math.max(PROP_FRAMES[dec.sprite][0]?.length || 12, PROP_FRAMES[dec.sprite].length || 12) : 2}
-              palette={isProp ? PROP_PALETTE : undefined}
-              primaryColor={isProp ? undefined : dec.tint}
-            />
+            {isProp ? (
+              <PropSprite name={dec.sprite} scale={TILE_SIZE / Math.max(PROP_FRAMES[dec.sprite][0]?.length || 12, PROP_FRAMES[dec.sprite].length || 12)} />
+            ) : (
+              <PixelSprite
+                frame={dec.sprite}
+                scale={2}
+                primaryColor={dec.tint}
+              />
+            )}
           </div>
         );
       })}

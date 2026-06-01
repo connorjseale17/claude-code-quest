@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FRAMES, PIXEL_PALETTE } from '../assets/sprites';
+import { FRAMES, PIXEL_PALETTE, PROP_FRAMES, PROP_FRAMES_B, PROP_PALETTE } from '../assets/sprites';
 
 interface PixelSpriteProps {
   frame: string | string[];
@@ -75,6 +75,22 @@ export function BotIdle({ scale = 4, primaryColor, style }: { scale?: number; pr
 
 export function BotWalk({ scale = 4, primaryColor, style }: { scale?: number; primaryColor?: string; style?: React.CSSProperties }) {
   return <AnimatedSprite frames={['walk_1', 'walk_2', 'walk_3', 'walk_4']} fps={6} scale={scale} primaryColor={primaryColor} style={style} />;
+}
+
+/** Renders a prop. If a B-frame exists in PROP_FRAMES_B (flicker / pulse /
+ *  state / sway / shimmer), alternates between A and B every ~520 ms. */
+export function PropSprite({ name, scale, style }: { name: string; scale: number; style?: React.CSSProperties }) {
+  const a = PROP_FRAMES[name];
+  const b = PROP_FRAMES_B[name];
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (!b) return;
+    const id = setInterval(() => setI(x => x ^ 1), 520);
+    return () => clearInterval(id);
+  }, [b]);
+  if (!a) return null;
+  const frame = (b && i === 1) ? b : a;
+  return <PixelSprite frame={frame} scale={scale} palette={PROP_PALETTE} style={style} />;
 }
 
 export function BotHappy({ scale = 4, primaryColor, style }: { scale?: number; primaryColor?: string; style?: React.CSSProperties }) {

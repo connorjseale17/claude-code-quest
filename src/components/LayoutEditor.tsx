@@ -15,7 +15,7 @@ import {
   type LevelId,
 } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
-import { PixelSprite } from './PixelSprite';
+import { PixelSprite, PropSprite } from './PixelSprite';
 import { FRAMES, PROP_FRAMES, PROP_PALETTE, PROP_LIST } from '../assets/sprites';
 
 const DRAFT_KEY = 'ccq-layout-draft';
@@ -552,7 +552,9 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
               const frame = isProp ? PROP_FRAMES[dec.sprite] : FRAMES[dec.sprite];
               return (
                 <EntityBox key={`dec-${i}`} x={dec.x} y={dec.y} cell={cell} onPointerDown={startEntityDrag('decorations', i)} style={selOutline(!!isSel('decorations', i))}>
-                  {frame && <PixelSprite frame={isProp ? PROP_FRAMES[dec.sprite] : dec.sprite} palette={isProp ? PROP_PALETTE : undefined} scale={fitScale(frame, cell)} />}
+                  {frame && (isProp
+                    ? <PropSprite name={dec.sprite} scale={fitScale(frame, cell)} />
+                    : <PixelSprite frame={dec.sprite} scale={fitScale(frame, cell)} />)}
                 </EntityBox>
               );
             })}

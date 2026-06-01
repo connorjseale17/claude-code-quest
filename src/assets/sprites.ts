@@ -1354,3 +1354,28 @@ export const PROP_LIST: { key: string; label: string; cat: string }[] = [
   { key: 'bookshelf', label: 'Bookshelf', cat: 'furniture' },
   { key: 'crate', label: 'Crate', cat: 'furniture' },
 ];
+
+// =============================================================================
+// PROP_FRAMES_B — second-frame data for animated props (flicker / pulse /
+// state / sway / shimmer). When a prop is present here, PropSprite alternates
+// between PROP_FRAMES[key] (frame A) and PROP_FRAMES_B[key] (frame B).
+// Static props (banner, cracked_bricks, chains, rubble, bones, cable_run,
+// table, anvil, weapon_rack, bookshelf, crate, barrel) are intentionally
+// absent — they render statically.
+// =============================================================================
+
+export const PROP_FRAMES_B: Record<string, string[]> = {
+  sconce: mkProp(['....f...', '...fhf..', '..ffF...', '...F....', '..ooo...', '...W....', '...W....', '.SsssS..', 'S..k..S.', '.S...S..', '..SkS...', '...S....']),
+  brazier: mkProp(['...ff.f.....', '..fhhhf.....', '.ffFFff.....', '..fFFFf.....', '...fFf......', '.oooooooo...', '.SsssssssS..', '..SssssS....', '...S..S.....', '..S....S....', '.S......S...', 'S........S..']),
+  hanging_lantern: mkProp(['...x....', '...x....', '..sss...', '.s...s..', 's..fh.s.', 's.fFf.s.', 's.fFff.s', 's..F..s.', '.s...s..', '..sss...', '...s....', '........']),
+  mana_crystal: mkProp(['....i....', '...cic...', '..ciic...', '.cciiccc.', 'cciiiiicc', '.cciiicc.', '..ciiic..', '...cic...', '....i....', '....m....', '.MMmmmMM.', '..mmmmm..']),
+  cursor_beacon: mkProp(['gggggggg', 'gkkkkkkg', 'gkmkmmkg', 'gkmmkmkg', 'gkkkkkkg', 'gggggggg', '..gGGg..', '..gGGg..', '..GGGG..']),
+  floor_lever: mkProp(['........', '......o.', '.....o..', '....o...', '...so...', '..sss...', '..sss...', '.SsssS..', 'SSSSSSSS', 'GGGGGGGG']),
+  crt_terminal: mkProp(['.SSSSSSSSSSSS.', 'SssssssssssssS', 'Sskmkkkmkkkk sS', ' Skmmkkkkmkkk sS', 'Skkkkkkkkkkk sS', 'SssssssssssssS', '.SSSSSSSSSSSS.', '....SSSS......', '..SSSSSSSS....', '.GGGGGGGGGG...']),
+  server_stack: mkProp(['SSSSSSSSSS', 'SkkkkkkkkS', 'SkGGGGGkmS', 'SkkkkkkkkS', 'SkGGGGGkfS', 'SkkkkkkkkS', 'SkGGGGGkmS', 'SkkkkkkkkS', 'SkGGGGGkmS', 'SSSSSSSSSS', 'GGGGGGGGGG']),
+  wall_runes: mkProp(['.c..c..c..c.', '.m.cmc.cmc..', '..cmc..cmc..', '.c.c.c.c.c..', '..i..i..i...', '............']),
+  cobweb: mkProp(['ii........', 'i.i.......', 'i..i......', 'i.i..i....', 'i..i...i..', 'i.i.i.i..i', 'i....i..i.', 'i..i...i..', 'i.i...i...', 'ii...i....']),
+  puddle: mkProp(['...SSSSSS....', '..SccccccS...', '.SciccccccS..', 'SccccicccS...', '.SccicccccS..', '..SccccccS...', '...SSSSSS....']),
+  summoning_circle: mkProp(['...cccccc...', '..c......c..', '.c..ccii..c.', 'c..i.pp.i..c', 'c.i.pmmp.i.c', 'c.i.pmmp.i.c', 'c..i.pp.i..c', '.c..ccii..c.', '..c......c..', '...cccccc...']),
+  treasure_chest: mkProp(['...k......k...', '..wwwwwwwwww..', '.wWWWWWWWWWWw.', 'wkffffffffffkw', 'wkfhfhfhfhfkw', 'wWWWWWWWWWWWw', 'wsssssssssssw', '.wwwwwwwwww...', '..............', '..............']),
+};
