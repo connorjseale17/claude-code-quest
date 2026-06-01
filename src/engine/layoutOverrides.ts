@@ -1804,6 +1804,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 22,
         "y": 7,
         "sprite": "dragon_a"
+      },
+      {
+        "id": "complexity-maxim",
+        "type": "lore",
+        "x": 12,
+        "y": 8,
+        "sprite": "paper"
       }
     ],
     "doors": [

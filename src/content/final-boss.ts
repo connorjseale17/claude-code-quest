@@ -3,32 +3,37 @@ import type { LessonContent } from './types';
 export const finalBossContent: LessonContent = {
   roomId: 'final-boss',
   intro:
-    'Operator. The throne. THE OVERLORD reigns here — every anti-pattern made flesh, every shortcut that ever cost an engagement. Cross the chamber. End the cycle.',
+    'The throne. The Gatekeeper waits here — the last test, the synthesis. Sloppy left a slime trail. The Memory Warlock forgot his own staff. Green Goblin dropped his pebbles. Connected Casper still wails about token bloat. Subagent Skeletor finally asked for help. Now: cross the chamber. End the cycle.',
   // Required-shape fallbacks (the battle replaces these for the encounter).
   prompt: '',
   choices: [{ id: 'noop', label: 'noop', correct: true }],
   passFeedback: '',
   failFeedback: '',
-  lore: [],
+  lore: [
+    {
+      id: 'complexity-maxim',
+      text: 'Tip: the one rule that governs all of this — only add complexity when you feel friction. Start with CLAUDE.md and plain prompts. Notice what you repeat. Automate THAT specific thing. Every hook, MCP server, skill, agent, plugin earns its way in by solving a real problem.',
+    },
+  ],
   battle: {
-    name: 'THE OVERLORD',
+    name: 'The Gatekeeper',
     spriteKey: 'dragon',
     maxHP: 6,
     playerHP: 6,
     phases: 3,
     introLine:
-      "*the throne stirs* you walked past every warning. you defeated my children. now answer to ME, operator. *the chamber dims*",
+      "*the throne stirs* my children fell — the Glob, the Warlock, the Goblin, the Ghost, the Skeletor. all of them. you stand alone now. *the chamber dims* one more keeper. then the cycle ends.",
     tauntLines: [
-      "*roars* you LEARNED but you have not MASTERED!",
+      "*roars* you LEARNED but you have not LIVED it!",
       "*shifts form* I am every shortcut you almost took!",
-      "*the throne cracks* I am vibe-coding, amnesia, copy-paste, walls, AND solitude!",
-      "*chamber shakes* you cannot dodge what you do not know!",
+      "*the throne cracks* I am sloppy. I am forgetful. I am unbottled. I am unconnected. I am alone.",
+      "*chamber shakes* maxims without practice are NOTHING!",
       "*howls* one more crack and you are MINE!",
     ],
     victoryLine:
-      "*the throne shatters* …the cycle… is broken… *the overlord dissolves into hex* the firm endures.",
+      "*the throne shatters* …the cycle… is broken… *the gatekeeper dissolves into hex* go. add complexity only when you feel friction. the firm endures.",
     questions: [
-      // L1 — permission modes (Welcome)
+      // L1 — permission modes (Welcome / Sloppy the Glob)
       {
         prompt: "You're opening a fresh client repo you've never seen. Which permission mode?",
         choices: [
@@ -40,7 +45,7 @@ export const finalBossContent: LessonContent = {
         passFeedback: 'STRIKE! Plan first on unknown code. Read before write.',
         failFeedback: 'MISS! Unknown code = PLAN mode. Always.',
       },
-      // L2 — CLAUDE.md (Claude.md)
+      // L2 — CLAUDE.md (Memory Warlock)
       {
         prompt: "The single highest-ROI place to encode 'use pnpm vitest'?",
         choices: [
@@ -52,19 +57,19 @@ export const finalBossContent: LessonContent = {
         passFeedback: 'STRIKE! The contract. One line saves countless turns.',
         failFeedback: 'MISS! CLAUDE.md is loaded every session. It is the contract.',
       },
-      // L3 — slash / hooks (Slash)
+      // L3 — slash / hooks (Green Goblin)
       {
         prompt: "Firm rule: lint MUST run before every commit, no exception. What GUARANTEES it?",
         choices: [
           { id: 'a', label: 'CLAUDE.md note', correct: false },
           { id: 'b', label: 'Slash command /commit', correct: false },
-          { id: 'c', label: 'PreToolUse hook on git commit', correct: true },
+          { id: 'c', label: 'PreToolUse hook on Bash(git commit *)', correct: true },
           { id: 'd', label: 'A code reviewer subagent', correct: false },
         ],
         passFeedback: 'STRIKE! Hooks are laws. Deterministic enforcement on the event.',
         failFeedback: 'MISS! CLAUDE.md and slash commands can be skipped. Hooks fire on events.',
       },
-      // L4 — MCP (MCP)
+      // L4 — MCP (Connected Casper)
       {
         prompt: "Safe pattern to let Claude read Drive + post Slack?",
         choices: [
@@ -76,7 +81,7 @@ export const finalBossContent: LessonContent = {
         passFeedback: 'STRIKE! Two servers. Scoped auth. Narrow rules. The pattern.',
         failFeedback: 'MISS! MCP solves this with scoped tokens. Custom wrappers leak.',
       },
-      // L5 — subagents / routines (Subagents)
+      // L5 — subagents / routines (Subagent Skeletor)
       {
         prompt: "Schedule: Friday 5pm — fetch merged PRs, summarize, post to #weekly-review. Right primitive?",
         choices: [
@@ -88,7 +93,7 @@ export const finalBossContent: LessonContent = {
         passFeedback: 'STRIKE! Routines for recurring. Schedule = /loop on Anthropic infra.',
         failFeedback: 'MISS! Recurring + autonomous + scheduled = routine. Not subagent, not hook.',
       },
-      // Meta — synthesis
+      // Synthesis — mental model
       {
         prompt: "Which sequence is the CORRECT mental model for a Claude Code session?",
         choices: [
@@ -100,19 +105,19 @@ export const finalBossContent: LessonContent = {
         passFeedback: 'STRIKE! Read first. Plan. Review the plan. Then write. Then ship.',
         failFeedback: 'MISS! The plan IS the first draft. Read and plan precede every keystroke.',
       },
-      // Meta — context
+      // Synthesis — the one rule
       {
-        prompt: "Which is NOT a Claude Code context-management tool?",
+        prompt: "You just installed Claude Code on a fresh project. Following the one rule that governs all of this — what do you build first?",
         choices: [
-          { id: 'a', label: '/compact', correct: false },
-          { id: 'b', label: '/clear', correct: false },
-          { id: 'c', label: '/rewind', correct: false },
-          { id: 'd', label: '/git-push', correct: true },
+          { id: 'a', label: 'CLAUDE.md + custom hooks + 4 MCP servers + a style-check skill + a reviewer agent + a team plugin', correct: false },
+          { id: 'b', label: 'Plain prompts and a basic CLAUDE.md. Add a tool only when you notice yourself repeating the same workaround.', correct: true },
+          { id: 'c', label: 'Install the most popular team plugin you can find and inherit its whole stack', correct: false },
+          { id: 'd', label: 'Skip CLAUDE.md, run /init, accept whatever it generates verbatim', correct: false },
         ],
-        passFeedback: 'STRIKE! /git-push is not a Claude Code primitive. The others manage context.',
-        failFeedback: 'MISS! /compact, /clear, /rewind all manage context. /git-push is not in the set.',
+        passFeedback: 'STRIKE! Only add complexity when you feel friction. Every hook, server, skill, agent, plugin earns its way in by solving a real problem you actually have.',
+        failFeedback: 'MISS! Start lean. The creator of Claude Code himself runs a minimal setup. Friction-driven complexity beats speculative complexity, every time.',
       },
-      // Meta — delegation
+      // Synthesis — delegation
       {
         prompt: "You need to research 5 competitors in parallel. Best move?",
         choices: [
