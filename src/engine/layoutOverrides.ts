@@ -1034,6 +1034,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 5,
         "y": 9,
         "sprite": "paper"
+      },
+      {
+        "id": "essential-stack",
+        "type": "lore",
+        "x": 6,
+        "y": 7,
+        "sprite": "paper"
       }
     ],
     "doors": [
@@ -1072,10 +1079,10 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "name": "Connector Duck",
         "dialog": [
           "Quack. Welcome to the Hub. We trade in connections.",
-          "MCP — Model Context Protocol — is how Claude reaches anything outside its own walls.",
-          "Slack. GitHub. Google Drive. Your CRM. Your warehouse. Any of them. All of them.",
-          "Add with `claude mcp add <name>`. Authorize once. Use forever. Yes — I'm a debugging duck. Why do you ask?",
-          "But — every server is a new attack surface. Default-deny. Audit the source. Don't ship the kingdom keys to a server you found in someone's gist."
+          "MCP — Model Context Protocol — open standard. Write the integration once, every AI client speaks to it.",
+          "Essential stack to start: GitHub, Context7 (current docs), Playwright (browser), Filesystem. Four servers cover most daily work.",
+          "#1 mistake: installing every cool server. Each one bloats context. Start lean. Add by need, not FOMO.",
+          "Every tool call sees what the AUTH TOKEN sees. Default-deny in /permissions. Auto-approve specific tools, never whole servers."
         ]
       }
     ],
@@ -1129,6 +1136,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "type": "lore",
         "x": 5,
         "y": 9,
+        "sprite": "paper"
+      },
+      {
+        "id": "mcp-mistake",
+        "type": "lore",
+        "x": 8,
+        "y": 1,
         "sprite": "paper"
       },
       {
@@ -1251,6 +1265,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "type": "lore",
         "x": 3,
         "y": 8,
+        "sprite": "paper"
+      },
+      {
+        "id": "hooks-mcp-pair",
+        "type": "lore",
+        "x": 5,
+        "y": 5,
         "sprite": "paper"
       }
     ],
