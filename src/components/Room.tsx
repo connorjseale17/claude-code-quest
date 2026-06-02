@@ -8,6 +8,12 @@ import { PROP_FRAMES } from '../assets/sprites';
 import { DPad } from './DPad';
 
 const TILE_SIZE = 40;
+// Chambers wider/taller than these bounds (e.g. final-boss-throne at 28×16 =
+// 1120×640) overflow the in-frame game area and bleed past the right edge of
+// the terminal frame. Scale-to-fit any chamber that doesn't fit. Quest's 16-
+// 19-wide rooms render at scale 1, no change.
+const FIT_W = 880;
+const FIT_H = 520;
 
 type ActiveObjective =
   | { kind: 'item'; itemId: string }
@@ -25,6 +31,12 @@ export function Room() {
 
   const totalWidth = chamber.width * TILE_SIZE;
   const totalHeight = chamber.height * TILE_SIZE;
+  // Scale-to-fit the rendered chamber so wide/tall rooms (final-boss-throne
+  // especially) don't get clipped by the terminal frame. Outer wrapper is
+  // sized at the SCALED dims so the parent flex layout centers it correctly.
+  const fitScale = Math.min(1, FIT_W / totalWidth, FIT_H / totalHeight);
+  const outerW = totalWidth * fitScale;
+  const outerH = totalHeight * fitScale;
 
   // Determine which thing should glow as the active objective.
   const challengeItem = chamber.items.find(i => i.type === 'challenge');
@@ -44,13 +56,16 @@ export function Room() {
   }
 
   return (
-    <div
-      className="relative mx-auto"
-      style={{
-        width: totalWidth,
-        height: totalHeight,
-      }}
-    >
+    <div className="mx-auto" style={{ width: outerW, height: outerH }}>
+      <div
+        className="relative"
+        style={{
+          width: totalWidth,
+          height: totalHeight,
+          transform: `scale(${fitScale})`,
+          transformOrigin: 'top left',
+        }}
+      >
       {/* Floor and walls — walls render as void-black; floor tiles adjacent
           to walls get a 3px orange edge strip on each wall-facing side
           (bright on top/left, dark on bottom/right). Matches the design
@@ -161,12 +176,16 @@ export function Room() {
       {chamber.doors.map(door => {
         const passable = !door.locked || Boolean(door.requiresLevelKey && levelState.keyCollected);
         const glowing = activeObjective?.kind === 'door' && activeObjective.doorId === door.id;
+        // End-of-game doors get a gold pulse instead of the per-level accent
+        // so the final exit reads as "end the game," not "next level."
+        const isEnd = door.target.kind === 'end';
+        const glowColor = isEnd && passable ? '#FFD700' : theme.accentColor;
         return (
           <div
             key={door.id}
             className={glowing ? 'cc-active-objective' : undefined}
             style={{
-              ['--glow-color' as string]: theme.accentColor,
+              ['--glow-color' as string]: glowColor,
             } as React.CSSProperties}
           >
             <Door
@@ -174,6 +193,7 @@ export function Room() {
               y={door.y}
               unlocked={passable}
               tileSize={TILE_SIZE}
+              isEnd={isEnd}
             />
           </div>
         );
@@ -253,6 +273,7 @@ export function Room() {
 
       {/* D-Pad indicator */}
       <DPad />
+      </div>
     </div>
   );
 }
