@@ -2227,7 +2227,16 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "requiresLevelKey": true
       }
     ],
-    "npcs": [],
+    "npcs": [
+      {
+        "id": "twic-npc-3",
+        "x": 6,
+        "y": 2,
+        "color": "#6EAAEF",
+        "name": "Beat Reporter",
+        "dialog": []
+      }
+    ],
     "decorations": [
       { "x": 7, "y": 5, "sprite": "hanging_lantern" },
       { "x": 4, "y": 3, "sprite": "floor_lever" },
@@ -2237,7 +2246,12 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       { "x": 14, "y": 5, "sprite": "bookshelf" },
       { "x": 13, "y": 5, "sprite": "bookshelf" },
       { "x": 14, "y": 8, "sprite": "bones" },
-      { "x": 8, "y": 6, "sprite": "cobweb" }
+      { "x": 8, "y": 6, "sprite": "cobweb" },
+      { "x": 10, "y": 10, "sprite": "crt_terminal" },
+      { "x": 12, "y": 10, "sprite": "server_stack" },
+      { "x": 3, "y": 10, "sprite": "anvil" },
+      { "x": 2, "y": 10, "sprite": "weapon_rack" },
+      { "x": 4, "y": 10, "sprite": "treasure_chest" }
     ],
     "spawnX": 13,
     "spawnY": 2,
