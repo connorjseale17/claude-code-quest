@@ -1534,13 +1534,6 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "paper"
       },
       {
-        "id": "fragment-x",
-        "type": "lore",
-        "x": 12,
-        "y": 9,
-        "sprite": "paper"
-      },
-      {
         "id": "git-shared-vs-local",
         "type": "lore",
         "x": 7,
@@ -1674,7 +1667,7 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "sprite": "skeleton_a"
       },
       {
-        "id": "fragment-y",
+        "id": "routines",
         "type": "lore",
         "x": 2,
         "y": 6,
