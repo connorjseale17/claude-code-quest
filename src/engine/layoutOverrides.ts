@@ -478,6 +478,13 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
         "x": 7,
         "y": 7,
         "sprite": "paper"
+      },
+      {
+        "id": "local-file",
+        "type": "lore",
+        "x": 5,
+        "y": 8,
+        "sprite": "paper"
       }
     ],
     "doors": [
