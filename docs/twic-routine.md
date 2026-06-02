@@ -95,24 +95,23 @@ git push origin main          # NEVER skip this. Production deploys from main.
 
 **Deploy (proven path — git push alone does NOT update the site; the Vercel
 CLI does).** Requires `VERCEL_TOKEN` in the run environment. Project is
-`claude-code-quest`. Two domains serve this project:
-`claude-code-quest-sigma.vercel.app` (the project's production domain — Vercel
-auto-updates it on every `--prod`) and `claudecodequest.vercel.app` (the
-clean public URL — a **custom alias** that does NOT move on its own; you MUST
-re-alias it each deploy or it goes stale while sigma looks fine):
+`claude-code-quest`. Two `.vercel.app` domains serve it, and **both are
+registered production domains**, so a single `--prod` updates both:
+`claudecodequest.vercel.app` (the clean public URL — share this one) and
+`claude-code-quest-sigma.vercel.app` (the original production domain):
 
 ```
 npx -y vercel@latest link --yes --project claude-code-quest --token "$VERCEL_TOKEN"
-# Capture the deployment URL so we can move the pretty alias to it:
-DEPLOY_URL=$(npx -y vercel@latest --prod --yes --project claude-code-quest --token "$VERCEL_TOKEN" 2>/dev/null | grep -oE 'https://[a-z0-9-]+\.vercel\.app' | tail -1)
-# Move the clean public URL onto this exact deployment (the step that was missing):
-npx -y vercel@latest alias set "$DEPLOY_URL" claudecodequest.vercel.app --token "$VERCEL_TOKEN"
+npx -y vercel@latest --prod   --yes --project claude-code-quest --token "$VERCEL_TOKEN"
 ```
 
-Vercel builds on its servers and updates the sigma production domain; the
-`alias set` line then points `claudecodequest.vercel.app` at the same build.
-If `$VERCEL_TOKEN` is absent, STOP and report that the content is on `main`
-but undeployed.
+Vercel builds on its servers and re-points BOTH production domains at the new
+build automatically — no manual `alias set` step. (History: until 2026-06-02
+`claudecodequest.vercel.app` was an unregistered alias that stayed stale and
+sat behind Vercel's SSO 401 wall; it was promoted to a production domain to
+fix both. Don't re-introduce an `alias set` step — it's redundant now.) If
+`$VERCEL_TOKEN` is absent, STOP and report that the content is on `main` but
+undeployed.
 
 **Verify the LIVE site on the clean public URL (don't trust the deploy
 message alone):**
