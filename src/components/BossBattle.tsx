@@ -14,6 +14,12 @@ type HitTarget = 'bot' | 'boss' | null;
 const RESOLVE_BANNER_MS = 1500;
 const STRIKE_MS = 900;
 const DEFEAT_HOLD_MS = 1800;
+// Auto-fire PASS_CHALLENGE if the player lingers on the victory screen without
+// pressing SPACE/Enter. Without this, a player who exits the panel via Escape
+// (or just walks away from the keyboard) never marks challengePassed, so no
+// key spawns and the door stays locked. Especially painful on TWiC's
+// one-question / one-HP battles where the victory screen flashes by.
+const VICTORY_HOLD_MS = 3000;
 
 export function BossBattle() {
   const state = useGame();
@@ -69,6 +75,16 @@ export function BossBattle() {
     dispatch({ type: 'PASS_CHALLENGE' });
   }, [dispatch]);
 
+  // Auto-advance on victory after VICTORY_HOLD_MS so the progression chain
+  // (PASS_CHALLENGE → key spawn → door unlock) can never be missed — even if
+  // the player walks away or hits Escape instead of SPACE. SPACE still works
+  // for immediate advance; this is a safety net, not a replacement.
+  useEffect(() => {
+    if (phase !== 'victory') return;
+    const id = window.setTimeout(handleVictoryAdvance, VICTORY_HOLD_MS);
+    return () => clearTimeout(id);
+  }, [phase, handleVictoryAdvance]);
+
   // ---- resolve banner → strike ----
   useEffect(() => {
     if (phase !== 'resolve') return;
@@ -108,7 +124,15 @@ export function BossBattle() {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        dispatch({ type: 'CLOSE_PANEL' });
+        // During victory: dispatch PASS_CHALLENGE instead of just CLOSE_PANEL,
+        // so the player who hits Escape still gets the key + door unlock.
+        // PASS_CHALLENGE's reducer also closes the panel, so behavior is
+        // identical from the player's POV except the progression actually fires.
+        if (phase === 'victory') {
+          handleVictoryAdvance();
+        } else {
+          dispatch({ type: 'CLOSE_PANEL' });
+        }
         return;
       }
       if (e.key === ' ' || e.key === 'Enter') {

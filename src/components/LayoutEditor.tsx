@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useGame } from '../engine/GameContext';
 import {
@@ -51,14 +51,35 @@ function fitScale(frame: string[] | undefined, box: number, factor = 0.9): numbe
 
 export function LayoutEditor({ onExit }: { onExit: () => void }) {
   const state = useGame();
-  const level = LEVEL_CONFIGS[state.currentLevel];
-  const theme = level.theme;
-  const chamberIds = Object.keys(level.chambers);
+
+  // Enumerate every chamber across every level so the editor can navigate to
+  // TWiC's single-chamber levels (twic-1/2/3, each with one chamber) without
+  // the player having to walk to that level first in-game. Quest levels carry
+  // multiple chambers so this also folds in cleanly.
+  const allChambers = useMemo(
+    () =>
+      (Object.keys(LEVEL_CONFIGS) as LevelId[]).flatMap(lid =>
+        Object.keys(LEVEL_CONFIGS[lid].chambers).map(cid => ({
+          levelId: lid,
+          chamberId: cid as ChamberId,
+        })),
+      ),
+    [],
+  );
 
   const [draft, setDraft] = useState<DraftMap>(loadDraft);
-  const [activeId, setActiveId] = useState<ChamberId>(() =>
-    chamberIds.includes(state.currentChamber) ? state.currentChamber : level.startingChamber,
+  const [activeId, setActiveId] = useState<ChamberId>(state.currentChamber);
+
+  // The level that owns the currently-edited chamber. Drives theme, the level
+  // title shown in the toolbar, draft seeding, exportJSON's scope, and the
+  // curriculum-id lookup in the sidebar. Falls back to the in-game level if
+  // the active chamber id ever fails to resolve (shouldn't happen, but cheap).
+  const activeLevelId = useMemo<LevelId>(
+    () => allChambers.find(c => c.chamberId === activeId)?.levelId ?? state.currentLevel,
+    [allChambers, activeId, state.currentLevel],
   );
+  const level = LEVEL_CONFIGS[activeLevelId];
+  const theme = level.theme;
   const [mode, setMode] = useState<'select' | 'paint'>('select');
   const [sel, setSel] = useState<Sel>(null);
   const [cell, setCell] = useState(28);
@@ -69,18 +90,22 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
   const singleDragRef = useRef<{ which: 'key' | 'spawn'; startX: number; startY: number; origX: number; origY: number } | null>(null);
   const paintRef = useRef<{ target: number; last: string } | null>(null);
 
-  // Seed any not-yet-drafted chamber of this level from its current effective config.
+  // Seed every not-yet-drafted chamber across every level from its current
+  // effective config, so the user can jump to any chamber in the dropdown
+  // without an undefined draft on first click.
   useEffect(() => {
     setDraft(prev => {
       const next = { ...prev };
       let changed = false;
-      for (const id of chamberIds) {
-        if (!next[id]) { next[id] = serializeChamber(level.chambers[id]); changed = true; }
+      for (const { levelId, chamberId } of allChambers) {
+        if (!next[chamberId]) {
+          next[chamberId] = serializeChamber(LEVEL_CONFIGS[levelId].chambers[chamberId]);
+          changed = true;
+        }
       }
       return changed ? next : prev;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentLevel]);
+  }, [allChambers]);
 
   // Autosave the draft buffer.
   useEffect(() => {
@@ -314,14 +339,17 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
   };
 
   const exportJSON = () => {
+    // Export only chambers belonging to the currently-edited level, so a save
+    // doesn't dump every drafted chamber in the repo. Uses activeLevelId so
+    // the save scope tracks what the user is actually looking at.
     const out: DraftMap = {};
-    for (const id of chamberIds) if (draft[id]) out[id] = draft[id];
+    for (const id of Object.keys(level.chambers)) if (draft[id]) out[id] = draft[id];
     const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     const date = new Date().toISOString().slice(0, 10);
     a.href = url;
-    a.download = `ccq-layout-${state.currentLevel}-${date}.json`;
+    a.download = `ccq-layout-${activeLevelId}-${date}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -375,8 +403,9 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
     background: '#141414', color: '#E8E8E8', border: '1px solid #2A2A2A', cursor: 'pointer',
   };
 
-  // curriculum ids for this level
-  const lc = CONTENT[state.currentLevel];
+  // curriculum ids for the level that owns the active chamber (so editing
+  // twic-room-2 shows twic-2's lore/practice ids, not twic-1's).
+  const lc = CONTENT[activeLevelId];
   const loreEntries = lc?.lore ?? [];
   const practiceId = lc?.practice?.id;
 
@@ -483,7 +512,11 @@ export function LayoutEditor({ onExit }: { onExit: () => void }) {
           <span style={{ color: '#7D7D7D', fontSize: 11 }}>{level.title}</span>
           <select value={activeId} onChange={e => { setActiveId(e.target.value); setSel(null); }}
             style={{ ...chipBtn, padding: '5px 8px' }}>
-            {chamberIds.map(id => <option key={id} value={id}>{level.chambers[id].name}</option>)}
+            {allChambers.map(({ levelId, chamberId }) => (
+              <option key={chamberId} value={chamberId}>
+                {LEVEL_CONFIGS[levelId].title} · {LEVEL_CONFIGS[levelId].chambers[chamberId].name}
+              </option>
+            ))}
           </select>
           <span style={{ flex: 1 }} />
           <button style={{ ...chipBtn, borderColor: '#7D7D7D' }} onClick={resetChamber}>↺ Reset to source</button>
