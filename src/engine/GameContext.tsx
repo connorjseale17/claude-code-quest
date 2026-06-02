@@ -14,6 +14,7 @@ export type GamePhase =
   | 'instructions'
   | 'customize'
   | 'pathSelect'
+  | 'origin'
   | 'playing'
   | 'loading'
   | 'gameOver';
@@ -61,6 +62,9 @@ export type GameState = {
   currentTrack: Track;
   /** One-shot flag for the TWiC floor-level Issue Intro overlay (room-1 entry). */
   twicIssueShown: boolean;
+  /** Sticky flag: has the player ever seen the Origin Splash? Persisted to
+   *  localStorage so returning Quest players skip straight to gameplay. */
+  originSeen: boolean;
 };
 
 const initialChamberState: ChamberState = {
@@ -140,6 +144,13 @@ export const initialState: GameState = {
   })(),
   currentTrack: 'quest',
   twicIssueShown: false,
+  originSeen: (() => {
+    try {
+      return localStorage.getItem('ccq-origin-seen') === '1';
+    } catch {
+      return false;
+    }
+  })(),
 };
 
 export type GameAction =
@@ -165,7 +176,8 @@ export type GameAction =
   | { type: 'DEV_WARP_LEVEL'; levelId: LevelId }
   | { type: 'DEV_UNLOCK_CURRENT' }
   | { type: 'SELECT_TRACK'; track: Track; levelId: LevelId; chamberId: ChamberId; spawnX: number; spawnY: number }
-  | { type: 'DISMISS_TWIC_ISSUE_INTRO' };
+  | { type: 'DISMISS_TWIC_ISSUE_INTRO' }
+  | { type: 'DISMISS_ORIGIN' };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -311,9 +323,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const ch = state.chambers[t.chamberId] ?? { ...initialChamberState };
       // Fire the one-shot TWiC Issue Intro overlay when the player first enters twic-1.
       const showTwicIssue = t.levelId === 'twic-1';
+      // Route through the Origin Splash before Level 1 gameplay begins —
+      // Quest track only, first-time players only. Returning players (those
+      // with the ccq-origin-seen localStorage flag) skip straight to playing.
+      // DISMISS_ORIGIN flips gamePhase → 'playing' and arms showIntro.
+      const showOrigin =
+        t.levelId === 'welcome' &&
+        state.currentTrack === 'quest' &&
+        !state.originSeen;
       return {
         ...state,
-        gamePhase: 'playing',
+        gamePhase: showOrigin ? 'origin' : 'playing',
         currentLevel: t.levelId,
         currentChamber: t.chamberId,
         bot: { x: t.spawnX, y: t.spawnY, facing: 'right', animation: 'idle' },
@@ -322,7 +342,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           [t.chamberId]: { ...ch, visited: true },
         },
         pendingLevelTransition: null,
-        showIntro: true,
+        // Defer the in-game IntroOverlay until origin dismisses; otherwise
+        // arm it immediately as before.
+        showIntro: !showOrigin,
         twicIssueShown: showTwicIssue || state.twicIssueShown,
       };
     }
@@ -372,6 +394,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'DISMISS_TWIC_ISSUE_INTRO':
       return { ...state, twicIssueShown: false };
+    case 'DISMISS_ORIGIN': {
+      // Origin Splash finished (either by walking the six sections or by
+      // hitting Skip). Persist the seen flag so returning players bypass it,
+      // flip the phase into gameplay, and arm the in-game IntroOverlay.
+      try { localStorage.setItem('ccq-origin-seen', '1'); } catch { /* ignore */ }
+      return {
+        ...state,
+        gamePhase: 'playing',
+        showIntro: true,
+        originSeen: true,
+      };
+    }
     default:
       return state;
   }

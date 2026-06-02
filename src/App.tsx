@@ -26,6 +26,7 @@ import { LayoutEditor } from './components/LayoutEditor';
 import { PathSelectScreen } from './components/PathSelectScreen';
 import { TwicIssueIntroOverlay } from './components/TwicIssueIntroOverlay';
 import { TwicStampScreen } from './components/TwicStampScreen';
+import { OriginSplash } from './components/OriginSplash';
 
 const BASE_W = 960;
 const BASE_H = 640;
@@ -70,7 +71,7 @@ function GameScreen({ onDevToggle }: { onDevToggle: () => void }) {
 
   return (
     <TerminalFrame title={title} onDevToggle={onDevToggle}>
-      <div className="flex flex-col h-full">
+      <div className="cc-fade-in flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
           <Room />
           {state.activePanel?.type === 'challenge' && (
@@ -115,6 +116,9 @@ function PhaseRouter() {
       break;
     case 'loading':
       screen = <LoadingScreen />;
+      break;
+    case 'origin':
+      screen = <OriginSplash />;
       break;
     case 'gameOver':
       // Quest end → trophy/lesson tally. TWiC end → stamp screen.

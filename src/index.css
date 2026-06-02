@@ -176,3 +176,15 @@ body {
   60%      { transform: rotate(-90deg); }
   100%     { transform: rotate(-90deg); }
 }
+
+/* Soft opacity fade-in for GameScreen mount — gives every level arrival a
+   "curtain up" beat. Pairs with the Origin Splash's fade-out (and every
+   LoadingScreen → playing handoff) so transitions feel intentional, not cut. */
+@keyframes cc-fade-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+.cc-fade-in {
+  animation: cc-fade-in 420ms ease;
+  animation-fill-mode: both;
+}
