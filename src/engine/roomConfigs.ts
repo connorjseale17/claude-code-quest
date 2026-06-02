@@ -1378,7 +1378,11 @@ function buildTwicRoom(inputs: TwicRoomInputs): ChamberConfig {
     height: TWIC_ROOM_H,
     tiles,
     items: [
-      { id: 'terminal', type: 'challenge', x: TWIC_MOUNTS.terminalX, y: TWIC_MOUNTS.terminalY, sprite: 'crt_terminal' },
+      // Visible boss sprite (slime, matching the battle's `spriteKey: 'slime'`)
+      // so the player sees something that obviously needs fighting — not a
+      // benign-looking CRT terminal they'd walk past. The challenge item's
+      // INTERACTION behavior is unchanged; only the in-room sprite swaps.
+      { id: 'terminal', type: 'challenge', x: TWIC_MOUNTS.terminalX, y: TWIC_MOUNTS.terminalY, sprite: 'slime_a' },
       { id: inputs.loreIds[0], type: 'lore', x: TWIC_MOUNTS.lore1X, y: TWIC_MOUNTS.lore1Y, sprite: 'paper' },
       { id: inputs.loreIds[1], type: 'lore', x: TWIC_MOUNTS.lore2X, y: TWIC_MOUNTS.lore2Y, sprite: 'paper' },
       { id: inputs.practiceId, type: 'practice', x: TWIC_MOUNTS.practiceX, y: TWIC_MOUNTS.practiceY, sprite: 'hint_token' },

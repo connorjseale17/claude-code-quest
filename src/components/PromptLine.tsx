@@ -1,5 +1,6 @@
 import { useGame } from '../engine/GameContext';
 import { LEVEL_CONFIGS } from '../engine/roomConfigs';
+import { getInteractableAt } from '../engine/collision';
 import { Cursor } from './TerminalFrame';
 
 export function PromptLine() {
@@ -27,8 +28,24 @@ export function PromptLine() {
   } else if (levelState.keyCollected) {
     promptColor = '#3FB950';
     promptText = 'door unlocked — proceed →';
-  } else if (state.showIntro) {
-    promptText = 'WASD to move · SPACE to interact';
+  } else {
+    // Standing next to an interactable? Tell the player what E/SPACE does.
+    // This is the difference between "I see a slime, why won't the door open"
+    // and "press E to fight." Especially load-bearing on TWiC where the boss
+    // is the only unlock trigger and the player needs to recognize it.
+    const interactable = getInteractableAt(state.bot.x, state.bot.y, chamber);
+    if (interactable?.kind === 'npc') {
+      promptText = 'press E to talk';
+    } else if (interactable?.kind === 'item' && interactable.type === 'challenge' && !levelState.challengePassed) {
+      promptColor = '#F85149';
+      promptText = 'press E to fight';
+    } else if (interactable?.kind === 'item' && interactable.type === 'lore') {
+      promptText = 'press E to read';
+    } else if (interactable?.kind === 'item' && interactable.type === 'practice') {
+      promptText = 'press E to practice';
+    } else if (state.showIntro) {
+      promptText = 'WASD to move · SPACE to interact';
+    }
   }
 
   // Lore counter: aggregated across all chambers in current level
