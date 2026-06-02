@@ -11,6 +11,7 @@ import type { SerializedChamber } from './roomConfigs';
 // Level 04 (mcp)         authored 2026-06-01
 // Level 05 (subagents)   authored 2026-06-01
 // Level 06 (final-boss)  authored 2026-06-01  — GAME COMPLETE
+// TWiC Room 1            authored 2026-06-02
 // ============================================================================
 
 export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
@@ -2025,5 +2026,82 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       "x": 25,
       "y": 8
     }
+  },
+  "twic-room-1": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      // Boss sprite swapped from 'crt_terminal' (the editor exported it before
+      // the visibility fix landed) to 'slime_a' — keeps the boss visible as a
+      // monster in front of the door, mechanics unchanged. Position (13, 6)
+      // matches the user's "current spot, right in front of the first door."
+      { "id": "terminal", "type": "challenge", "x": 13, "y": 6, "sprite": "slime_a" },
+      { "id": "twic-1-lore-a", "type": "lore", "x": 10, "y": 2, "sprite": "paper" },
+      { "id": "twic-1-lore-b", "type": "lore", "x": 10, "y": 9, "sprite": "paper" },
+      { "id": "twic-1-practice", "type": "practice", "x": 14, "y": 2, "sprite": "hint_token" }
+    ],
+    "doors": [
+      {
+        "id": "exit",
+        "x": 15,
+        "y": 6,
+        "target": { "kind": "level", "level": "twic-2", "chamber": "twic-room-2" },
+        "spawnX": 1,
+        "spawnY": 6,
+        "locked": true,
+        "requiresLevelKey": true
+      }
+    ],
+    "npcs": [
+      {
+        "id": "twic-npc-1",
+        "x": 4,
+        "y": 6,
+        "color": "#6EAAEF",
+        "name": "Beat Reporter",
+        "dialog": []
+      }
+    ],
+    "decorations": [
+      { "x": 8, "y": 8, "sprite": "bookshelf" },
+      { "x": 8, "y": 9, "sprite": "bookshelf" },
+      { "x": 8, "y": 10, "sprite": "bookshelf" },
+      { "x": 12, "y": 1, "sprite": "bookshelf" },
+      { "x": 12, "y": 10, "sprite": "bookshelf" },
+      { "x": 12, "y": 9, "sprite": "bookshelf" },
+      { "x": 12, "y": 8, "sprite": "bookshelf" },
+      { "x": 12, "y": 2, "sprite": "bookshelf" },
+      { "x": 12, "y": 3, "sprite": "bookshelf" },
+      { "x": 8, "y": 1, "sprite": "bookshelf" },
+      { "x": 8, "y": 3, "sprite": "bookshelf" },
+      { "x": 8, "y": 2, "sprite": "bookshelf" },
+      { "x": 6, "y": 4, "sprite": "brazier" },
+      { "x": 6, "y": 7, "sprite": "brazier" },
+      { "x": 2, "y": 1, "sprite": "banner" },
+      { "x": 5, "y": 1, "sprite": "banner" },
+      { "x": 4, "y": 10, "sprite": "mana_crystal" },
+      { "x": 2, "y": 10, "sprite": "anvil" },
+      { "x": 3, "y": 10, "sprite": "weapon_rack" },
+      { "x": 4, "y": 1, "sprite": "server_stack" },
+      { "x": 3, "y": 1, "sprite": "server_stack" },
+      { "x": 5, "y": 10, "sprite": "barrel" }
+    ],
+    "spawnX": 2,
+    "spawnY": 6,
+    "keySpawn": { "x": 14, "y": 8 }
   }
 };
