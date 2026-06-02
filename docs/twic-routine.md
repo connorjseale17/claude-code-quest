@@ -12,11 +12,12 @@ The scaffolding (the `twic-1/2/3` levels, `PathSelectScreen`,
 
 ## STEP 0 — TARGET + GUARDRAIL (do this first, every run)
 
-1. **Run on the branch the live site deploys from.** This repo has more than
-   one branch; the TWiC scaffolding + placeholder content live on the deployed
-   branch (currently `claude/inspiring-davinci-w4RCY`; confirm against the
-   Vercel project's Production Branch). Do NOT run against a branch that lacks
-   the scaffolding.
+1. **Run on `main`.** `main` is the repo's default branch and Vercel's
+   Production Branch — it is the codebase the live site builds from. Start the
+   run with `git checkout main && git pull origin main`. Do NOT create or work
+   on a side branch, and do NOT run against any branch that lacks the
+   scaffolding — that was the historical failure (content shipped to the wrong
+   codebase and never reached the site).
 2. **Verify the four content files already exist:**
    `src/content/twic-1.ts`, `twic-2.ts`, `twic-3.ts`, `twic-issue.ts`.
    If ANY is missing, **STOP and alert** — the routine must never re-create
@@ -83,13 +84,27 @@ false; (3) the three features are distinct; (4) Book A ≠ Book B in each room;
 ```
 npm install            # if node_modules absent
 npm run build          # tsc validates the LessonContent shapes; fix content, not types
+
+# Prove the built artifact carries the new content (and dropped the placeholder):
+grep -q "<a feature name you just wrote>" dist/assets/*.js && echo "content in bundle ✓"
+
 git add src/content/twic-1.ts src/content/twic-2.ts src/content/twic-3.ts src/content/twic-issue.ts
 git commit -m "TWiC · week of $(date +%F)"
-git push origin <deployed-branch>     # the branch Vercel builds (Production Branch)
+git push origin main          # NEVER skip this. Production deploys from main.
 ```
 
-Vercel auto-deploys that branch. Confirm the live site's PATH SELECT tile shows
-`UPDATED · {today}` and the three rooms read the new features.
+**Deploy (do not assume git-push is enough — confirm one of these is true):**
+- **Preferred:** the GitHub repo is connected to Vercel with Production Branch
+  = `main`, so the push above auto-builds and deploys. No secrets needed.
+- **Fallback (CLI):** if the project is not git-connected, deploy explicitly
+  with `npx vercel --prod --yes` — this requires `VERCEL_TOKEN` (and the linked
+  `.vercel/project.json`, which is gitignored) available in the run
+  environment. If neither is configured, STOP and report that the content is on
+  `main` but cannot be deployed from here.
+
+Then confirm the live site (`https://claude-code-quest-sigma.vercel.app`):
+the PATH SELECT tile shows `UPDATED · {today}` and the three rooms read the new
+features.
 
 ## FINAL SUMMARY (always print)
 

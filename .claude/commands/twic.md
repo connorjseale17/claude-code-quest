@@ -12,8 +12,8 @@ Critical guardrails (STEP 0 of the runbook):
   already exist. If any is missing, **STOP and report** — you are on the wrong
   branch/repo. NEVER create the rooms, levels, components, or a parallel
   scaffolding.
-- Run on the branch Vercel deploys (its Production Branch — the one that
-  carries the TWiC scaffolding). Push there so the live site updates.
+- Run on `main` (the default + Vercel Production Branch). Start with
+  `git checkout main && git pull origin main`. Never work on a side branch.
 - Preserve every fixed value: `roomId: 'twic-room-N'`, ids `twic-N-lore-a/b`,
   `twic-N-practice`, `twic-N-prize`, NPC key `twic-npc-N`, the door-challenge
   battle (`spriteKey: 'slime'`, `maxHP: 1`, one question / 4 choices / 1
@@ -22,5 +22,6 @@ Critical guardrails (STEP 0 of the runbook):
 
 Then: STEP 1 scan → STEP 2 pick 3 (or "quiet week" → stop, no push) → STEP 3
 write → STEP 4 self-check (all five yes) → STEP 5 `npm run build` until green,
-commit `TWiC · week of <date>`, `git push` to the deployed branch. End with the
-runbook's FINAL SUMMARY.
+commit `TWiC · week of <date>`, **`git push origin main` (never skip)**, then
+trigger the Vercel deploy (git-integration on `main`, or `npx vercel --prod`).
+End with the runbook's FINAL SUMMARY, including the live-site confirmation.
