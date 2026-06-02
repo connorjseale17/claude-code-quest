@@ -29,7 +29,28 @@ not a branch, not a PR.
   `src/content/twic-1.ts`, `twic-2.ts`, `twic-3.ts`, `twic-issue.ts`.
   If any is missing → **STOP and report** "scaffolding missing — wrong
   checkout." NEVER create rooms, levels, components, or rebuild scaffolding.
-- You **edit only those four files** (prose only). Preserve every fixed value:
+
+### SCOPE DISCIPLINE — non-negotiable
+
+The routine writes **content prose only**. The TWiC room **structure** is a
+BASE STANDARD locked outside this routine's scope. The following paths are
+**OFF-LIMITS** to this routine — touch them and the run fails:
+
+- `src/engine/layoutOverrides.ts` — the canonical TWiC chamber layouts (tile
+  maps, item positions, NPC placement, key spawn, door target, decorations).
+- `src/engine/roomConfigs.ts` — the LevelId union, level configs, the
+  `buildTwicRoom()` builder, `TWIC_MOUNTS` coordinates, themes.
+- Any component file (`src/components/*.tsx`), `src/App.tsx`, `src/engine/*`
+  beyond reading them for reference, or `package.json`/build config.
+
+You may **read** any of these for reference; you must **never write to them**.
+If a feature you're trying to teach feels like it needs new geometry, that's a
+signal to teach a different feature this week — not to touch structure.
+
+You **write only to these four files** (prose only):
+`src/content/twic-1.ts`, `twic-2.ts`, `twic-3.ts`, `twic-issue.ts`.
+
+Inside those four files, preserve every fixed value:
 
   | Slot | Fixed — do not change |
   |------|------------------------|

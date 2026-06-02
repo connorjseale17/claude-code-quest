@@ -10,6 +10,10 @@ interface ItemProps {
   tileSize: number;
   /** Optional tint applied to palette '1' for theming */
   tint?: string;
+  /** Override the BESTIARY/default scale. TWiC rooms pass this to keep bosses
+   *  inside a single tile — the 2×2-tile Quest boss size bleeds over walls in
+   *  TWiC's tighter compartmented layouts. */
+  scaleOverride?: number;
 }
 
 // Per-sprite scale overrides for bestiary altars. The design specifies
@@ -41,7 +45,7 @@ export const IMAGE_SPRITES: Record<string, string> = {
   paper: IMAGE_FRAMES.book, // Minecraft-style book — used for every lore item
 };
 
-export function Item({ x, y, sprite, tileSize, tint }: ItemProps) {
+export function Item({ x, y, sprite, tileSize, tint, scaleOverride }: ItemProps) {
   const pair = getAnimationPair(sprite);
   const [phase, setPhase] = useState(0);
 
@@ -52,7 +56,7 @@ export function Item({ x, y, sprite, tileSize, tint }: ItemProps) {
   }, [pair]);
 
   const frame = pair ? pair[phase] : sprite;
-  const scale = BESTIARY_SCALES[sprite] ?? 3;
+  const scale = scaleOverride ?? BESTIARY_SCALES[sprite] ?? 3;
   const imgSrc = IMAGE_SPRITES[sprite];
 
   return (

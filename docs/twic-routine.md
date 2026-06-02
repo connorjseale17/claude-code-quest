@@ -23,6 +23,19 @@ The scaffolding (the `twic-1/2/3` levels, `PathSelectScreen`,
    If ANY is missing, **STOP and alert** — the routine must never re-create
    scaffolding or invent a parallel set of rooms. A missing file means you are
    on the wrong branch/repo.
+3. **Scope discipline — write content only.** The TWiC room **structure** is
+   a BASE STANDARD locked outside this routine's scope. These files are
+   OFF-LIMITS:
+   - `src/engine/layoutOverrides.ts` (canonical TWiC chamber layouts).
+   - `src/engine/roomConfigs.ts` (LevelId union, `buildTwicRoom()`, mounts).
+   - Any component file (`src/components/*.tsx`), `src/App.tsx`, or other
+     engine files beyond reading for reference.
+
+   You may **read** these for context; you must **never write to them**.
+   Tile maps, item positions, NPC placement, key spawn, door target, and
+   decorations are frozen — every future TWiC issue inherits them as-is.
+   If a feature seems to need new geometry, pick a different feature this
+   week instead of touching structure.
 
 **Fixed contract — preserve verbatim, change only the prose:**
 

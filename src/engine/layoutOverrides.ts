@@ -11,9 +11,28 @@ import type { SerializedChamber } from './roomConfigs';
 // Level 04 (mcp)         authored 2026-06-01
 // Level 05 (subagents)   authored 2026-06-01
 // Level 06 (final-boss)  authored 2026-06-01  — GAME COMPLETE
-// TWiC Room 1            authored 2026-06-02
-// TWiC Room 2            authored 2026-06-02
-// TWiC Room 3            authored 2026-06-02  — ISSUE COMPLETE
+// TWiC Room 1            authored 2026-06-02  ── BASE STANDARD, LOCKED
+// TWiC Room 2            authored 2026-06-02  ── BASE STANDARD, LOCKED
+// TWiC Room 3            authored 2026-06-02  ── BASE STANDARD, LOCKED  (ISSUE COMPLETE)
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// TWiC BASE STANDARDS — DO NOT MODIFY
+// ─────────────────────────────────────────────────────────────────────────────
+// The three twic-room-* entries below define the CANONICAL ROOM STRUCTURE for
+// the TWiC floor: tile maps, item positions (terminal/lore/practice), NPC
+// placement, key spawn, door target, and decorations. These are user-authored
+// in LayoutEditor and frozen for every future TWiC issue.
+//
+// The weekly /twic routine writes ONLY content prose to the four files at
+// src/content/twic-{1,2,3,issue}.ts. It must NEVER:
+//   - edit this file (layoutOverrides.ts) for any TWiC entry
+//   - edit src/engine/roomConfigs.ts (the chamber builders and LevelId union)
+//   - move items, NPCs, doors, walls, decorations, or key spawns
+//   - rename ids (chamber, item, NPC, prize) — content references them
+//
+// If the user explicitly hands over a new LayoutEditor export for a TWiC room,
+// that's the ONE path to update these — and it gets locked again afterward.
+// ─────────────────────────────────────────────────────────────────────────────
 // ============================================================================
 
 export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {

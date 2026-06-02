@@ -183,6 +183,11 @@ export function Room() {
       {chamber.items.map(item => {
         if (item.type === 'challenge' && levelState.challengePassed) return null;
         const glowing = activeObjective?.kind === 'item' && activeObjective.itemId === item.id;
+        // TWiC rooms are tighter (16×12 with internal compartment walls), so
+        // the 2×2-tile Quest boss scale (scale 5 = 80px) bleeds over walls.
+        // Force challenge items to 1-tile fit (scale 2 = 32px in a 40px tile)
+        // in TWiC. Quest rooms keep their authored boss size.
+        const isTwicBoss = item.type === 'challenge' && level.track === 'twic';
         return (
           <div
             key={item.id}
@@ -198,6 +203,7 @@ export function Room() {
               sprite={item.sprite}
               tileSize={TILE_SIZE}
               tint={item.type === 'lore' || item.type === 'practice' ? theme.accentColor : undefined}
+              scaleOverride={isTwicBoss ? 2 : undefined}
             />
           </div>
         );
