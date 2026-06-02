@@ -13,6 +13,7 @@ import type { SerializedChamber } from './roomConfigs';
 // Level 06 (final-boss)  authored 2026-06-01  — GAME COMPLETE
 // TWiC Room 1            authored 2026-06-02
 // TWiC Room 2            authored 2026-06-02
+// TWiC Room 3            authored 2026-06-02  — ISSUE COMPLETE
 // ============================================================================
 
 export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
@@ -2169,6 +2170,57 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       { "x": 11, "y": 1, "sprite": "server_stack" }
     ],
     "spawnX": 2,
+    "spawnY": 2,
+    "keySpawn": { "x": 14, "y": 6 }
+  },
+  "twic-room-3": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 2],
+      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+      [1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      { "id": "terminal", "type": "challenge", "x": 12, "y": 7, "sprite": "slime_a" },
+      { "id": "twic-3-lore-a", "type": "lore", "x": 2, "y": 4, "sprite": "paper" },
+      { "id": "twic-3-lore-b", "type": "lore", "x": 3, "y": 9, "sprite": "paper" },
+      { "id": "twic-3-practice", "type": "practice", "x": 11, "y": 10, "sprite": "hint_token" }
+    ],
+    "doors": [
+      {
+        "id": "exit",
+        "x": 15,
+        "y": 6,
+        "target": { "kind": "end" },
+        "spawnX": 1,
+        "spawnY": 6,
+        "locked": true,
+        "requiresLevelKey": true
+      }
+    ],
+    "npcs": [],
+    "decorations": [
+      { "x": 7, "y": 5, "sprite": "hanging_lantern" },
+      { "x": 4, "y": 3, "sprite": "floor_lever" },
+      { "x": 2, "y": 2, "sprite": "hanging_lantern" },
+      { "x": 11, "y": 5, "sprite": "bookshelf" },
+      { "x": 12, "y": 5, "sprite": "bookshelf" },
+      { "x": 14, "y": 5, "sprite": "bookshelf" },
+      { "x": 13, "y": 5, "sprite": "bookshelf" },
+      { "x": 14, "y": 8, "sprite": "bones" },
+      { "x": 8, "y": 6, "sprite": "cobweb" }
+    ],
+    "spawnX": 13,
     "spawnY": 2,
     "keySpawn": { "x": 14, "y": 6 }
   }
