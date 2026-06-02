@@ -1401,3 +1401,19 @@ export const PROP_FRAMES_B: Record<string, string[]> = {
   summoning_circle: mkProp(['...cccccc...', '..c......c..', '.c..ccii..c.', 'c..i.pp.i..c', 'c.i.pmmp.i.c', 'c.i.pmmp.i.c', 'c..i.pp.i..c', '.c..ccii..c.', '..c......c..', '...cccccc...']),
   treasure_chest: mkProp(['...k......k...', '..wwwwwwwwww..', '.wWWWWWWWWWWw.', 'wkffffffffffkw', 'wkfhfhfhfhfkw', 'wWWWWWWWWWWWw', 'wsssssssssssw', '.wwwwwwwwww...', '..............', '..............']),
 };
+
+// =============================================================================
+// TWiC altar aliases — the "This Week in Claude" rooms reuse the rich boss
+// sprites (vorthex / grist / emberling) for their on-map altars. Those sprites
+// ship with battle frames (idle_1/2 + attack/hurt/defeat) but no `_a`/`_b`
+// map pair, so we alias their two idle frames into a `${family}_map_a/_b`
+// pair. Item.getAnimationPair animates the `_map_a`/`_map_b` pair on the map,
+// while BossSprite still finds NO `${family}_a` and keeps the full
+// idle/attack/hurt/defeat battle animation untouched.
+// =============================================================================
+FRAMES.vorthex_map_a = FRAMES.vorthex_idle_1;
+FRAMES.vorthex_map_b = FRAMES.vorthex_idle_2;
+FRAMES.grist_map_a = FRAMES.grist_idle_1;
+FRAMES.grist_map_b = FRAMES.grist_idle_2;
+FRAMES.emberling_map_a = FRAMES.emberling_idle_1;
+FRAMES.emberling_map_b = FRAMES.emberling_idle_2;

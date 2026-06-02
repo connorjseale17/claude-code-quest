@@ -73,7 +73,9 @@ function seedLevelStates(): Record<LevelId, LevelState> {
   ) as Record<LevelId, LevelState>;
 }
 
-const startLevel: LevelId = 'welcome';
+// The weekly "This Week in Claude" rooms lead the flow, so a returning player
+// meets the fresh drop first and then continues into the evergreen curriculum.
+const startLevel: LevelId = 'twic-1';
 const startLevelCfg = LEVEL_CONFIGS[startLevel];
 const startChamber: ChamberId = startLevelCfg.startingChamber;
 const startChamberCfg = startLevelCfg.chambers[startChamber];
@@ -322,7 +324,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'ADVANCE_PHASE': {
       // Customize → loading screen first, then Level 01 via COMPLETE_LEVEL_TRANSITION
       if (state.gamePhase === 'customize') {
-        const startLevelId: LevelId = 'welcome';
+        const startLevelId: LevelId = 'twic-1';
         const startCfg = LEVEL_CONFIGS[startLevelId];
         const startChamberId = startCfg.startingChamber;
         const startChamber = startCfg.chambers[startChamberId];

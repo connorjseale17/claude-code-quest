@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGame, useGameDispatch } from '../engine/GameContext';
 import { TerminalFrame, Cursor } from './TerminalFrame';
 import { BotIdle } from './PixelSprite';
+import { TWIC_ISSUE_INTRO } from '../content/twic-issue';
 
 const LINES = [
   '> Welcome to Claude Code Quest.',
   '> A game about the tool that built it.',
-  '> Six bosses. One mission. Let\'s go.',
+  '> This week\'s drop first, then the curriculum.',
 ];
 
 export function SplashScreen() {
@@ -125,6 +126,26 @@ export function SplashScreen() {
           </div>
 
           <div>
+            {/* This Week in Claude — the dated issue tile. Refreshed weekly by
+                the TWiC content routine via TWIC_ISSUE_INTRO. */}
+            <div
+              style={{
+                border: '1px solid #5AA9FF',
+                borderLeftWidth: 4,
+                padding: '10px 16px',
+                marginBottom: 16,
+                maxWidth: 520,
+                background: 'rgba(45,108,192,0.08)',
+              }}
+            >
+              <div style={{ color: '#5AA9FF', fontSize: 11, letterSpacing: '0.14em', marginBottom: 6 }}>
+                ▦ {TWIC_ISSUE_INTRO.title.toUpperCase()} · {TWIC_ISSUE_INTRO.date}
+              </div>
+              <div style={{ color: '#A9C7E8', fontSize: 12, lineHeight: 1.5 }}>
+                {TWIC_ISSUE_INTRO.framing}
+              </div>
+            </div>
+
             <div
               style={{
                 border: '1px solid #E8633D',

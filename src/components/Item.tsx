@@ -23,6 +23,10 @@ const BESTIARY_SCALES: Record<string, number> = {
   skeleton_a: 5,
   warlock_a: 5,
   dragon_a: 7,
+  // TWiC weekly-room altars (aliased idle frames of the rich boss sprites).
+  vorthex_map_a: 5,
+  grist_map_a: 5,
+  emberling_map_a: 5,
 };
 
 /** If `sprite` ends in `_a` and a `_b` variant exists, return the pair. */

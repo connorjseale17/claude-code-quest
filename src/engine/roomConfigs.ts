@@ -10,6 +10,13 @@ import { LAYOUT_OVERRIDES } from './layoutOverrides';
 // ============================================================================
 
 export type LevelId =
+  // "This Week in Claude" — three single-chamber feature-briefing rooms,
+  // refreshed weekly by the TWiC content routine. They sit at the front of the
+  // flow so a returning player meets the fresh drop first, then continues into
+  // the evergreen curriculum below.
+  | 'twic-1'
+  | 'twic-2'
+  | 'twic-3'
   | 'welcome'
   | 'claudemd'
   | 'slash'
@@ -217,6 +224,16 @@ const THEME_CRIMSON: Theme = {
   accentColor: '#D43A2A',
 };
 
+// "This Week in Claude" — a cool newsroom blue, distinct from every curriculum
+// theme so the weekly track reads as its own front-page section.
+const THEME_TWIC: Theme = {
+  wallColor: '#0C0B0A',
+  wallShadow: '#2D6CC0',
+  floorColor: '#1B2433',
+  floorDot: '#5AA9FF',
+  accentColor: '#5AA9FF',
+};
+
 // ============================================================================
 // Level 01: Welcome — 2 chambers (Antechamber + Sanctum)
 // ============================================================================
@@ -345,7 +362,7 @@ function buildWelcomeLevel(): LevelConfig {
 
   return {
     id: 'welcome',
-    number: 1,
+    number: 4,
     title: 'WELCOME',
     subtitle: 'Your first prompt',
     theme: THEME_ORANGE,
@@ -547,7 +564,7 @@ function buildClaudemdLevel(): LevelConfig {
 
   return {
     id: 'claudemd',
-    number: 2,
+    number: 5,
     title: 'THE CLAUDE.MD',
     subtitle: 'Context is everything',
     theme: THEME_PURPLE,
@@ -745,7 +762,7 @@ function buildSlashLevel(): LevelConfig {
 
   return {
     id: 'slash',
-    number: 3,
+    number: 6,
     title: 'SLASH COMMANDS',
     subtitle: 'Summon any prompt',
     theme: THEME_GREEN,
@@ -947,7 +964,7 @@ function buildMcpLevel(): LevelConfig {
 
   return {
     id: 'mcp',
-    number: 4,
+    number: 7,
     title: 'MCP SERVERS',
     subtitle: 'Tools without walls',
     theme: THEME_TEAL,
@@ -1174,7 +1191,7 @@ function buildSubagentsLevel(): LevelConfig {
 
   return {
     id: 'subagents',
-    number: 5,
+    number: 8,
     title: 'SUBAGENTS',
     subtitle: 'You are not alone',
     theme: THEME_PINK,
@@ -1259,7 +1276,7 @@ function buildFinalBossLevel(): LevelConfig {
 
   return {
     id: 'final-boss',
-    number: 6,
+    number: 9,
     title: 'THE THRONE',
     subtitle: 'final confrontation',
     theme: THEME_CRIMSON,
@@ -1269,6 +1286,169 @@ function buildFinalBossLevel(): LevelConfig {
     startingChamber: throne.id,
     challengeChamber: throne.id,
   };
+}
+
+// ============================================================================
+// This Week in Claude — 3 single-chamber feature rooms (twic-1 / twic-2 / twic-3)
+//
+// Each room is one 19×12 chamber that doubles as its own boss arena (the
+// single-chamber pattern proven by the final-boss throne). The geometry, item
+// slots, NPC slot, and door wiring are FIXED here; only the lesson *text* and
+// the boss name/sprite live in the weekly-rewritten content files. Item ids
+// match the ids the content files preserve verbatim, so a weekly content
+// refresh never has to touch this file.
+// ============================================================================
+
+type TwicRoomSpec = {
+  id: LevelId;
+  number: number;
+  title: string;
+  subtitle: string;
+  chamberId: ChamberId;
+  /** NPC id — MUST match the conversations key in the content file. */
+  npcId: string;
+  npcName: string;
+  npcColor: string;
+  /** On-map altar sprite (a `${family}_map_a` 2-frame pair). */
+  altarSprite: string;
+  /** West door back to the previous room, or null for the first room. */
+  backChamber: ChamberId | null;
+  /** Where the east exit drops the player next. */
+  exit: DoorTarget;
+};
+
+function buildTwicLevel(spec: TwicRoomSpec): LevelConfig {
+  const w = 19, h = 12;
+  const tiles = blankTileMap(w, h);
+  // East exit door (locked until the boss is beaten and the key collected).
+  tiles[6][w - 1] = 2;
+  // West back-door for rooms 2 and 3.
+  if (spec.backChamber) tiles[6][0] = 2;
+  // Two top-corner crate clusters + a single spine pillar for a light weave.
+  fillRect(tiles, 2, 2, 3, 3, 1);
+  fillRect(tiles, 15, 2, 16, 3, 1);
+  fillRect(tiles, 5, 5, 5, 7, 1);
+
+  const doors: DoorConfig[] = [
+    {
+      id: 'exit',
+      x: w - 1,
+      y: 6,
+      target: spec.exit,
+      spawnX: 1,
+      spawnY: 6,
+      locked: true,
+      requiresLevelKey: true,
+    },
+  ];
+  if (spec.backChamber) {
+    doors.unshift({
+      id: 'back',
+      x: 0,
+      y: 6,
+      target: { kind: 'chamber', chamber: spec.backChamber },
+      spawnX: w - 2,
+      spawnY: 6,
+      locked: false,
+    });
+  }
+
+  const chamber: ChamberConfig = {
+    id: spec.chamberId,
+    level: spec.id,
+    name: 'Briefing Room',
+    width: w,
+    height: h,
+    tiles,
+    spawnX: 1,
+    spawnY: 6,
+    items: [
+      // Two lore books (ids the content file keeps verbatim), a practice
+      // token, and the boss altar.
+      { id: `${spec.id}-lore-a`, type: 'lore', x: 8, y: 3, sprite: 'paper' },
+      { id: `${spec.id}-lore-b`, type: 'lore', x: 11, y: 3, sprite: 'paper' },
+      { id: `${spec.id}-practice`, type: 'practice', x: 8, y: 9, sprite: 'hint_token' },
+      { id: `${spec.id}-terminal`, type: 'challenge', x: 14, y: 6, sprite: spec.altarSprite },
+    ],
+    doors,
+    npcs: [
+      {
+        id: spec.npcId,
+        x: 3,
+        y: 6,
+        color: spec.npcColor,
+        name: spec.npcName,
+        dialog: ['This week in Claude — let me walk you through what just shipped.'],
+      },
+    ],
+    decorations: [
+      { x: 9, y: 1, sprite: 'crt_terminal' },
+      { x: 1, y: 1, sprite: 'sconce' },
+      { x: 17, y: 1, sprite: 'sconce' },
+      { x: 17, y: 10, sprite: 'server_stack' },
+    ],
+    keySpawn: { x: 16, y: 9 },
+  };
+
+  return {
+    id: spec.id,
+    number: spec.number,
+    title: spec.title,
+    subtitle: spec.subtitle,
+    theme: THEME_TWIC,
+    chambers: { [chamber.id]: chamber },
+    startingChamber: chamber.id,
+    challengeChamber: chamber.id,
+  };
+}
+
+function buildTwic1Level(): LevelConfig {
+  return buildTwicLevel({
+    id: 'twic-1',
+    number: 1,
+    title: 'THIS WEEK · I',
+    subtitle: 'fresh from the changelog',
+    chamberId: 'twic-1-room',
+    npcId: 'twic-npc-1',
+    npcName: 'Swarm-keeper',
+    npcColor: '#5AA9FF',
+    altarSprite: 'vorthex_map_a',
+    backChamber: null,
+    exit: { kind: 'level', level: 'twic-2', chamber: 'twic-2-room' },
+  });
+}
+
+function buildTwic2Level(): LevelConfig {
+  return buildTwicLevel({
+    id: 'twic-2',
+    number: 2,
+    title: 'THIS WEEK · II',
+    subtitle: 'fresh from the changelog',
+    chamberId: 'twic-2-room',
+    npcId: 'twic-npc-2',
+    npcName: 'Dial-tender',
+    npcColor: '#7FD7FF',
+    altarSprite: 'grist_map_a',
+    backChamber: 'twic-1-room',
+    exit: { kind: 'level', level: 'twic-3', chamber: 'twic-3-room' },
+  });
+}
+
+function buildTwic3Level(): LevelConfig {
+  return buildTwicLevel({
+    id: 'twic-3',
+    number: 3,
+    title: 'THIS WEEK · III',
+    subtitle: 'fresh from the changelog',
+    chamberId: 'twic-3-room',
+    npcId: 'twic-npc-3',
+    npcName: 'Tidewright',
+    npcColor: '#9CC9FF',
+    altarSprite: 'emberling_map_a',
+    backChamber: 'twic-2-room',
+    // Last weekly room hands off into the evergreen curriculum.
+    exit: { kind: 'level', level: 'welcome', chamber: 'welcome-antechamber' },
+  });
 }
 
 // ============================================================================
@@ -1310,6 +1490,9 @@ function withOverrides(level: LevelConfig): LevelConfig {
 /** Hand-authored levels BEFORE any layout overrides — used by getBaseChamber()
  *  so Layout Mode's "Reset to source" can restore the builder geometry. */
 const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
+  'twic-1': buildTwic1Level(),
+  'twic-2': buildTwic2Level(),
+  'twic-3': buildTwic3Level(),
   welcome: buildWelcomeLevel(),
   claudemd: buildClaudemdLevel(),
   slash: buildSlashLevel(),
@@ -1319,6 +1502,9 @@ const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
 };
 
 export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
+  'twic-1': withOverrides(BASE_LEVEL_CONFIGS['twic-1']),
+  'twic-2': withOverrides(BASE_LEVEL_CONFIGS['twic-2']),
+  'twic-3': withOverrides(BASE_LEVEL_CONFIGS['twic-3']),
   welcome: withOverrides(BASE_LEVEL_CONFIGS.welcome),
   claudemd: withOverrides(BASE_LEVEL_CONFIGS.claudemd),
   slash: withOverrides(BASE_LEVEL_CONFIGS.slash),
