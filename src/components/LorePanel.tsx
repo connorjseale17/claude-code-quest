@@ -337,14 +337,16 @@ export function LorePanel() {
         />
 
         {/* Text area — header band (spans the top), body (two columns across
-            the spine, auto-fit), and takeaway callout (pinned at the bottom). */}
+            the spine, auto-fit), and takeaway callout (pinned at the bottom).
+            Top/bottom insets sit comfortably inside the ruling frame so the
+            title and takeaway don't crowd the border. */}
         <div
           style={{
             position: 'absolute',
             left: '7.5%',
             right: '7.5%',
-            top: '9%',
-            bottom: '8.5%',
+            top: '13%',
+            bottom: '12.5%',
             display: 'flex',
             flexDirection: 'column',
             color: '#3a2c18',
