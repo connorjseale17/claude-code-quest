@@ -15,7 +15,10 @@ export type LevelId =
   | 'slash'
   | 'mcp'
   | 'subagents'
-  | 'final-boss';
+  | 'final-boss'
+  | 'twic-1'
+  | 'twic-2'
+  | 'twic-3';
 
 export type ChamberId = string;
 
@@ -115,6 +118,8 @@ export type LevelConfig = {
   startingChamber: ChamberId;
   /** The chamber that contains the boss challenge + key spawn */
   challengeChamber: ChamberId;
+  /** Which learning path this level belongs to. Defaults to 'quest'. */
+  track?: 'quest' | 'twic';
 };
 
 /** The editable subset of a ChamberConfig that Layout Mode serializes and that
@@ -215,6 +220,15 @@ const THEME_CRIMSON: Theme = {
   floorColor: '#2A1C19',
   floorDot: '#D43A2A',
   accentColor: '#D43A2A',
+};
+
+/** Placeholder TWiC theme — style guide will refine. Cool blue, newsroom feel. */
+const THEME_NEWSROOM: Theme = {
+  wallColor: '#0C0B0A',
+  wallShadow: '#2F5BA8',
+  floorColor: '#1B2230',
+  floorDot: '#6EAAEF',
+  accentColor: '#6EAAEF',
 };
 
 // ============================================================================
@@ -1307,6 +1321,171 @@ function withOverrides(level: LevelConfig): LevelConfig {
   return { ...level, chambers };
 }
 
+// ============================================================================
+// TWiC — "This Week in Claude" template floor
+//
+// Three geometrically IDENTICAL chambers, one per level. Mount points are
+// hard-coded at fixed positions and reused every week. Content (intro, NPC
+// lesson, 2 lore books, practice, door challenge) is swapped weekly by a
+// later-built routine. See plan / spec for the mount contract.
+// ============================================================================
+
+const TWIC_ROOM_W = 16;
+const TWIC_ROOM_H = 12;
+
+/** Fixed mount-point coordinates — IDENTICAL across all three TWiC rooms. */
+const TWIC_MOUNTS = {
+  spawnX: 1,
+  spawnY: 6,
+  npcX: 8,
+  npcY: 5,
+  lore1X: 5, lore1Y: 3,
+  lore2X: 11, lore2Y: 3,
+  practiceX: 8, practiceY: 8,
+  /** Challenge terminal — tile-adjacent to the locked exit door. */
+  terminalX: 13, terminalY: 6,
+  keySpawnX: 13, keySpawnY: 7,
+  /** Exit door on east wall. */
+  exitX: 15, exitY: 6,
+} as const;
+
+interface TwicRoomInputs {
+  levelId: 'twic-1' | 'twic-2' | 'twic-3';
+  chamberId: string;
+  name: string;
+  /** id of the NPC sprite that mounts the conversation. */
+  npcId: string;
+  /** display name for the NPC sprite. */
+  npcName: string;
+  /** ids of the two lore books in this room (Book 1 = core, Book 2 = why). */
+  loreIds: [string, string];
+  /** id of the practice item — matches PracticeContent.id. */
+  practiceId: string;
+  /** Where the exit door leads. Room-3 sends the player to `{kind:'end'}`. */
+  exitTarget: DoorTarget;
+}
+
+/** Build one identical TWiC chamber. All three rooms call this. */
+function buildTwicRoom(inputs: TwicRoomInputs): ChamberConfig {
+  const tiles = blankTileMap(TWIC_ROOM_W, TWIC_ROOM_H);
+  // Open exit door tile on east wall.
+  tiles[TWIC_MOUNTS.exitY][TWIC_MOUNTS.exitX] = 2;
+  return {
+    id: inputs.chamberId,
+    level: inputs.levelId,
+    name: inputs.name,
+    width: TWIC_ROOM_W,
+    height: TWIC_ROOM_H,
+    tiles,
+    items: [
+      { id: 'terminal', type: 'challenge', x: TWIC_MOUNTS.terminalX, y: TWIC_MOUNTS.terminalY, sprite: 'crt_terminal' },
+      { id: inputs.loreIds[0], type: 'lore', x: TWIC_MOUNTS.lore1X, y: TWIC_MOUNTS.lore1Y, sprite: 'paper' },
+      { id: inputs.loreIds[1], type: 'lore', x: TWIC_MOUNTS.lore2X, y: TWIC_MOUNTS.lore2Y, sprite: 'paper' },
+      { id: inputs.practiceId, type: 'practice', x: TWIC_MOUNTS.practiceX, y: TWIC_MOUNTS.practiceY, sprite: 'hint_token' },
+    ],
+    doors: [
+      {
+        id: 'exit',
+        x: TWIC_MOUNTS.exitX,
+        y: TWIC_MOUNTS.exitY,
+        target: inputs.exitTarget,
+        spawnX: 1,
+        spawnY: 6,
+        locked: true,
+        requiresLevelKey: true,
+      },
+    ],
+    npcs: [
+      {
+        id: inputs.npcId,
+        x: TWIC_MOUNTS.npcX,
+        y: TWIC_MOUNTS.npcY,
+        color: THEME_NEWSROOM.accentColor,
+        name: inputs.npcName,
+        dialog: [],
+      },
+    ],
+    decorations: [],
+    spawnX: TWIC_MOUNTS.spawnX,
+    spawnY: TWIC_MOUNTS.spawnY,
+    keySpawn: { x: TWIC_MOUNTS.keySpawnX, y: TWIC_MOUNTS.keySpawnY },
+  };
+}
+
+function buildTwic1Level(): LevelConfig {
+  const chamber = buildTwicRoom({
+    levelId: 'twic-1',
+    chamberId: 'twic-room-1',
+    name: 'This Week · Room 1',
+    npcId: 'twic-npc-1',
+    npcName: 'Beat Reporter',
+    loreIds: ['twic-1-lore-a', 'twic-1-lore-b'],
+    practiceId: 'twic-1-practice',
+    exitTarget: { kind: 'level', level: 'twic-2', chamber: 'twic-room-2' },
+  });
+  return {
+    id: 'twic-1',
+    number: 7,
+    title: 'TWiC · Feature A',
+    subtitle: 'This week in Claude',
+    theme: THEME_NEWSROOM,
+    chambers: { [chamber.id]: chamber },
+    startingChamber: chamber.id,
+    challengeChamber: chamber.id,
+    track: 'twic',
+  };
+}
+
+function buildTwic2Level(): LevelConfig {
+  const chamber = buildTwicRoom({
+    levelId: 'twic-2',
+    chamberId: 'twic-room-2',
+    name: 'This Week · Room 2',
+    npcId: 'twic-npc-2',
+    npcName: 'Beat Reporter',
+    loreIds: ['twic-2-lore-a', 'twic-2-lore-b'],
+    practiceId: 'twic-2-practice',
+    exitTarget: { kind: 'level', level: 'twic-3', chamber: 'twic-room-3' },
+  });
+  return {
+    id: 'twic-2',
+    number: 8,
+    title: 'TWiC · Feature B',
+    subtitle: 'This week in Claude',
+    theme: THEME_NEWSROOM,
+    chambers: { [chamber.id]: chamber },
+    startingChamber: chamber.id,
+    challengeChamber: chamber.id,
+    track: 'twic',
+  };
+}
+
+function buildTwic3Level(): LevelConfig {
+  const chamber = buildTwicRoom({
+    levelId: 'twic-3',
+    chamberId: 'twic-room-3',
+    name: 'This Week · Room 3',
+    npcId: 'twic-npc-3',
+    npcName: 'Beat Reporter',
+    loreIds: ['twic-3-lore-a', 'twic-3-lore-b'],
+    practiceId: 'twic-3-practice',
+    // Final room: exit drops the player into the completion stamp screen
+    // (GAME_OVER → TwicStampScreen via the currentTrack switch in App.tsx).
+    exitTarget: { kind: 'end' },
+  });
+  return {
+    id: 'twic-3',
+    number: 9,
+    title: 'TWiC · Feature C',
+    subtitle: 'This week in Claude',
+    theme: THEME_NEWSROOM,
+    chambers: { [chamber.id]: chamber },
+    startingChamber: chamber.id,
+    challengeChamber: chamber.id,
+    track: 'twic',
+  };
+}
+
 /** Hand-authored levels BEFORE any layout overrides — used by getBaseChamber()
  *  so Layout Mode's "Reset to source" can restore the builder geometry. */
 const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
@@ -1316,6 +1495,9 @@ const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   mcp: buildMcpLevel(),
   subagents: buildSubagentsLevel(),
   'final-boss': buildFinalBossLevel(),
+  'twic-1': buildTwic1Level(),
+  'twic-2': buildTwic2Level(),
+  'twic-3': buildTwic3Level(),
 };
 
 export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
@@ -1325,6 +1507,9 @@ export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   mcp: withOverrides(BASE_LEVEL_CONFIGS.mcp),
   subagents: withOverrides(BASE_LEVEL_CONFIGS.subagents),
   'final-boss': withOverrides(BASE_LEVEL_CONFIGS['final-boss']),
+  'twic-1': withOverrides(BASE_LEVEL_CONFIGS['twic-1']),
+  'twic-2': withOverrides(BASE_LEVEL_CONFIGS['twic-2']),
+  'twic-3': withOverrides(BASE_LEVEL_CONFIGS['twic-3']),
 };
 
 /** Convenience: lookup a chamber by ID across all levels. */

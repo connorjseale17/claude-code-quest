@@ -7,26 +7,29 @@ import { CONTENT } from '../content';
 export function EndScreen() {
   const state = useGame();
 
-  const trophies = (Object.keys(LEVEL_CONFIGS) as LevelId[])
-    .sort((a, b) => LEVEL_CONFIGS[a].number - LEVEL_CONFIGS[b].number)
+  // Quest end-screen only counts Quest levels. TWiC has its own stamp screen
+  // and doesn't roll up trophies/lessons here.
+  const questLevelIds = (Object.keys(LEVEL_CONFIGS) as LevelId[])
+    .filter(id => (LEVEL_CONFIGS[id].track ?? 'quest') === 'quest')
+    .sort((a, b) => LEVEL_CONFIGS[a].number - LEVEL_CONFIGS[b].number);
+
+  const trophies = questLevelIds
     .map(id => CONTENT[id].practice?.prize)
     .filter((p): p is { id: string; label: string } => Boolean(p));
 
   const earnedCount = trophies.filter(t => state.prizesUnlocked.includes(t.id)).length;
 
-  // Lessons: every NPC across all levels that has an authored conversation.
-  const lessons = (Object.keys(LEVEL_CONFIGS) as LevelId[])
-    .sort((a, b) => LEVEL_CONFIGS[a].number - LEVEL_CONFIGS[b].number)
-    .flatMap(levelId => {
-      const convos = CONTENT[levelId].conversations ?? {};
-      return Object.keys(convos).map(npcId => {
-        const chamber = Object.values(LEVEL_CONFIGS[levelId].chambers).find(c =>
-          c.npcs.some(n => n.id === npcId),
-        );
-        const npc = chamber?.npcs.find(n => n.id === npcId);
-        return { npcId, name: npc?.name ?? npcId };
-      });
+  // Lessons: every NPC across the Quest levels that has an authored conversation.
+  const lessons = questLevelIds.flatMap(levelId => {
+    const convos = CONTENT[levelId].conversations ?? {};
+    return Object.keys(convos).map(npcId => {
+      const chamber = Object.values(LEVEL_CONFIGS[levelId].chambers).find(c =>
+        c.npcs.some(n => n.id === npcId),
+      );
+      const npc = chamber?.npcs.find(n => n.id === npcId);
+      return { npcId, name: npc?.name ?? npcId };
     });
+  });
   const lessonsCompletedCount = lessons.filter(l =>
     state.lessonsCompleted.includes(l.npcId),
   ).length;

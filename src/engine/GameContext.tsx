@@ -8,7 +8,16 @@ import {
 
 export type Direction = 'left' | 'right' | 'up' | 'down';
 export type PanelType = 'challenge' | 'lore' | 'npc' | 'practice';
-export type GamePhase = 'boot' | 'splash' | 'instructions' | 'customize' | 'playing' | 'loading' | 'gameOver';
+export type GamePhase =
+  | 'boot'
+  | 'splash'
+  | 'instructions'
+  | 'customize'
+  | 'pathSelect'
+  | 'playing'
+  | 'loading'
+  | 'gameOver';
+export type Track = 'quest' | 'twic';
 
 export type PendingLevelTransition = {
   levelId: LevelId;
@@ -48,6 +57,10 @@ export type GameState = {
   player: { name: string; botColor: string };
   prizesUnlocked: string[];
   lessonsCompleted: string[];
+  /** Which learning path the player is currently in. Defaults to 'quest'. */
+  currentTrack: Track;
+  /** One-shot flag for the TWiC floor-level Issue Intro overlay (room-1 entry). */
+  twicIssueShown: boolean;
 };
 
 const initialChamberState: ChamberState = {
@@ -125,6 +138,8 @@ export const initialState: GameState = {
     } catch {}
     return [];
   })(),
+  currentTrack: 'quest',
+  twicIssueShown: false,
 };
 
 export type GameAction =
@@ -148,7 +163,9 @@ export type GameAction =
   | { type: 'UNLOCK_PRIZE'; prizeId: string }
   | { type: 'MARK_LESSON_COMPLETED'; npcId: string }
   | { type: 'DEV_WARP_LEVEL'; levelId: LevelId }
-  | { type: 'DEV_UNLOCK_CURRENT' };
+  | { type: 'DEV_UNLOCK_CURRENT' }
+  | { type: 'SELECT_TRACK'; track: Track; levelId: LevelId; chamberId: ChamberId; spawnX: number; spawnY: number }
+  | { type: 'DISMISS_TWIC_ISSUE_INTRO' };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -251,12 +268,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const chamberId = cfg.startingChamber;
       const chamber = cfg.chambers[chamberId];
       const ch = state.chambers[chamberId] ?? { ...initialChamberState };
+      // Keep currentTrack in sync with the warp target so the TWiC stamp /
+      // Quest end-screen routing stays correct after a dev jump.
+      const track: Track = cfg.track ?? 'quest';
       return {
         ...state,
         gamePhase: 'playing',
         gameOver: false,
         currentLevel: action.levelId,
         currentChamber: chamberId,
+        currentTrack: track,
         bot: { x: chamber.spawnX, y: chamber.spawnY, facing: 'right', animation: 'idle' },
         chambers: { ...state.chambers, [chamberId]: { ...ch, visited: true } },
         activePanel: null,
@@ -288,6 +309,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const t = state.pendingLevelTransition;
       if (!t) return state;
       const ch = state.chambers[t.chamberId] ?? { ...initialChamberState };
+      // Fire the one-shot TWiC Issue Intro overlay when the player first enters twic-1.
+      const showTwicIssue = t.levelId === 'twic-1';
       return {
         ...state,
         gamePhase: 'playing',
@@ -300,6 +323,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         },
         pendingLevelTransition: null,
         showIntro: true,
+        twicIssueShown: showTwicIssue || state.twicIssueShown,
       };
     }
     case 'SET_PLAYER': {
@@ -320,31 +344,34 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, lessonsCompleted };
     }
     case 'ADVANCE_PHASE': {
-      // Customize → loading screen first, then Level 01 via COMPLETE_LEVEL_TRANSITION
-      if (state.gamePhase === 'customize') {
-        const startLevelId: LevelId = 'welcome';
-        const startCfg = LEVEL_CONFIGS[startLevelId];
-        const startChamberId = startCfg.startingChamber;
-        const startChamber = startCfg.chambers[startChamberId];
-        return {
-          ...state,
-          gamePhase: 'loading',
-          pendingLevelTransition: {
-            levelId: startLevelId,
-            chamberId: startChamberId,
-            spawnX: startChamber.spawnX,
-            spawnY: startChamber.spawnY,
-          },
-        };
-      }
+      // Customize → PATH SELECT screen. Track + start level are chosen there.
       const transitions: Record<string, GamePhase> = {
         boot: 'splash',
         splash: 'instructions',
         instructions: 'customize',
+        customize: 'pathSelect',
       };
       const next = transitions[state.gamePhase];
       return next ? { ...state, gamePhase: next } : state;
     }
+    case 'SELECT_TRACK': {
+      // Path-select screen dispatches this to queue the chosen track's loading
+      // transition. The track flag governs end-screen routing and any
+      // track-specific UI (Issue Intro overlay, stamp screen).
+      return {
+        ...state,
+        gamePhase: 'loading',
+        currentTrack: action.track,
+        pendingLevelTransition: {
+          levelId: action.levelId,
+          chamberId: action.chamberId,
+          spawnX: action.spawnX,
+          spawnY: action.spawnY,
+        },
+      };
+    }
+    case 'DISMISS_TWIC_ISSUE_INTRO':
+      return { ...state, twicIssueShown: false };
     default:
       return state;
   }

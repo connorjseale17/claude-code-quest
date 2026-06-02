@@ -23,6 +23,9 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { MobileControls } from './components/MobileControls';
 import { RotatePrompt } from './components/RotatePrompt';
 import { LayoutEditor } from './components/LayoutEditor';
+import { PathSelectScreen } from './components/PathSelectScreen';
+import { TwicIssueIntroOverlay } from './components/TwicIssueIntroOverlay';
+import { TwicStampScreen } from './components/TwicStampScreen';
 
 const BASE_W = 960;
 const BASE_H = 640;
@@ -77,6 +80,7 @@ function GameScreen({ onDevToggle }: { onDevToggle: () => void }) {
           {state.activePanel?.type === 'npc' && <NPCEncounter />}
           {state.activePanel?.type === 'practice' && <PracticeTerminal />}
           <IntroOverlay />
+          <TwicIssueIntroOverlay />
           <PauseMenu />
         </div>
         <PromptLine />
@@ -106,11 +110,17 @@ function PhaseRouter() {
     case 'customize':
       screen = <CustomizeScreen />;
       break;
+    case 'pathSelect':
+      screen = <PathSelectScreen />;
+      break;
     case 'loading':
       screen = <LoadingScreen />;
       break;
     case 'gameOver':
-      screen = (
+      // Quest end → trophy/lesson tally. TWiC end → stamp screen.
+      screen = state.currentTrack === 'twic' ? (
+        <TwicStampScreen />
+      ) : (
         <TerminalFrame title="claude-code-quest --complete" accent onDevToggle={toggleDev}>
           <EndScreen />
         </TerminalFrame>

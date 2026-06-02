@@ -31,6 +31,12 @@ export const FUN_FACTS: string[] = [
   'Permission modes go: PLAN, ACCEPT-EDITS, AUTO, ASK. Shift+Tab to cycle. Plan first, ship last.',
   "A CLAUDE.md file at the root of your firm's project template is the cheapest leverage in the industry — one hour writing it pays back in every session forever.",
   'MCP servers let Claude post Slack updates, read Drive folders, and pull GitHub PRs — all from the same prompt, all with scoped auth.',
+
+  // TWiC-flavored — surfaces between rooms on the weekly floor.
+  'This Week in Claude refreshes every Monday — three new features, three new briefs, same three rooms.',
+  "The Beat Reporters in TWiC carry the week's rundown so you don't have to scan release notes yourself.",
+  'Every TWiC room is the same shape on purpose — geometry is permanent, content is swappable.',
+  'A TWiC issue takes about ten minutes to walk start to finish. Bite-sized by design.',
 ];
 
 /** Returns a random fun fact. */
