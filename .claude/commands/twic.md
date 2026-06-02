@@ -58,7 +58,7 @@ Inside those four files, preserve every fixed value:
   | lore ids | `twic-N-lore-a`, `twic-N-lore-b` |
   | practice / prize id | `twic-N-practice` / `twic-N-prize` (keep prize labels) |
   | NPC key | `twic-npc-N` (NPC name "Beat Reporter" lives in roomConfigs) |
-  | battle | ONE door-challenge question, `spriteKey: 'slime'`, `maxHP: 1`, exactly 4 choices, exactly one `correct: true` |
+  | battle | ONE door-challenge question, `maxHP: 1`, exactly 4 choices, exactly one `correct: true`. Per-room `spriteKey` is locked (matches the in-room boss sprite, set in layoutOverrides.ts and OUT OF SCOPE for this routine): **twic-1 → `'skeleton'`**, **twic-2 → `'ghost'`**, **twic-3 → `'dragon'`**. Never use `'slime'` for a TWiC battle — that was the pre-2026-06-02 default and is no longer valid. |
   | `TWIC_ISSUE_INTRO` | shape `{ publishDate: 'YYYY-MM-DD', framing: string }` |
 
 ## STEP 1 — SCAN

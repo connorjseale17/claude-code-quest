@@ -96,7 +96,7 @@ because those can run code on the next ____.`,
   },
   battle: {
     name: 'The Postinstall Prowler',
-    spriteKey: 'slime',
+    spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,

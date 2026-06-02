@@ -45,7 +45,7 @@ The scaffolding (the `twic-1/2/3` levels, `PathSelectScreen`,
 | lore ids | `twic-N-lore-a`, `twic-N-lore-b` |
 | practice id / prize id | `twic-N-practice` / `twic-N-prize` |
 | NPC conversation key | `twic-npc-N` (NPC name "Beat Reporter" lives in roomConfigs) |
-| battle | one "Door Challenge" question, `spriteKey: 'slime'`, `maxHP: 1`, exactly 4 choices, exactly one `correct: true` |
+| battle | one "Door Challenge" question, `maxHP: 1`, exactly 4 choices, exactly one `correct: true`. Per-room `spriteKey` is locked (matches in-room boss in layoutOverrides.ts — out of routine scope): twic-1 → `'skeleton'`, twic-2 → `'ghost'`, twic-3 → `'dragon'`. Never `'slime'`. |
 | `TWIC_ISSUE_INTRO` | shape `{ publishDate: 'YYYY-MM-DD', framing: string }` |
 
 You replace: `intro`, top-level `prompt`/`choices`/feedback, the two `lore`

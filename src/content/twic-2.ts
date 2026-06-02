@@ -93,7 +93,7 @@ and when you're done, leave it ____ so I can clean up with ____.`,
   },
   battle: {
     name: 'Snarl, the Branch-Tangler',
-    spriteKey: 'slime',
+    spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,

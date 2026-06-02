@@ -2066,11 +2066,12 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ],
     "items": [
-      // Boss sprite swapped from 'crt_terminal' (the editor exported it before
-      // the visibility fix landed) to 'slime_a' — keeps the boss visible as a
-      // monster in front of the door, mechanics unchanged. Position (13, 6)
-      // matches the user's "current spot, right in front of the first door."
-      { "id": "terminal", "type": "challenge", "x": 13, "y": 6, "sprite": "slime_a" },
+      // Boss sprite is the visible monster in the room and matches the
+      // battle UI's spriteKey. Room 1 = skeleton, room 2 = ghost, room 3 =
+      // dragon (per user direction — variety across the three TWiC rooms).
+      // Rendered at scaleOverride=2 in Room.tsx for TWiC → 32px inside the
+      // 40px tile, fits 1×1 with margin.
+      { "id": "terminal", "type": "challenge", "x": 13, "y": 6, "sprite": "skeleton_a" },
       { "id": "twic-1-lore-a", "type": "lore", "x": 10, "y": 2, "sprite": "paper" },
       { "id": "twic-1-lore-b", "type": "lore", "x": 10, "y": 9, "sprite": "paper" },
       { "id": "twic-1-practice", "type": "practice", "x": 14, "y": 2, "sprite": "hint_token" }
@@ -2143,7 +2144,9 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ],
     "items": [
-      { "id": "terminal", "type": "challenge", "x": 11, "y": 8, "sprite": "slime_a" },
+      // Room 2 boss = ghost (per user direction). Renders 1×1 via Room.tsx's
+      // scaleOverride for level.track === 'twic'.
+      { "id": "terminal", "type": "challenge", "x": 11, "y": 8, "sprite": "ghost_a" },
       { "id": "twic-2-lore-a", "type": "lore", "x": 6, "y": 2, "sprite": "paper" },
       { "id": "twic-2-lore-b", "type": "lore", "x": 6, "y": 9, "sprite": "paper" },
       { "id": "twic-2-practice", "type": "practice", "x": 12, "y": 2, "sprite": "hint_token" }
@@ -2210,7 +2213,10 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ],
     "items": [
-      { "id": "terminal", "type": "challenge", "x": 12, "y": 7, "sprite": "slime_a" },
+      // Room 3 (final) boss = dragon (per user direction — climactic final
+      // boss). Even the dragon renders 1×1 via scaleOverride=2; its natural
+      // BESTIARY scale of 7 (112px) would normally span 3 tiles.
+      { "id": "terminal", "type": "challenge", "x": 12, "y": 7, "sprite": "dragon_a" },
       { "id": "twic-3-lore-a", "type": "lore", "x": 2, "y": 4, "sprite": "paper" },
       { "id": "twic-3-lore-b", "type": "lore", "x": 3, "y": 9, "sprite": "paper" },
       { "id": "twic-3-practice", "type": "practice", "x": 11, "y": 10, "sprite": "hint_token" }
