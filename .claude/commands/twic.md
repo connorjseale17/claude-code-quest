@@ -23,5 +23,8 @@ Critical guardrails (STEP 0 of the runbook):
 Then: STEP 1 scan → STEP 2 pick 3 (or "quiet week" → stop, no push) → STEP 3
 write → STEP 4 self-check (all five yes) → STEP 5 `npm run build` until green,
 commit `TWiC · week of <date>`, **`git push origin main` (never skip)**, then
-trigger the Vercel deploy (git-integration on `main`, or `npx vercel --prod`).
-End with the runbook's FINAL SUMMARY, including the live-site confirmation.
+**deploy with the Vercel CLI** (git push alone does NOT update the site):
+`npx -y vercel@latest link --yes --project claude-code-quest --token "$VERCEL_TOKEN"`
+then `npx -y vercel@latest --prod --yes --project claude-code-quest --token "$VERCEL_TOKEN"`.
+Finally curl the live bundle to confirm the new feature text is served and no
+"Placeholder" remains. End with the runbook's FINAL SUMMARY + live-site confirmation.

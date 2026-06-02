@@ -93,18 +93,30 @@ git commit -m "TWiC · week of $(date +%F)"
 git push origin main          # NEVER skip this. Production deploys from main.
 ```
 
-**Deploy (do not assume git-push is enough — confirm one of these is true):**
-- **Preferred:** the GitHub repo is connected to Vercel with Production Branch
-  = `main`, so the push above auto-builds and deploys. No secrets needed.
-- **Fallback (CLI):** if the project is not git-connected, deploy explicitly
-  with `npx vercel --prod --yes` — this requires `VERCEL_TOKEN` (and the linked
-  `.vercel/project.json`, which is gitignored) available in the run
-  environment. If neither is configured, STOP and report that the content is on
-  `main` but cannot be deployed from here.
+**Deploy (proven path — git push alone does NOT update the site; the Vercel
+CLI does).** Requires `VERCEL_TOKEN` in the run environment. Project is
+`claude-code-quest`, production alias `claude-code-quest-sigma.vercel.app`:
 
-Then confirm the live site (`https://claude-code-quest-sigma.vercel.app`):
-the PATH SELECT tile shows `UPDATED · {today}` and the three rooms read the new
-features.
+```
+npx -y vercel@latest link --yes --project claude-code-quest --token "$VERCEL_TOKEN"
+npx -y vercel@latest --prod   --yes --project claude-code-quest --token "$VERCEL_TOKEN"
+```
+
+Vercel builds on its servers and re-aliases the production URL. If
+`$VERCEL_TOKEN` is absent, STOP and report that the content is on `main` but
+undeployed.
+
+**Verify the LIVE site (don't trust the deploy message alone):**
+
+```
+URL=https://claude-code-quest-sigma.vercel.app
+A=$(curl -fsSL "$URL/" | grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' | head -1)
+curl -fsSL "$URL$A" | grep -q "<a feature name you wrote>" && echo "LIVE ✓"
+curl -fsSL "$URL$A" | grep -q "Placeholder" && echo "STILL STALE — investigate"
+```
+
+The PATH SELECT tile should read `UPDATED · {today}` and the three rooms the
+new features.
 
 ## FINAL SUMMARY (always print)
 
