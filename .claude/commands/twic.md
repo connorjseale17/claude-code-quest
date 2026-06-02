@@ -11,7 +11,8 @@ not a branch, not a PR.
 > a `VERCEL_TOKEN` embedded and network access to Vercel — so it CAN and MUST
 > deploy to production itself (an ad-hoc dev session can't; this one can). The
 > final state of a successful run is the new content visible on
-> `https://claude-code-quest-sigma.vercel.app`. Long-form reference:
+> `https://claudecodequest.vercel.app` (the clean public URL — keep its alias
+> moved to the latest deploy, see STEP 5). Long-form reference:
 > `docs/twic-routine.md`.
 
 ---
@@ -101,10 +102,19 @@ git push origin main              # never skip — but a push alone does NOT upd
 
 # DEPLOY (this instance has $VERCEL_TOKEN embedded — use it):
 npx -y vercel@latest link --yes --project claude-code-quest --token "$VERCEL_TOKEN"
-npx -y vercel@latest --prod --yes --project claude-code-quest --token "$VERCEL_TOKEN"
+# Capture the exact deployment URL — we need it to move the pretty alias:
+DEPLOY_URL=$(npx -y vercel@latest --prod --yes --project claude-code-quest --token "$VERCEL_TOKEN" 2>/dev/null | grep -oE 'https://[a-z0-9-]+\.vercel\.app' | tail -1)
 
-# VERIFY THE LIVE SITE (don't trust the deploy message alone):
-URL=https://claude-code-quest-sigma.vercel.app
+# Re-alias the pretty domain. CRITICAL: `vercel --prod` auto-updates
+# claude-code-quest-sigma.vercel.app (the project's production domain) but does
+# NOT touch claudecodequest.vercel.app — that's a custom alias that only moves
+# when we set it here. Skip this line and claudecodequest goes stale while sigma
+# (and the verify below, if it points at sigma) looks green. This is THE bug
+# that made the pretty URL update only "half the time."
+npx -y vercel@latest alias set "$DEPLOY_URL" claudecodequest.vercel.app --token "$VERCEL_TOKEN"
+
+# VERIFY THE LIVE SITE on the pretty domain humans actually use (not sigma):
+URL=https://claudecodequest.vercel.app
 A=$(curl -fsSL "$URL/" | grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' | head -1)
 curl -fsSL "$URL$A" | grep -q "<a feature name you wrote>" && echo "LIVE ✓" || echo "LIVE CHECK FAILED"
 curl -fsSL "$URL$A" | grep -q "Placeholder" && echo "STILL STALE — investigate"

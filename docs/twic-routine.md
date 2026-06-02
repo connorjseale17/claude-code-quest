@@ -95,21 +95,30 @@ git push origin main          # NEVER skip this. Production deploys from main.
 
 **Deploy (proven path — git push alone does NOT update the site; the Vercel
 CLI does).** Requires `VERCEL_TOKEN` in the run environment. Project is
-`claude-code-quest`, production alias `claude-code-quest-sigma.vercel.app`:
+`claude-code-quest`. Two domains serve this project:
+`claude-code-quest-sigma.vercel.app` (the project's production domain — Vercel
+auto-updates it on every `--prod`) and `claudecodequest.vercel.app` (the
+clean public URL — a **custom alias** that does NOT move on its own; you MUST
+re-alias it each deploy or it goes stale while sigma looks fine):
 
 ```
 npx -y vercel@latest link --yes --project claude-code-quest --token "$VERCEL_TOKEN"
-npx -y vercel@latest --prod   --yes --project claude-code-quest --token "$VERCEL_TOKEN"
+# Capture the deployment URL so we can move the pretty alias to it:
+DEPLOY_URL=$(npx -y vercel@latest --prod --yes --project claude-code-quest --token "$VERCEL_TOKEN" 2>/dev/null | grep -oE 'https://[a-z0-9-]+\.vercel\.app' | tail -1)
+# Move the clean public URL onto this exact deployment (the step that was missing):
+npx -y vercel@latest alias set "$DEPLOY_URL" claudecodequest.vercel.app --token "$VERCEL_TOKEN"
 ```
 
-Vercel builds on its servers and re-aliases the production URL. If
-`$VERCEL_TOKEN` is absent, STOP and report that the content is on `main` but
-undeployed.
+Vercel builds on its servers and updates the sigma production domain; the
+`alias set` line then points `claudecodequest.vercel.app` at the same build.
+If `$VERCEL_TOKEN` is absent, STOP and report that the content is on `main`
+but undeployed.
 
-**Verify the LIVE site (don't trust the deploy message alone):**
+**Verify the LIVE site on the clean public URL (don't trust the deploy
+message alone):**
 
 ```
-URL=https://claude-code-quest-sigma.vercel.app
+URL=https://claudecodequest.vercel.app
 A=$(curl -fsSL "$URL/" | grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' | head -1)
 curl -fsSL "$URL$A" | grep -q "<a feature name you wrote>" && echo "LIVE ✓"
 curl -fsSL "$URL$A" | grep -q "Placeholder" && echo "STILL STALE — investigate"
