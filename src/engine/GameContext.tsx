@@ -17,6 +17,8 @@ export type GamePhase =
   | 'origin'
   | 'playing'
   | 'loading'
+  | 'wrapUp'
+  | 'certification'
   | 'gameOver';
 export type Track = 'quest' | 'twic';
 
@@ -177,7 +179,8 @@ export type GameAction =
   | { type: 'DEV_UNLOCK_CURRENT' }
   | { type: 'SELECT_TRACK'; track: Track; levelId: LevelId; chamberId: ChamberId; spawnX: number; spawnY: number }
   | { type: 'DISMISS_TWIC_ISSUE_INTRO' }
-  | { type: 'DISMISS_ORIGIN' };
+  | { type: 'DISMISS_ORIGIN' }
+  | { type: 'DISMISS_WRAP_UP' };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -274,7 +277,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'DISMISS_INTRO':
       return { ...state, showIntro: false };
     case 'GAME_OVER':
-      return { ...state, gameOver: true, gamePhase: 'gameOver' };
+      // Quest path → wrap-up + certification flow. TWiC path → stamp screen
+      // (handled by gameOver in App.tsx via currentTrack switch).
+      return state.currentTrack === 'quest'
+        ? { ...state, gameOver: true, gamePhase: 'wrapUp' }
+        : { ...state, gameOver: true, gamePhase: 'gameOver' };
     case 'DEV_WARP_LEVEL': {
       const cfg = LEVEL_CONFIGS[action.levelId];
       const chamberId = cfg.startingChamber;
@@ -405,6 +412,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         showIntro: true,
         originSeen: true,
       };
+    }
+    case 'DISMISS_WRAP_UP': {
+      // Final beat of the Wrap-Up Splash was clicked through (or skipped).
+      // Advance into the Certification Page where the player enters their
+      // name and downloads the PDF.
+      return { ...state, gamePhase: 'certification' };
     }
     default:
       return state;

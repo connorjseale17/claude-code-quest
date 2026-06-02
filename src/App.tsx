@@ -27,6 +27,8 @@ import { PathSelectScreen } from './components/PathSelectScreen';
 import { TwicIssueIntroOverlay } from './components/TwicIssueIntroOverlay';
 import { TwicStampScreen } from './components/TwicStampScreen';
 import { OriginSplash } from './components/OriginSplash';
+import { WrapUpSplash } from './components/WrapUpSplash';
+import { CertificationPage } from './components/CertificationPage';
 
 const BASE_W = 960;
 const BASE_H = 640;
@@ -119,6 +121,12 @@ function PhaseRouter() {
       break;
     case 'origin':
       screen = <OriginSplash />;
+      break;
+    case 'wrapUp':
+      screen = <WrapUpSplash />;
+      break;
+    case 'certification':
+      screen = <CertificationPage />;
       break;
     case 'gameOver':
       // Quest end → trophy/lesson tally. TWiC end → stamp screen.
