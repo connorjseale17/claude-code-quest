@@ -18,5 +18,5 @@ export type TwicIssueIntro = {
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
   publishDate: '2026-06-02',
   framing:
-    "This week in Claude, dated 2026-06-02. Three features shipped — here's what's new and how to put each one to work today.",
+    "This week in Claude, dated 2026-06-02: Dynamic Workflows (/workflows) plans once and fans out into hundreds of parallel subagents in a single session; Effort Control (/effort) dials how hard Claude thinks; and /simplify runs a cleanup-only review that auto-applies quality fixes before you open a PR.",
 };
