@@ -12,6 +12,7 @@ import type { SerializedChamber } from './roomConfigs';
 // Level 05 (subagents)   authored 2026-06-01
 // Level 06 (final-boss)  authored 2026-06-01  — GAME COMPLETE
 // TWiC Room 1            authored 2026-06-02
+// TWiC Room 2            authored 2026-06-02
 // ============================================================================
 
 export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
@@ -2103,5 +2104,72 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     "spawnX": 2,
     "spawnY": 6,
     "keySpawn": { "x": 14, "y": 8 }
+  },
+  "twic-room-2": {
+    "width": 16,
+    "height": 12,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2],
+      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      { "id": "terminal", "type": "challenge", "x": 11, "y": 8, "sprite": "slime_a" },
+      { "id": "twic-2-lore-a", "type": "lore", "x": 6, "y": 2, "sprite": "paper" },
+      { "id": "twic-2-lore-b", "type": "lore", "x": 6, "y": 9, "sprite": "paper" },
+      { "id": "twic-2-practice", "type": "practice", "x": 12, "y": 2, "sprite": "hint_token" }
+    ],
+    "doors": [
+      {
+        "id": "exit",
+        "x": 15,
+        "y": 6,
+        "target": { "kind": "level", "level": "twic-3", "chamber": "twic-room-3" },
+        "spawnX": 1,
+        "spawnY": 6,
+        "locked": true,
+        "requiresLevelKey": true
+      }
+    ],
+    "npcs": [
+      {
+        "id": "twic-npc-2",
+        "x": 2,
+        "y": 9,
+        "color": "#6EAAEF",
+        "name": "Beat Reporter",
+        "dialog": []
+      }
+    ],
+    "decorations": [
+      { "x": 10, "y": 4, "sprite": "brazier" },
+      { "x": 13, "y": 4, "sprite": "brazier" },
+      { "x": 13, "y": 10, "sprite": "bookshelf" },
+      { "x": 10, "y": 10, "sprite": "bookshelf" },
+      { "x": 9, "y": 10, "sprite": "bookshelf" },
+      { "x": 11, "y": 10, "sprite": "bookshelf" },
+      { "x": 12, "y": 10, "sprite": "bookshelf" },
+      { "x": 14, "y": 10, "sprite": "bookshelf" },
+      { "x": 1, "y": 8, "sprite": "bookshelf" },
+      { "x": 1, "y": 9, "sprite": "bookshelf" },
+      { "x": 2, "y": 10, "sprite": "bookshelf" },
+      { "x": 1, "y": 10, "sprite": "bookshelf" },
+      { "x": 3, "y": 10, "sprite": "bookshelf" },
+      { "x": 13, "y": 1, "sprite": "server_stack" },
+      { "x": 12, "y": 1, "sprite": "server_stack" },
+      { "x": 11, "y": 1, "sprite": "server_stack" }
+    ],
+    "spawnX": 2,
+    "spawnY": 2,
+    "keySpawn": { "x": 14, "y": 6 }
   }
 };
