@@ -1,5 +1,7 @@
 ---
-description: Weekly "This Week in Claude" routine — scan, write 3 rooms, build, push main, deploy to Vercel, verify live.
+description: 'TWiC weekly routine — scan releases, write the 3 rooms + issue intro, build, push main, deploy, verify live.'
+argument-hint: ''
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch
 ---
 
 You are running the weekly **This Week in Claude (TWiC)** routine for
