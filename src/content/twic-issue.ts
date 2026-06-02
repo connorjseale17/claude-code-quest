@@ -18,5 +18,5 @@ export type TwicIssueIntro = {
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
   publishDate: '2026-06-02',
   framing:
-    "This week in Claude, dated 2026-06-02: Dynamic Workflows (/workflows) plans once and fans out into hundreds of parallel subagents in a single session; Effort Control (/effort) dials how hard Claude thinks; and /simplify runs a cleanup-only review that auto-applies quality fixes before you open a PR.",
+    "This week in Claude, the theme is keeping your foot on the gas without leaving a mess: Accept Edits now taps the brakes before any config file that could quietly run code, so momentum mode stops short of signing a blank check; Claude-managed git worktrees let you spike risky work in an isolated folder and sweep it up with plain git when you're done; and plugins dropped into `.claude/skills` now load on their own, shipping a team's workflow with the repo instead of through a marketplace.",
 };
