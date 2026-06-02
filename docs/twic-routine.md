@@ -61,23 +61,76 @@ modes, CLAUDE.md, slash basics, MCP, subagents). Pick the 3 best on
 teachability / broad applicability / novelty. Fewer than 3 qualify → **STOP**,
 print "quiet week — prior issue still live," do not commit or push.
 
-## STEP 3 — WRITE
+## STEP 3 — WRITE (match Quest depth + format; never Quest content)
 
-Read `src/content/welcome.ts` for voice, and the current four TWiC files for
-shape. Overwrite the four files, mapping Feature A→twic-1, B→twic-2, C→twic-3,
-keeping every fixed value in the STEP 0 table. Lore books use structured-lore
-markup (`**Title**`, `**Section**`, blank-line paragraphs, `> Takeaway:` line;
-inline `*italic*` / `` `code` `` allowed); Book A = mechanic, Book B =
-application — no duplication. NPC beats are 2–4 `say` beats in the Beat Reporter
-voice. Update `TWIC_ISSUE_INTRO.framing` to name all three features + today's
-`publishDate`.
+Read `src/content/welcome.ts` end to end before writing. It is the reference
+for **how deep, how structured, and how polished** each mount point must be —
+**not** a source of teaching content. Every word about a TWiC feature is
+original to that feature. Do NOT copy or paraphrase lore, examples, scenarios,
+or phrasing from `welcome.ts` or any other Quest file (`claudemd.ts`,
+`slash.ts`, `mcp.ts`, `subagents.ts`, `final-boss.ts`). Read for *craft*;
+write your own *substance*.
+
+Re-read the four TWiC files for the fixed shape. Overwrite them, mapping
+Feature A → `twic-1`, B → `twic-2`, C → `twic-3`. For every mount, hit the
+depth bar — underwriting any one mount fails this PRD.
+
+**Per mount-point bar:**
+
+- **`intro`** — 3–4 sentences setting arrival; name the Beat Reporter, point
+  at the books and the boss. Not a one-liner.
+- **`lore[0]` (mechanic) and `lore[1]` (application)** — each **280–450
+  words**, structured: `**Specific Title**` (scene-setting, not generic) →
+  `**Named Sub-heading**` → 2–4 sentence body → another `**Named
+  Sub-heading**` → body → (optional third section) → `> Takeaway:` one-line
+  declarative close. Inline `*italic*` / `` `code` `` allowed. The two books
+  must not duplicate teaching — Book 2 picks up from where Book 1 ends.
+- **`conversations[twic-npc-N]`** — **6–9 beats**, mostly `kind: 'say'`,
+  with **at least one mid-lesson `kind: 'choice'` beat** (3 options, exactly
+  one `correct: true`, each option carries a 1–3 sentence `reaction`). Close
+  with a `say` beat that tees up the boss. `summary` recaps the lesson's
+  3–4 key points.
+- **`practice.template`** — multi-line scene-set business prompt (**5–8
+  lines**), 3–5 blanks, each with **3 distinct suggestions**. Must require
+  using the TWiC feature meaningfully. Keep `prize.id` / `prize.label`.
+- **`battle`** — schema locked (`spriteKey: 'slime'`, `maxHP: 1`, one
+  question, four choices, one correct). Upgrade the surrounds: a thematic
+  boss `name` tied to the feature (NOT "Door Challenge · {Feature}"), an
+  in-character `introLine`, 2–3 themed `tauntLines`, a `victoryLine`. The
+  question's `passFeedback` starts with `HIT!`; `failFeedback` starts with
+  `MISS!`. Distractors are real misreadings — never "all/none of the above."
+- **Top-level `prompt` / `choices` / `passFeedback` / `failFeedback`** —
+  mirror `battle.questions[0]` verbatim.
+- **`TWIC_ISSUE_INTRO.framing`** — 2–3 sentences naming all three features
+  with a one-clause hook per feature; reads like the first paragraph of an
+  industry newsletter. `publishDate` = today (ISO `YYYY-MM-DD`).
+
+References for shape/depth (not substance): `welcomeContent.intro`, its
+five lore entries, `welcomeContent.conversations['guide-bot']` (10-beat arc
+with two `choice` beats), `welcomeContent.practice`, `welcomeContent.battle`
+(named boss "Sloppy the Glob," atmospheric lines, HIT!/MISS! feedback).
 
 ## STEP 4 — SELF-CHECK
 
-All must be yes, fix in place until so: (1) every claim supported by STEP 1
-source text; (2) each battle's marked-correct is true and all 3 distractors are
-false; (3) the three features are distinct; (4) Book A ≠ Book B in each room;
-(5) `framing` names the three actual features and `publishDate` is today.
+All must be yes; fix in place until so.
+
+**Correctness:** (1) every claim supported by STEP 1 source text; (2) each
+battle's marked-correct is true and all 3 distractors are false; (3) top-level
+`prompt`/`choices`/feedback mirror `battle.questions[0]` verbatim; (4) the
+three features are distinct; (5) Book 1 ≠ Book 2 in each room; (6) `framing`
+names the three actual features and `publishDate` is today.
+
+**Depth + format:** (7) each `intro` is 3–4 sentences; (8) each lore book is
+≥250 words (aim 280–450) with the full `**Title**` / `**Section**` /
+`> Takeaway:` structure; (9) each NPC has 6–9 beats with at least one
+`choice` beat carrying per-option reactions; (10) each `practice.template` is
+5+ lines with 3–5 blanks × 3 suggestions; (11) each `battle.name` is a
+thematic boss name and `introLine`/`tauntLines`/`victoryLine` are in
+character; `passFeedback`/`failFeedback` start with `HIT!`/`MISS!`;
+(12) `TWIC_ISSUE_INTRO.framing` is 2–3 sentences with a hook per feature.
+
+**No-bleed:** (13) no teaching content, lore, examples, scenarios, or
+phrasing copied or paraphrased from `welcome.ts` or any Quest content file.
 
 ## STEP 5 — VERIFY + SHIP
 
