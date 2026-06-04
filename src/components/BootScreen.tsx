@@ -1,6 +1,22 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useGameDispatch } from '../engine/GameContext';
 import { TerminalFrame, Cursor } from './TerminalFrame';
+
+/** macOS-terminal-style "Last login" timestamp from the current Date. */
+function formatLoginStamp(d: Date): string {
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const pad = (n: number) => String(n).padStart(2, '0');
+  // macOS pads day with a leading SPACE (not zero) for single-digit days
+  const day = d.getDate() < 10 ? ` ${d.getDate()}` : String(d.getDate());
+  return `${weekdays[d.getDay()]} ${months[d.getMonth()]} ${day} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+const CREDITS: { role: string; name: string }[] = [
+  { role: 'App Development Lead',    name: 'Connor Seale' },
+  { role: 'Curriculum Development',  name: 'Gustavo Tepoz' },
+  { role: 'Learning & Engagement',   name: 'Christopher Arana' },
+];
 
 const LOAD_LINES: { text: string; color: string; delay: number; art?: boolean }[] = [
   { text: '$ npm install claude-code-quest@latest', color: '#E8E8E8', delay: 0 },
@@ -62,6 +78,10 @@ export function BootScreen() {
   const autoTypeRef = useRef(true);
   const [loadedLines, setLoadedLines] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Compute the login stamp ONCE on mount so it doesn't tick over while the
+  // player is reading the screen — feels like a real "Last login" line, not
+  // a live clock.
+  const lastLogin = useMemo(() => formatLoginStamp(new Date()), []);
 
   useEffect(() => {
     const target = 'initialize';
@@ -158,8 +178,26 @@ export function BootScreen() {
       >
         {phase === 'prompt' && (
           <div>
+            {/* Credits block — styled like a terminal MOTD shown above the
+                login stamp. Subtle, muted, accent on the names. */}
+            <div style={{ fontSize: 11, lineHeight: 1.7, marginBottom: 18 }}>
+              <div style={{ color: '#3A3A3A', letterSpacing: '0.04em', marginBottom: 6 }}>
+                ── claude-code-quest · built by ──────────────────────
+              </div>
+              {CREDITS.map(c => (
+                <div key={c.name} style={{ display: 'flex', gap: 12 }}>
+                  <span style={{ color: '#7D7D7D', minWidth: 220, display: 'inline-block' }}>
+                    {c.role}
+                  </span>
+                  <span style={{ color: '#E8633D' }}>{c.name}</span>
+                </div>
+              ))}
+              <div style={{ color: '#3A3A3A', letterSpacing: '0.04em', marginTop: 6 }}>
+                ──────────────────────────────────────────────────────
+              </div>
+            </div>
             <div style={{ color: '#7D7D7D', fontSize: 12, marginBottom: 4 }}>
-              Last login: Thu May 15 09:42:01 on ttys001
+              Last login: {lastLogin} on ttys001
             </div>
             <div style={{ marginTop: 16 }}>
               <span style={{ color: '#7D7D7D' }}>~/claude-code-quest $ </span>
