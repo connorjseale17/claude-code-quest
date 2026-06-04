@@ -32,13 +32,11 @@ import { CREDITS } from '../credits';
 
 const CERT_URL = '/cert/quest-certificate.html';
 
-// The cert HTML is designed at this logical pixel size (3:2 landscape — see
-// the thumbnail SVG's viewBox="0 0 1200 800" in the template). The preview
-// uses CSS zoom to scale this to fit the iframe; the print stylesheet
-// resets zoom to 1 and pins the @page to landscape Letter so the PDF
-// renders at full design fidelity.
-const CERT_NATURAL_W = 1200;
-const CERT_NATURAL_H = 800;
+// The cert HTML is a standalone bundle that unpacks asynchronously and its
+// real rendered size isn't known until after the bundler runs. We measure
+// scrollWidth/scrollHeight dynamically via a MutationObserver and ResizeObserver
+// pair, rather than assuming the design dims from the thumbnail SVG. See the
+// useEffect below that drives the fit-zoom on every content/size change.
 
 function formatLongDate(d: Date): string {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -151,37 +149,71 @@ export function CertificationPage() {
     return out;
   }, [template, name, issueDateLong, expirationDateLong, issueDateIso]);
 
-  // After the iframe is populated, measure its actual rendered size and set
-  // the cert content's CSS zoom so the full design (CERT_NATURAL_W ×
-  // CERT_NATURAL_H) fits inside the iframe with no clipping. Re-runs if the
-  // iframe wrapper resizes (e.g. game scale change). Print zoom is reset to
-  // 1 via the injected @media print rule above, so this only affects preview.
+  // After the iframe is populated, measure the cert's ACTUAL content size
+  // (the cert HTML is a self-contained bundle that unpacks asynchronously, so
+  // the real size isn't known until after the bundler replaces the body) and
+  // set the cert content's CSS zoom so it fits inside the iframe with no
+  // clipping. Re-runs on iframe load, on every container resize, AND on every
+  // DOM mutation inside the iframe (the bundler swap is one such mutation).
   useEffect(() => {
     if (!populated) return;
     const iframe = iframeRef.current;
     const box = iframeBoxRef.current;
     if (!iframe || !box) return;
 
+    let mo: MutationObserver | null = null;
+    let raf = 0;
+
     const applyZoom = () => {
       const doc = iframe.contentDocument;
-      if (!doc?.documentElement) return;
+      if (!doc?.body) return;
       const rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
-      const fit = Math.min(rect.width / CERT_NATURAL_W, rect.height / CERT_NATURAL_H);
-      // Slight pad so the cert doesn't touch the iframe border.
-      (doc.documentElement.style as CSSStyleDeclaration & { zoom?: string }).zoom = String(fit * 0.96);
+      // Reset zoom to 1 BEFORE measuring so we read true content dimensions,
+      // not dimensions warped by our previous zoom. Then re-apply.
+      const docEl = doc.documentElement as HTMLElement & { style: CSSStyleDeclaration & { zoom?: string } };
+      docEl.style.zoom = '1';
+      const contentW = Math.max(doc.body.scrollWidth, doc.documentElement.scrollWidth);
+      const contentH = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+      if (contentW <= 0 || contentH <= 0) return;
+      // Fit to the more-constrained dimension. Tight pad (0.98) so the cert
+      // uses nearly all the available room — user reported the prior 0.96
+      // looked too small.
+      const fit = Math.min(rect.width / contentW, rect.height / contentH) * 0.98;
+      docEl.style.zoom = String(fit);
     };
 
-    // Run on iframe load AND on any resize of its container.
-    iframe.addEventListener('load', applyZoom);
-    const ro = new ResizeObserver(applyZoom);
+    const scheduleApply = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(applyZoom);
+    };
+
+    const onLoad = () => {
+      // The bundler unpacks asynchronously after load, so a) measure now (in
+      // case there's nothing to unpack), b) watch for the body swap and
+      // re-measure when the real content lands.
+      scheduleApply();
+      const doc = iframe.contentDocument;
+      if (doc?.body) {
+        mo?.disconnect();
+        mo = new MutationObserver(scheduleApply);
+        mo.observe(doc.body, { childList: true, subtree: true, characterData: true });
+        mo.observe(doc.documentElement, { attributes: true, attributeFilter: ['style'] });
+      }
+    };
+
+    iframe.addEventListener('load', onLoad);
+    const ro = new ResizeObserver(scheduleApply);
     ro.observe(box);
-    // First attempt — covers fast paths where load already fired.
-    applyZoom();
+    // First attempt — covers the case where 'load' already fired (e.g. on
+    // re-render).
+    scheduleApply();
 
     return () => {
-      iframe.removeEventListener('load', applyZoom);
+      iframe.removeEventListener('load', onLoad);
       ro.disconnect();
+      mo?.disconnect();
+      cancelAnimationFrame(raf);
     };
   }, [populated]);
 
@@ -294,13 +326,16 @@ export function CertificationPage() {
             </div>
           )}
           {populated && (
+            // Iframe box fills ALL available space (no aspect lock — the cert
+            // has its own aspect, and the fit-zoom in the useEffect above
+            // sizes the cert to whatever shape this box ends up being). The
+            // cert's body has display:flex/center, so any leftover space
+            // shows as a white margin around the cert rather than dead
+            // black space.
             <div
               ref={iframeBoxRef}
               style={{
-                aspectRatio: `${CERT_NATURAL_W} / ${CERT_NATURAL_H}`,
-                maxWidth: '100%',
-                maxHeight: '100%',
-                width: 'auto',
+                width: '100%',
                 height: '100%',
                 display: 'flex',
               }}
