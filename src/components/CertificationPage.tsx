@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../engine/GameContext';
 import { TerminalFrame, Cursor } from './TerminalFrame';
+import { CREDITS } from '../credits';
 
 /**
  * Wrap-up Part 2 — the Certification Page.
@@ -267,6 +268,32 @@ export function CertificationPage() {
 
         <div style={{ color: '#3A3A3A', fontSize: 10, textAlign: 'center', letterSpacing: '0.08em' }}>
           credential id is computed locally from your name and the issue date — no server, no storage
+        </div>
+
+        {/* Bookend credits — matches the MOTD on the BootScreen so the first
+            and last screens of the experience name the same team. */}
+        <div
+          style={{
+            marginTop: 4,
+            paddingTop: 12,
+            borderTop: '1px solid #1A1A1A',
+            fontSize: 10,
+            lineHeight: 1.65,
+            color: '#7D7D7D',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '4px 18px',
+            justifyContent: 'center',
+            letterSpacing: '0.04em',
+          }}
+        >
+          <span style={{ color: '#3A3A3A', letterSpacing: '0.12em' }}>BUILT BY ──</span>
+          {CREDITS.map(c => (
+            <span key={c.name}>
+              <span style={{ color: '#7D7D7D' }}>{c.role}:</span>{' '}
+              <span style={{ color: '#E8633D' }}>{c.name}</span>
+            </span>
+          ))}
         </div>
       </div>
     </TerminalFrame>

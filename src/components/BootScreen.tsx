@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useGameDispatch } from '../engine/GameContext';
 import { TerminalFrame, Cursor } from './TerminalFrame';
+import { CREDITS } from '../credits';
 
 /** macOS-terminal-style "Last login" timestamp from the current Date. */
 function formatLoginStamp(d: Date): string {
@@ -11,12 +12,6 @@ function formatLoginStamp(d: Date): string {
   const day = d.getDate() < 10 ? ` ${d.getDate()}` : String(d.getDate());
   return `${weekdays[d.getDay()]} ${months[d.getMonth()]} ${day} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
-
-const CREDITS: { role: string; name: string }[] = [
-  { role: 'App Development Lead',    name: 'Connor Seale' },
-  { role: 'Curriculum Development',  name: 'Gustavo Tepoz' },
-  { role: 'Learning & Engagement',   name: 'Christopher Arana' },
-];
 
 const LOAD_LINES: { text: string; color: string; delay: number; art?: boolean }[] = [
   { text: '$ npm install claude-code-quest@latest', color: '#E8E8E8', delay: 0 },
