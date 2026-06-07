@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-06-02',
+  publishDate: '2026-06-07',
   framing:
-    "This week in Claude, the theme is keeping your foot on the gas without leaving a mess: Accept Edits now taps the brakes before any config file that could quietly run code, so momentum mode stops short of signing a blank check; Claude-managed git worktrees let you spike risky work in an isolated folder and sweep it up with plain git when you're done; and plugins dropped into `.claude/skills` now load on their own, shipping a team's workflow with the repo instead of through a marketplace.",
+    "This week in Claude, the theme is scale and control — bigger jobs, fewer stalls, and a sharper hand on the throttle. Dynamic Workflows, the headline that shipped with Opus 4.8, lets Claude plan an enormous task itself and fan out hundreds of parallel subagents in one session, enough to carry a codebase-scale migration from kickoff to merge. The new `fallbackModel` setting keeps an engagement alive by hopping to a backup roster when your primary model goes dark, and the `/effort` dial lets you decide how hard Claude thinks on any given task — and lock that choice in as your default.",
 };

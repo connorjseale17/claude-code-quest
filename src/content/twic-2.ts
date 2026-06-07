@@ -1,120 +1,128 @@
 import type { LessonContent } from './types';
 
-/** twic-2 (Feature B) — Claude-managed git worktrees (mid-session switching + unlocked cleanup).
- *  Same contract as twic-1. Source: Claude Code CHANGELOG 2.1.157. */
+/**
+ * twic-2 (Feature B) — fallbackModel: configure up to three fallback models so a
+ * session keeps running when the primary is unavailable.
+ * Source: Claude Code CHANGELOG 2.1.166 ("Added `fallbackModel` setting for
+ * configuring up to three fallback models when primary is unavailable" +
+ * "Claude Code retries once on fallback model for unexpected non-retryable API
+ * errors").
+ * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
+ */
 export const twic2Content: LessonContent = {
   roomId: 'twic-room-2',
   intro:
-    "Room 2. The story is git worktrees — separate working folders for the same repo, now something Claude can hop between mid-session and tidy up when it's done. Talk to the Beat Reporter, read the two books, then answer the door.",
+    "Room 2. The Beat Reporter's mid-week story is the unglamorous one that saves a deadline: a new `fallbackModel` setting. Configure a backup roster and your session keeps running when the model you asked for can't answer. Read the two pages for how the failover works and why every serious operator turns it on, then face down the thing in the doorway — it specializes in vanishing at the worst moment.",
   prompt:
-    "A client wants you to spike a risky framework swap without disturbing the half-built demo on your main checkout. How does a Claude-managed git worktree let you do that?",
+    "You've set `fallbackModel` in your config. Mid-engagement, the model you normally run becomes unavailable. What does Claude Code do?",
   choices: [
-    { id: 'a', label: 'It gives the spike its own checked-out folder on its own branch, backed by the same repo, so your main checkout stays untouched while Claude works the experiment', correct: true },
-    { id: 'b', label: 'It compresses every branch into a single directory to save disk space', correct: false },
-    { id: 'c', label: 'It lets two people edit the same files at once over the network', correct: false },
-    { id: 'd', label: 'It merges all of your branches together before the spike begins', correct: false },
+    { id: 'a', label: 'It falls over to a configured fallback model — you can list up to three in priority order — so the session keeps going', correct: true },
+    { id: 'b', label: 'It halts the session and waits until your primary model comes back online', correct: false },
+    { id: 'c', label: 'It permanently rewrites your default to whatever model is cheapest that day', correct: false },
+    { id: 'd', label: 'It keeps the same model but silently truncates your context to force the request through', correct: false },
   ],
-  passFeedback: 'HIT! A worktree is a separate desk for the same project. The spike lives in its own folder on its own branch; your demo never moves.',
-  failFeedback: 'MISS! Worktrees are about isolation, not compression, real-time collaboration, or auto-merging. Each one is a separate checkout of the same repo — re-read the books.',
+  passFeedback: 'HIT! `fallbackModel` lets you configure up to three backups; when the primary is unavailable Claude Code reaches for the next one in the list and the work continues instead of stalling.',
+  failFeedback: 'MISS! The point is continuity, not a stall, not a permanent switch, and not silent context-trimming. It steps down to a backup you chose ahead of time — re-read the books.',
   lore: [
     {
       id: 'twic-2-lore-a',
-      text: `**One Repo, Many Desks — How Claude-Managed Worktrees Work**
+      text: `**fallbackModel — A Backup Roster for When the Lights Flicker**
 
-**What a worktree actually is**
+**The failure it's built for**
 
-A git worktree is a second working directory backed by the same repository. Normally a clone gives you exactly one checked-out branch at a time, so switching branches means stashing or committing whatever is in flight. A worktree breaks that limit: each one is its own folder with its own checked-out branch, all sharing a single underlying repo and history. You can have the main branch open in one and an experiment open in another, side by side, with neither touching the other's files.
+Every model has bad moments — capacity crunches, a transient outage, an unexpected error that won't clear on retry. When that happens mid-task, a session that only knows one model has nowhere to go: it stops. Release 2.1.166 added the *\`fallbackModel\` setting for configuring up to three fallback models when the primary is unavailable*. Instead of a single point of failure you declare a roster, and Claude Code knows where to turn when the front-runner can't answer.
 
-**What Claude does with them**
+**How the failover behaves**
 
-Claude Code can create and manage its own worktrees and step into them with \`EnterWorktree\`. As of 2.1.157, \`EnterWorktree\` *can now switch between Claude-managed worktrees mid-session* — Claude can move from one isolated workspace to another without restarting the session or losing the conversation. That makes it practical to keep several lines of work, each in its own folder, alive from a single sitting.
+The setting holds up to three models, and the order is the priority order — your preferred backup first, then the next, then the last resort. When the primary is unavailable, Claude Code steps down the list rather than halting. There's a second, sharper behavior baked in too: *Claude Code retries once on the fallback model for unexpected non-retryable API errors*. So even a one-off error that normally wouldn't be retried gets a single automatic second attempt on a different model before it surfaces to you.
 
-**Cleanup got friendlier**
+**What it doesn't do**
 
-The other 2.1.157 change is pure housekeeping. *Worktrees managed by Claude are now left unlocked when the agent finishes, so* \`git worktree remove\`*/*\`prune\` *can clean them up.* Before, a finished worktree could sit locked and resist an ordinary teardown; now the standard git commands sweep them away. The feature no longer accumulates clutter you have to fight.
+Worth being precise: this is a continuity feature, not a model-selection or cost feature. It doesn't quietly downgrade you to save money, it doesn't permanently change your default, and it isn't doing anything to your context window. The primary stays your primary; the fallback only steps in when the primary genuinely can't serve the request.
 
-> Takeaway: A worktree is a separate desk for the same project — Claude can now hop between its desks mid-session and sweep them up with plain git when it's done.`,
+> Takeaway: \`fallbackModel\` turns a single model into a prioritized roster so an outage on one becomes a graceful hop to the next, not a dead stop.`,
     },
     {
       id: 'twic-2-lore-b',
-      text: `**Spikes That Don't Touch the Deliverable — Worktrees on an Engagement**
+      text: `**Resilience You Configure Once — Why Client Work Earns a Roster**
 
-**Isolation is the whole selling point**
+**The cost of a stall lands on you**
 
-The consulting use is risk containment. You have a half-built demo on your main checkout and the client asks, "could we do this in a different framework?" Instead of stashing your work and gambling the spike in the same directory, you let Claude run the experiment in its own worktree. The demo stays exactly as you left it; the spike lives in a separate folder on its own branch. If it flops, you delete the folder and nothing of value was ever at risk.
+On your own machine, a model hiccup is a shrug and a coffee. On a client engagement it's different: you're mid-demo, or racing a deadline, and "the tool just stopped" is not a sentence you want to say in the room. \`fallbackModel\` is the cheapest insurance against that moment. It's a one-time configuration that converts an outage from a hard stop into an invisible hop, and the client never sees the seam.
 
-**Parallel tracks from one session**
+**Stack the roster by judgment, not reflex**
 
-Because Claude can now switch between worktrees mid-session, you can keep more than one track moving without spinning up separate sessions. One worktree carries the safe, shippable work; another holds the speculative rewrite; a third might host a throwaway reproduction of a client's bug. You move between them as the conversation calls for it, and each stays insulated from the others' changes.
+Because the list is a priority order, treat it like a small decision rather than a default. Lead with the model closest in capability to your primary so a failover barely changes the quality of the work, then let later entries trade down toward "just keep us moving." For a sensitive build you might weight the whole roster toward your most trusted models; for a low-stakes prototype you might prioritize whatever stays up. The point is that *you* decided the order in advance, calmly, instead of scrambling when something breaks live.
 
-**Leave the site clean**
+**Set it and forget it — then trust it**
 
-Treat teardown as part of the job. When a spike is settled — merged or abandoned — remove its worktree with \`git worktree remove\` and let \`git worktree prune\` clear the stragglers. Because Claude now leaves its worktrees unlocked, that cleanup is one command, not a wrestling match. A tidy repo at hand-off is part of the deliverable.
+This is the rare feature that asks for thirty seconds once and then disappears. Add it to the config you carry into engagements, confirm the order reflects how you'd actually want to degrade, and move on. The single automatic retry on a fallback means many transient errors resolve before you'd even notice them — which is exactly the kind of quiet reliability that separates a tool you demo on from a tool you depend on.
 
-> Takeaway: Run risky or parallel work in its own worktree so the deliverable is never the thing you're experimenting on — then sweep the experiments away when they're done.`,
+> Takeaway: Configure the roster once, ordered by how you'd want to degrade, and an outage on client time becomes a seam nobody in the room ever sees.`,
     },
   ],
   practice: {
     id: 'twic-2-practice',
-    template: `Set up a Claude-managed worktree so you can ____
-on the ____ branch, while my main checkout keeps
-the in-progress demo exactly as it is.
-Switch into the worktree mid-session to do the work,
-and when you're done, leave it ____ so I can clean up with ____.`,
+    template: `Set up fallbackModel so a model outage never stalls me on ____.
+Make my primary the model I always start with, then list up to three backups in priority order.
+First backup: the model ____ to my primary, so quality barely changes.
+Last resort: whatever ____, to keep the session alive at all costs.
+I want the failover to be ____ — I should not have to babysit it mid-engagement.`,
     blanks: [
-      { id: 'task', suggestions: ['spike the React 19 upgrade', 'try the risky billing refactor', 'rebuild the export pipeline'] },
-      { id: 'branch', suggestions: ['spike/react-19', 'experiment/billing', 'feature/export-v2'] },
-      { id: 'end-state', suggestions: ['unlocked', 'unlocked for cleanup', 'ready to prune'] },
-      { id: 'cleanup', suggestions: ['git worktree remove', 'git worktree prune', 'a single git command'] },
+      { id: 'context', suggestions: ['a live client demo', 'a deadline build', 'an unattended migration'] },
+      { id: 'closeness', suggestions: ['closest in capability', 'most similar in behavior', 'nearest in quality'] },
+      { id: 'availability', suggestions: ['tends to stay up', 'has the most capacity', 'is least likely to be down'] },
+      { id: 'mode', suggestions: ['automatic and silent', 'hands-off', 'invisible to the client'] },
     ],
     prize: { id: 'twic-2-prize', label: 'TWIC · MID-WEEK' },
   },
   conversations: {
     'twic-npc-2': {
       summary:
-        "Git worktrees are separate working folders backed by the same repo, each on its own branch, so multiple branches stay checked out side by side. Claude manages its own (EnterWorktree) and, as of 2.1.157, can switch between them mid-session and leaves them unlocked when finished so git worktree remove/prune can clean them up. Use them to isolate risky or parallel work from the main deliverable.",
+        "fallbackModel (Claude Code 2.1.166) lets you configure up to three fallback models, in priority order, that step in when your primary is unavailable — so the session keeps running instead of halting. Claude Code also retries once on the fallback for an unexpected non-retryable API error, so many transient failures clear automatically. It's a continuity feature, not a cost or model-selection one: the primary stays primary; the backups only fire on a genuine outage. Set the roster once, ordered by how you'd want to degrade, and lead with the model closest to your primary.",
       beats: [
-        { kind: 'say', text: "Story two: git worktrees. A worktree is a second working folder backed by the *same* repo — its own checked-out branch in its own directory. No stashing to switch branches; you just have them open side by side." },
-        { kind: 'say', text: "Claude can create and step into its own worktrees with `EnterWorktree`. New in 2.1.157: it can now *switch between those worktrees mid-session* — moving between isolated workspaces without restarting or losing the conversation." },
-        { kind: 'say', text: "Second change is cleanup. Claude's worktrees are now *left unlocked when it finishes*, so a plain `git worktree remove` or `prune` clears them. They used to sit locked and fight teardown — not anymore." },
+        { kind: 'say', text: "Mid-week story — less flashy, saves more deadlines than anything else this issue: the `fallbackModel` setting, new in 2.1.166. It lets you configure *up to three* fallback models for when your primary is unavailable." },
+        { kind: 'say', text: "Picture the failure it's for: a capacity crunch, a transient outage, an error that won't clear. A session that only knows one model just stops there. With a roster, Claude Code knows where to turn — it steps down your list instead of halting." },
+        { kind: 'say', text: "The order is the priority order: preferred backup first, then the next, then a last resort. And there's a sharper bit too — Claude Code retries once on the fallback for an unexpected non-retryable API error. So even a one-off error gets a second swing on a different model before it ever reaches you." },
         {
           kind: 'choice',
-          prompt: "Quick check. You've got a live demo half-built on your main checkout and the client asks for a risky framework spike. Why reach for a worktree?",
+          prompt: "Sanity check. Which of these is fallbackModel actually doing?",
           options: [
-            { id: 'isolate', label: 'so the spike runs in its own folder on its own branch, leaving my main checkout untouched', correct: true, reaction: "Exactly. Same repo, separate desk. The demo stays put while the experiment lives somewhere it can't hurt anything." },
-            { id: 'merge', label: 'so the demo and the spike share files and merge automatically', correct: false, reaction: "No — the whole point is isolation. Worktrees keep the two apart; nothing merges on its own." },
-            { id: 'compress', label: 'so both branches compress into a single directory', correct: false, reaction: "Worktrees aren't about saving space. They're about keeping separate branches checked out at once without clobbering each other." },
+            { id: 'cost', label: 'Quietly switching me to the cheapest model to save money', correct: false, reaction: "No — it's not a cost knob. It never downgrades you to save money and never changes your default. The primary stays primary." },
+            { id: 'continuity', label: 'Keeping the session alive by hopping to a backup when the primary can\'t answer', correct: true, reaction: "That's it. Pure continuity. The backup only fires when the primary genuinely can't serve the request, then hands the work forward." },
+            { id: 'context', label: 'Trimming my context window to force the request through', correct: false, reaction: "Nothing to do with context. It doesn't touch your window — it changes *which model* answers, not how much it sees." },
           ],
         },
-        { kind: 'say', text: "On an engagement that means risk containment: spike the scary idea in its own worktree, keep the deliverable on your main checkout, and delete the folder if the spike flops. Run a couple of tracks at once and switch between them as the work calls for it." },
-        { kind: 'say', text: "The books cover the mechanics and the consulting playbook. The door asks how a worktree lets you spike without disturbing your demo — answer it and the key drops." },
+        { kind: 'say', text: "Consultant angle: on your own box an outage is a shrug. On a client demo, 'the tool just stopped' is a sentence you never want to say out loud. This setting turns that hard stop into an invisible hop — the client never sees the seam." },
+        { kind: 'say', text: "Stack the roster by judgment: lead with the model closest in capability to your primary so a failover barely changes the work, then let later entries trade down toward 'just keep us moving.' You decide the order calmly, once, instead of scrambling when it breaks live." },
+        { kind: 'say', text: "It's the rare set-it-and-forget-it feature — thirty seconds in your config and then it disappears. The books have the mechanics and the roster playbook. The door wants to know what Claude Code does the moment your model goes dark — nail that and the key's yours." },
       ],
     },
   },
   battle: {
-    name: 'Snarl, the Branch-Tangler',
+    name: 'The No-Show Wraith',
     spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*knots two branches together with a wet slap* …one directory… all your work in one pile… stash it, lose it, mix it all up…",
+    introLine: "*flickers translucent at the threshold* …the model you wanted? gone. vanished. now what, with no one waiting in the wings…?",
     tauntLines: [
-      "*smears your demo into the spike* who needs separate folders, hmm? let it all touch…",
-      "*tangles a third branch in* you'll never untangle which change went where…",
+      "*fades half out of sight* no backup, no roster, no plan — just you, stalled, watching the cursor blink…",
+      "*phases through the key* outages don't wait for your deadline, and neither do I…",
     ],
-    victoryLine: "*comes apart at the seams* …ugh… separate desks… you kept them apart… take the key…",
+    victoryLine: "*solidifies, deflating* …you had a roster ready the whole time… of course you take the key…",
     questions: [
       {
         prompt:
-          "A client wants you to spike a risky framework swap without disturbing the half-built demo on your main checkout. How does a Claude-managed git worktree let you do that?",
+          "You've set `fallbackModel` in your config. Mid-engagement, the model you normally run becomes unavailable. What does Claude Code do?",
         choices: [
-          { id: 'a', label: 'It gives the spike its own checked-out folder on its own branch, backed by the same repo, so your main checkout stays untouched while Claude works the experiment', correct: true },
-          { id: 'b', label: 'It compresses every branch into a single directory to save disk space', correct: false },
-          { id: 'c', label: 'It lets two people edit the same files at once over the network', correct: false },
-          { id: 'd', label: 'It merges all of your branches together before the spike begins', correct: false },
+          { id: 'a', label: 'It falls over to a configured fallback model — you can list up to three in priority order — so the session keeps going', correct: true },
+          { id: 'b', label: 'It halts the session and waits until your primary model comes back online', correct: false },
+          { id: 'c', label: 'It permanently rewrites your default to whatever model is cheapest that day', correct: false },
+          { id: 'd', label: 'It keeps the same model but silently truncates your context to force the request through', correct: false },
         ],
-        passFeedback: 'HIT! A worktree is a separate desk for the same project. The spike lives in its own folder on its own branch; your demo never moves.',
-        failFeedback: 'MISS! Worktrees are about isolation, not compression, real-time collaboration, or auto-merging. Each one is a separate checkout of the same repo — re-read the books.',
+        passFeedback: 'HIT! `fallbackModel` lets you configure up to three backups; when the primary is unavailable Claude Code reaches for the next one in the list and the work continues instead of stalling.',
+        failFeedback: 'MISS! The point is continuity, not a stall, not a permanent switch, and not silent context-trimming. It steps down to a backup you chose ahead of time — re-read the books.',
       },
     ],
   },
