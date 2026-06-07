@@ -2200,24 +2200,25 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     "height": 12,
     "tiles": [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
       [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1],
       [1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 2],
-      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
       [1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ],
     "items": [
-      // Room 3 (final) boss = dragon (per user direction — climactic final
-      // boss). Even the dragon renders 1×1 via scaleOverride=2; its natural
-      // BESTIARY scale of 7 (112px) would normally span 3 tiles.
+      // Room 3 (final) boss = dragon (per locked per-room boss assignment).
+      // Editor exported with sprite 'slime_a' (likely loaded from an older
+      // session); preserved as 'dragon_a' here to match twic-3.ts's
+      // battle.spriteKey = 'dragon'. Per-room boss assignment is locked.
       { "id": "terminal", "type": "challenge", "x": 12, "y": 7, "sprite": "dragon_a" },
-      { "id": "twic-3-lore-a", "type": "lore", "x": 2, "y": 4, "sprite": "paper" },
+      { "id": "twic-3-lore-a", "type": "lore", "x": 13, "y": 2, "sprite": "paper" },
       { "id": "twic-3-lore-b", "type": "lore", "x": 3, "y": 9, "sprite": "paper" },
       { "id": "twic-3-practice", "type": "practice", "x": 11, "y": 10, "sprite": "hint_token" }
     ],
@@ -2236,8 +2237,8 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     "npcs": [
       {
         "id": "twic-npc-3",
-        "x": 6,
-        "y": 2,
+        "x": 4,
+        "y": 3,
         "color": "#6EAAEF",
         "name": "Beat Reporter",
         "dialog": []
@@ -2245,7 +2246,6 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     ],
     "decorations": [
       { "x": 7, "y": 5, "sprite": "hanging_lantern" },
-      { "x": 4, "y": 3, "sprite": "floor_lever" },
       { "x": 2, "y": 2, "sprite": "hanging_lantern" },
       { "x": 11, "y": 5, "sprite": "bookshelf" },
       { "x": 12, "y": 5, "sprite": "bookshelf" },
@@ -2257,10 +2257,15 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
       { "x": 12, "y": 10, "sprite": "server_stack" },
       { "x": 3, "y": 10, "sprite": "anvil" },
       { "x": 2, "y": 10, "sprite": "weapon_rack" },
-      { "x": 4, "y": 10, "sprite": "treasure_chest" }
+      { "x": 4, "y": 10, "sprite": "treasure_chest" },
+      { "x": 14, "y": 2, "sprite": "bookshelf" },
+      { "x": 14, "y": 1, "sprite": "bookshelf" },
+      { "x": 13, "y": 1, "sprite": "bookshelf" },
+      { "x": 12, "y": 1, "sprite": "bookshelf" },
+      { "x": 14, "y": 3, "sprite": "bookshelf" }
     ],
-    "spawnX": 13,
-    "spawnY": 2,
+    "spawnX": 2,
+    "spawnY": 6,
     "keySpawn": { "x": 14, "y": 6 }
   }
 };
