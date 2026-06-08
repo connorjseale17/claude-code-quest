@@ -60,6 +60,12 @@ export function TypewriterSplash({
   const stateRef = useRef({ typed: '', sectionIdx: 0, isExiting: false });
   stateRef.current = { typed, sectionIdx, isExiting };
 
+  // Holds the active typewriter setInterval id so advance() can stop it on a
+  // skip. Without this the interval keeps firing after setTyped(fullText) and
+  // overwrites the skip back to a partial slice on the next tick — the visible
+  // 'glitch' where the text revealed itself, then reverted, then re-typed.
+  const typeIntervalRef = useRef<number | null>(null);
+
   const currentSection = sections[sectionIdx];
   const isComplete = typed === currentSection.text;
 
@@ -75,14 +81,17 @@ export function TypewriterSplash({
       i++;
       if (i >= text.length) {
         setTyped(text);
-        clearInterval(typeId);
+        window.clearInterval(typeId);
+        if (typeIntervalRef.current === typeId) typeIntervalRef.current = null;
       } else {
         setTyped(text.slice(0, i));
       }
     }, typeIntervalMs);
+    typeIntervalRef.current = typeId;
     return () => {
-      clearTimeout(fadeId);
-      clearInterval(typeId);
+      window.clearTimeout(fadeId);
+      window.clearInterval(typeId);
+      if (typeIntervalRef.current === typeId) typeIntervalRef.current = null;
     };
   }, [sectionIdx, isExiting, sections, typeIntervalMs]);
 
@@ -91,7 +100,13 @@ export function TypewriterSplash({
     if (s.isExiting) return;
     const text = sections[s.sectionIdx].text;
     if (s.typed !== text) {
-      setTyped(text); // skip typewriter on the current section
+      // Skip the in-progress typewriter for the current section. Stop the
+      // interval FIRST so its next tick can't overwrite our setTyped.
+      if (typeIntervalRef.current !== null) {
+        window.clearInterval(typeIntervalRef.current);
+        typeIntervalRef.current = null;
+      }
+      setTyped(text);
       return;
     }
     if (s.sectionIdx < sections.length - 1) {
