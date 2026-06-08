@@ -92,6 +92,9 @@ export function CertificationPage() {
   const [name, setName] = useState<string>(state.player.name || '');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeBoxRef = useRef<HTMLDivElement>(null);
+  // True while a print is in flight — applyFit skips so it can't re-apply the
+  // screen-shrink transform onto the cert mid-print (which would blank the PDF).
+  const printingRef = useRef(false);
 
   // Today + +1 year, computed once on mount so the page doesn't shift if the
   // user lingers across midnight.
@@ -174,6 +177,7 @@ export function CertificationPage() {
     let raf = 0;
 
     const applyFit = () => {
+      if (printingRef.current) return; // don't fight the print reset
       const doc = iframe.contentDocument;
       const html = doc?.documentElement;
       const body = doc?.body;
@@ -245,13 +249,58 @@ export function CertificationPage() {
   }, [populated]);
 
   const handlePrint = () => {
-    const win = iframeRef.current?.contentWindow;
-    if (!win) return;
-    // Give the cert's bundler a beat to finish unpacking if the user clicks
-    // immediately on mount — focus() also helps Safari open the dialog
-    // reliably.
+    const iframe = iframeRef.current;
+    const win = iframe?.contentWindow;
+    const doc = iframe?.contentDocument;
+    if (!win || !doc) return;
+
+    // CRITICAL: the screen fit is applied as INLINE styles on the cert card
+    // (position:fixed + translate + scale) and html/body (overflow:hidden).
+    // Inline styles apply to PRINT too, so without this the PDF prints the cert
+    // shrunk to ~30% and pinned off the page box → blank. Strip those styles,
+    // print at natural size (the cert's own @page handles landscape), then
+    // restore the screen fit afterward.
+    const root = doc.body?.firstElementChild as HTMLElement | null;
+    const htmlEl = doc.documentElement;
+    const saved = {
+      rootPosition: root?.style.position ?? '',
+      rootTop: root?.style.top ?? '',
+      rootLeft: root?.style.left ?? '',
+      rootTransform: root?.style.transform ?? '',
+      htmlOverflow: htmlEl.style.overflow,
+      bodyOverflow: doc.body.style.overflow,
+    };
+
+    printingRef.current = true;
+    if (root) {
+      root.style.position = 'static';
+      root.style.top = '';
+      root.style.left = '';
+      root.style.transform = 'none';
+    }
+    htmlEl.style.overflow = 'visible';
+    doc.body.style.overflow = 'visible';
+
+    let restored = false;
+    const restore = () => {
+      if (restored) return;
+      restored = true;
+      if (root) {
+        root.style.position = saved.rootPosition;
+        root.style.top = saved.rootTop;
+        root.style.left = saved.rootLeft;
+        root.style.transform = saved.rootTransform;
+      }
+      htmlEl.style.overflow = saved.htmlOverflow;
+      doc.body.style.overflow = saved.bodyOverflow;
+      printingRef.current = false;
+    };
+    win.addEventListener('afterprint', restore, { once: true });
+
     win.focus();
     win.print();
+    // Fallback for browsers that don't fire afterprint reliably.
+    window.setTimeout(restore, 2000);
   };
 
   return (
