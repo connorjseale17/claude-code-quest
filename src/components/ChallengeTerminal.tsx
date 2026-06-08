@@ -65,6 +65,11 @@ export function ChallengeTerminal() {
     dispatch({ type: 'CLOSE_PANEL' });
   }, [dispatch]);
 
+  const clearMiss = useCallback(() => {
+    setSelected(null);
+    setResult(null);
+  }, []);
+
   useEffect(() => {
     if (!bootReady) return;
     const handler = (e: KeyboardEvent) => {
@@ -72,6 +77,9 @@ export function ChallengeTerminal() {
         if (result === 'pass') {
           e.preventDefault();
           dispatch({ type: 'PASS_CHALLENGE' });
+        } else if (result === 'fail') {
+          e.preventDefault();
+          clearMiss();
         } else if (!textDone) {
           e.preventDefault();
           skipTypewriter();
@@ -80,23 +88,17 @@ export function ChallengeTerminal() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [bootReady, textDone, result, dispatch, skipTypewriter]);
+  }, [bootReady, textDone, result, dispatch, skipTypewriter, clearMiss]);
 
   if (!content) return null;
 
   function handleChoice(choiceId: string) {
     setSelected(choiceId);
     const choice = content.choices.find(c => c.id === choiceId);
-    if (choice?.correct) {
-      setResult('pass');
-    } else {
-      setResult('fail');
-      setTimeout(() => {
-        setSelected(null);
-        setResult(null);
-      }, 1500);
-    }
+    setResult(choice?.correct ? 'pass' : 'fail');
   }
+
+  const correctChoice = content.choices.find(c => c.correct);
 
   const numLabel = String(level.number).padStart(2, '0');
 
@@ -149,15 +151,28 @@ export function ChallengeTerminal() {
           <div
             style={{
               marginTop: 12,
-              padding: '8px 10px',
+              padding: '10px 12px',
               border: '1px solid rgba(248, 81, 73, 0.3)',
               background: '#1A0F0F',
               fontSize: 12,
-              lineHeight: 1.4,
+              lineHeight: 1.5,
             }}
           >
-            <span style={{ color: '#F85149' }}>{content.failFeedback.split(']')[0]}]</span>
-            {content.failFeedback.split(']').slice(1).join(']')}
+            <div>
+              <span style={{ color: '#F85149' }}>{content.failFeedback.split(']')[0]}]</span>
+              {content.failFeedback.split(']').slice(1).join(']')}
+            </div>
+            {correctChoice && (
+              <div style={{
+                marginTop: 8,
+                paddingTop: 8,
+                borderTop: '1px dashed rgba(248, 81, 73, 0.25)',
+                color: '#E8E8E8',
+              }}>
+                <span style={{ color: '#3FB950', fontWeight: 700 }}>correct answer: </span>
+                {correctChoice.label}
+              </div>
+            )}
           </div>
         )}
 
@@ -182,7 +197,8 @@ export function ChallengeTerminal() {
           )}
           {result === 'fail' && (
             <>
-              <span style={{ color: '#F85149' }}>{'>'}</span> try again…
+              <span style={{ color: '#F85149' }}>{'>'}</span>{' '}
+              <span style={{ color: '#7FA890' }}>SPACE</span> to try again
             </>
           )}
           {!result && textDone && (

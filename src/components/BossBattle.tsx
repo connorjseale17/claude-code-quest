@@ -11,7 +11,6 @@ import { HPBar } from './HPBar';
 type BattlePhase = 'intro' | 'question' | 'resolve' | 'strike' | 'victory' | 'defeat';
 type HitTarget = 'bot' | 'boss' | null;
 
-const RESOLVE_BANNER_MS = 1500;
 const STRIKE_MS = 900;
 const DEFEAT_HOLD_MS = 1800;
 // Auto-fire PASS_CHALLENGE if the player lingers on the victory screen without
@@ -85,12 +84,9 @@ export function BossBattle() {
     return () => clearTimeout(id);
   }, [phase, handleVictoryAdvance]);
 
-  // ---- resolve banner → strike ----
-  useEffect(() => {
-    if (phase !== 'resolve') return;
-    const id = window.setTimeout(() => setPhase('strike'), RESOLVE_BANNER_MS);
-    return () => clearTimeout(id);
-  }, [phase]);
+  // resolve → strike no longer auto-advances; player must press SPACE/Enter
+  // or click the panel to acknowledge the feedback before the hit lands. This
+  // gives time to read the explanation and see the correct answer on a miss.
 
   // ---- strike: apply damage + flash, then transition ----
   useEffect(() => {
@@ -139,6 +135,9 @@ export function BossBattle() {
         if (phase === 'intro') {
           e.preventDefault();
           setPhase('question');
+        } else if (phase === 'resolve') {
+          e.preventDefault();
+          setPhase('strike');
         } else if (phase === 'victory') {
           e.preventDefault();
           handleVictoryAdvance();
@@ -270,27 +269,57 @@ export function BossBattle() {
           </>
         )}
 
-        {(phase === 'resolve' || phase === 'strike') && (
-          <div
-            style={{
-              padding: '14px 16px',
-              background: lastWasCorrect ? '#0F1A12' : '#1A0F0F',
-              border: `1px solid ${lastWasCorrect ? 'rgba(63,185,80,0.3)' : 'rgba(248,81,73,0.3)'}`,
-              fontSize: 14,
-              lineHeight: 1.5,
-            }}
-          >
-            <div style={{ color: lastWasCorrect ? '#3FB950' : '#F85149', fontWeight: 700, marginBottom: 6 }}>
-              {lastWasCorrect ? `⚔ STRIKE — ${battle.name} takes a hit!` : `✗ MISS — ${battle.name} strikes you!`}
-            </div>
-            {lastWasCorrect ? currentQuestion.passFeedback : currentQuestion.failFeedback}
-            {!lastWasCorrect && (
-              <div style={{ marginTop: 10, color: accent, fontStyle: 'italic', fontSize: 13 }}>
-                {tauntRef.current}
+        {(phase === 'resolve' || phase === 'strike') && (() => {
+          const correctChoice = currentQuestion.choices.find(c => c.correct);
+          return (
+            <div
+              onClick={() => { if (phase === 'resolve') setPhase('strike'); }}
+              style={{
+                padding: '14px 16px',
+                background: lastWasCorrect ? '#0F1A12' : '#1A0F0F',
+                border: `1px solid ${lastWasCorrect ? 'rgba(63,185,80,0.3)' : 'rgba(248,81,73,0.3)'}`,
+                fontSize: 14,
+                lineHeight: 1.5,
+                cursor: phase === 'resolve' ? 'pointer' : 'default',
+              }}
+            >
+              <div style={{ color: lastWasCorrect ? '#3FB950' : '#F85149', fontWeight: 700, marginBottom: 6 }}>
+                {lastWasCorrect ? `⚔ STRIKE — ${battle.name} takes a hit!` : `✗ MISS — ${battle.name} strikes you!`}
               </div>
-            )}
-          </div>
-        )}
+              {lastWasCorrect ? currentQuestion.passFeedback : currentQuestion.failFeedback}
+              {!lastWasCorrect && correctChoice && (
+                <div style={{
+                  marginTop: 10,
+                  paddingTop: 10,
+                  borderTop: '1px dashed rgba(248,81,73,0.25)',
+                  fontSize: 13,
+                  color: '#E8E8E8',
+                }}>
+                  <span style={{ color: '#3FB950', fontWeight: 700 }}>correct answer: </span>
+                  {correctChoice.label}
+                </div>
+              )}
+              {!lastWasCorrect && (
+                <div style={{ marginTop: 10, color: accent, fontStyle: 'italic', fontSize: 13 }}>
+                  {tauntRef.current}
+                </div>
+              )}
+              {phase === 'resolve' && (
+                <div style={{
+                  marginTop: 12,
+                  paddingTop: 8,
+                  borderTop: '1px solid #1F1F1F',
+                  color: '#7D7D7D',
+                  fontSize: 11,
+                }}>
+                  <span style={{ color: lastWasCorrect ? '#3FB950' : '#F85149' }}>{'>'}</span>{' '}
+                  <span style={{ color: '#E8E8E8' }}>SPACE</span> or click to continue
+                  <Cursor color={lastWasCorrect ? '#3FB950' : '#F85149'} />
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {phase === 'victory' && (
           <>

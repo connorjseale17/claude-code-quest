@@ -388,6 +388,7 @@ function ChoiceBeat({
   onPick: (c: ConversationChoice | null) => void;
   subText: (s: string) => string;
 }) {
+  const correctOption = beat.options.find(o => o.correct);
   return (
     <div>
       <div style={{ fontSize: 15, lineHeight: 1.6, marginBottom: 14, whiteSpace: 'pre-wrap' }}>
@@ -416,6 +417,18 @@ function ChoiceBeat({
           }}
         >
           {subText(picked.reaction)}
+          {!picked.correct && correctOption && (
+            <div style={{
+              marginTop: 10,
+              paddingTop: 10,
+              borderTop: '1px dashed rgba(248,81,73,0.25)',
+              color: '#E8E8E8',
+              fontSize: 13,
+            }}>
+              <span style={{ color: '#3FB950', fontWeight: 700 }}>correct answer: </span>
+              {correctOption.label}
+            </div>
+          )}
         </div>
       )}
       <div style={{ marginTop: 14, color: '#7D7D7D', fontSize: 12 }}>
