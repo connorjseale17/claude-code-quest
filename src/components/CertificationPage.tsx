@@ -181,31 +181,37 @@ export function CertificationPage() {
       const rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
 
-      // Reset to a clean, measurable layout: kill any prior transform, drop the
-      // cert's min-height:100vh, and let html lay out as a plain block so
-      // body.scrollWidth/Height report the cert's true natural size.
-      body.style.transform = 'none';
-      body.style.minHeight = '0';
+      // Scale the CERT CARD itself, not <body>. The cert's own stylesheet
+      // stretches body to fill the viewport (display:flex; min-height:100vh),
+      // so measuring/scaling body fits the empty page area, leaving the card
+      // tiny. The card is body's first element child (the bundler mounts a
+      // single root). Falling back to body covers any unexpected structure.
+      const root = (body.firstElementChild as HTMLElement | null) ?? body;
+
+      // Reset transforms so we read the card's true natural size.
+      root.style.transform = 'none';
       body.style.margin = '0';
-      html.style.display = 'block';
       html.style.margin = '0';
 
-      const contentW = body.scrollWidth;
-      const contentH = body.scrollHeight;
+      const r = root.getBoundingClientRect();
+      const contentW = r.width || root.scrollWidth;
+      const contentH = r.height || root.scrollHeight;
       if (contentW <= 0 || contentH <= 0) return;
 
       const fit = Math.min(rect.width / contentW, rect.height / contentH) * 0.98;
 
-      // Now center: html fills the iframe and flex-centers body; body is scaled
-      // about its own center so it stays put as it shrinks.
+      // Center: html fills the iframe and flex-centers body; body is a block so
+      // it shrink-wraps the card; the card is scaled about its own center.
       html.style.width = '100%';
       html.style.height = '100%';
       html.style.display = 'flex';
       html.style.alignItems = 'center';
       html.style.justifyContent = 'center';
       html.style.overflow = 'hidden';
-      body.style.transformOrigin = 'center center';
-      body.style.transform = `scale(${fit})`;
+      body.style.display = 'block';
+      body.style.minHeight = '0';
+      root.style.transformOrigin = 'center center';
+      root.style.transform = `scale(${fit})`;
     };
 
     const scheduleApply = () => {
