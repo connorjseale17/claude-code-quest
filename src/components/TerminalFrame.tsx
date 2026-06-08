@@ -4,9 +4,12 @@ interface TerminalFrameProps {
   children: React.ReactNode;
   /** When provided, the window-chrome dots become a hidden dev-menu toggle. */
   onDevToggle?: () => void;
+  /** Optional content rendered where the window-control glyphs used to sit
+   *  (right side of the title bar). Used for the in-game run timer. */
+  rightSlot?: React.ReactNode;
 }
 
-export function TerminalFrame({ title = 'claude-code-quest --v1.0', accent = false, children, onDevToggle }: TerminalFrameProps) {
+export function TerminalFrame({ title = 'claude-code-quest --v1.0', accent = false, children, onDevToggle, rightSlot }: TerminalFrameProps) {
   return (
     <div
       className="flex flex-col h-full w-full box-border"
@@ -42,7 +45,9 @@ export function TerminalFrame({ title = 'claude-code-quest --v1.0', accent = fal
         <div className="flex-1 text-center" style={{ fontSize: 12, color: '#7D7D7D', letterSpacing: '0.04em' }}>
           {title}
         </div>
-        <div style={{ fontSize: 12, color: '#3A3A3A' }}>━ ▢ ✕</div>
+        <div style={{ minWidth: 60, display: 'flex', justifyContent: 'flex-end' }}>
+          {rightSlot}
+        </div>
       </div>
       <div className="flex-1 overflow-hidden relative">
         {children}

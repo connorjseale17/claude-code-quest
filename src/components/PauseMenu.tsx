@@ -68,7 +68,6 @@ export function PauseMenu() {
   const showRunStats = state.currentTrack === 'quest' && state.runStartedAt !== null;
   const levelsCompletedCount = Object.keys(state.levelsCompletedAt).length;
   const prizesEarnedCount = state.prizesUnlocked.length;
-  const lessonsLearnedCount = state.lessonsCompleted.length;
 
   return (
     <div
@@ -81,118 +80,119 @@ export function PauseMenu() {
         style={{
           background: '#1A1A1A',
           border: `1px solid ${accent}`,
-          padding: '28px 36px',
-          minWidth: 440,
-          maxWidth: 560,
+          padding: '18px 22px',
+          width: 420,
           fontFamily: "'JetBrains Mono', monospace",
           color: '#E8E8E8',
         }}
       >
-        <div style={{ color: accent, fontSize: 11, letterSpacing: '0.12em', marginBottom: 14 }}>
-          ── PAUSED ──
+        {/* Combined header — "PAUSED · LVL 03 · CLAUDE.md / chamber" — saves
+            three sections worth of vertical space. */}
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 2 }}>
+          <div style={{ color: accent, fontSize: 11, letterSpacing: '0.14em', fontWeight: 700 }}>
+            PAUSED
+          </div>
+          <div style={{ color: '#3A3A3A', fontSize: 10, letterSpacing: '0.12em' }}>
+            LVL {numLabel} · {level.title.toUpperCase()}
+          </div>
         </div>
-
-        <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
-          LEVEL {numLabel} · {level.title}
-        </div>
-        <div style={{ color: '#7D7D7D', fontSize: 13, marginBottom: showRunStats ? 18 : 22 }}>
+        <div style={{ color: '#7D7D7D', fontSize: 12, marginBottom: 14 }}>
           chamber: <span style={{ color: '#E8E8E8' }}>{chamber.name}</span>
         </div>
 
         {showRunStats && (
-          <div style={{ marginBottom: 22 }}>
-            <div style={{ color: accent, fontSize: 11, letterSpacing: '0.08em', marginBottom: 6 }}>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ color: accent, fontSize: 10, letterSpacing: '0.10em', marginBottom: 4 }}>
               RUN STATS
             </div>
             <div style={{
-              paddingLeft: 12,
+              paddingLeft: 10,
               display: 'grid',
-              gridTemplateColumns: 'auto 1fr',
-              columnGap: 10,
-              rowGap: 4,
-              fontSize: 13,
+              gridTemplateColumns: 'auto auto auto auto auto auto auto auto',
+              columnGap: 8,
+              rowGap: 2,
+              fontSize: 12,
               alignItems: 'baseline',
             }}>
-              <span style={{ color: '#7D7D7D' }}>elapsed:</span>
-              <span style={{ color: '#E8E8E8', fontWeight: 700, letterSpacing: '0.06em' }}>
+              <span style={{ color: '#7D7D7D' }}>time</span>
+              <span style={{ color: '#E8E8E8', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                 {formatRunTime(elapsed)}
               </span>
-              <span style={{ color: '#7D7D7D' }}>levels done:</span>
+              <span style={{ color: '#3A3A3A' }}>·</span>
+              <span style={{ color: '#7D7D7D' }}>lvls</span>
               <span style={{ color: accent }}>{levelsCompletedCount}/7</span>
-              <span style={{ color: '#7D7D7D' }}>prizes earned:</span>
+              <span style={{ color: '#3A3A3A' }}>·</span>
+              <span style={{ color: '#7D7D7D' }}>prizes</span>
               <span style={{ color: accent }}>{prizesEarnedCount}</span>
-              <span style={{ color: '#7D7D7D' }}>lessons:</span>
-              <span style={{ color: accent }}>{lessonsLearnedCount}</span>
             </div>
           </div>
         )}
 
-        <div style={{ marginBottom: 22 }}>
-          <div style={{ color: accent, fontSize: 11, letterSpacing: '0.08em', marginBottom: 6 }}>
-            CURRENT OBJECTIVE
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ color: accent, fontSize: 10, letterSpacing: '0.10em', marginBottom: 4 }}>
+            OBJECTIVE
           </div>
-          <div style={{ fontSize: 14, paddingLeft: 12 }}>
+          <div style={{ fontSize: 13, paddingLeft: 10 }}>
             <span style={{ color: accent }}>{'>'}</span> {objective}
           </div>
         </div>
 
-        <div style={{ marginBottom: 22, paddingLeft: 12, fontSize: 13, lineHeight: 1.9 }}>
+        <div style={{ paddingLeft: 10, fontSize: 12, lineHeight: 1.7, marginBottom: 12 }}>
           <div>
-            <span style={{ color: '#7D7D7D' }}>lore fragments: </span>
+            <span style={{ color: '#7D7D7D' }}>lore: </span>
             <span style={{ color: seenLore === totalLore && totalLore > 0 ? '#3FB950' : accent }}>
               {seenLore}/{totalLore}
             </span>
+            {totalNPCs > 0 && (
+              <>
+                <span style={{ color: '#3A3A3A' }}> · </span>
+                <span style={{ color: '#7D7D7D' }}>npcs: </span>
+                <span style={{ color: seenNPCs === totalNPCs ? '#3FB950' : accent }}>
+                  {seenNPCs}/{totalNPCs}
+                </span>
+              </>
+            )}
+            {lessonNpcIds.length > 0 && (
+              <>
+                <span style={{ color: '#3A3A3A' }}> · </span>
+                <span style={{ color: '#7D7D7D' }}>lessons: </span>
+                <span style={{ color: lessonsCompleted === lessonNpcIds.length ? '#3FB950' : accent }}>
+                  {lessonsCompleted}/{lessonNpcIds.length}
+                </span>
+              </>
+            )}
           </div>
-          {totalNPCs > 0 && (
-            <div>
-              <span style={{ color: '#7D7D7D' }}>characters met: </span>
-              <span style={{ color: seenNPCs === totalNPCs ? '#3FB950' : accent }}>
-                {seenNPCs}/{totalNPCs}
-              </span>
-            </div>
-          )}
-          {lessonNpcIds.length > 0 && (
-            <div>
-              <span style={{ color: '#7D7D7D' }}>lessons completed: </span>
-              <span style={{ color: lessonsCompleted === lessonNpcIds.length ? '#3FB950' : accent }}>
-                {lessonsCompleted}/{lessonNpcIds.length}
-              </span>
-            </div>
-          )}
           <div>
             <span style={{ color: '#7D7D7D' }}>challenge: </span>
             <span style={{ color: levelState.challengePassed ? '#3FB950' : '#7D7D7D' }}>
-              {levelState.challengePassed ? '✓ complete' : '— pending'}
+              {levelState.challengePassed ? '✓' : '—'}
             </span>
-          </div>
-          <div>
+            <span style={{ color: '#3A3A3A' }}> · </span>
             <span style={{ color: '#7D7D7D' }}>key: </span>
             <span style={{ color: levelState.keyCollected ? '#3FB950' : '#7D7D7D' }}>
-              {levelState.keyCollected ? '✓ collected' : '— locked'}
+              {levelState.keyCollected ? '✓' : '—'}
             </span>
           </div>
         </div>
 
         <div style={{
           borderTop: '1px solid #2A2A2A',
-          paddingTop: 14,
-          marginBottom: 14,
+          paddingTop: 10,
           color: '#7D7D7D',
-          fontSize: 12,
-          lineHeight: 1.8,
+          fontSize: 11,
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
         }}>
-          <div style={{ color: accent, fontSize: 11, letterSpacing: '0.08em', marginBottom: 6 }}>
-            CONTROLS
-          </div>
-          <div><span style={{ color: '#E8E8E8' }}>WASD</span> / <span style={{ color: '#E8E8E8' }}>arrows</span> — move</div>
-          <div><span style={{ color: '#E8E8E8' }}>SPACE</span> / <span style={{ color: '#E8E8E8' }}>ENTER</span> — interact</div>
-          <div><span style={{ color: '#E8E8E8' }}>ESC</span> — pause / resume</div>
-        </div>
-
-        <div style={{ color: '#7D7D7D', fontSize: 13 }}>
-          <span style={{ color: accent }}>{'>'}</span> press{' '}
-          <span style={{ color: '#E8E8E8' }}>ESC</span> to resume
-          <Cursor />
+          <span>
+            <span style={{ color: '#E8E8E8' }}>WASD</span> move ·{' '}
+            <span style={{ color: '#E8E8E8' }}>SPACE</span> interact
+          </span>
+          <span>
+            <span style={{ color: accent }}>{'>'}</span>{' '}
+            <span style={{ color: '#E8E8E8' }}>ESC</span> resume
+            <Cursor />
+          </span>
         </div>
       </div>
     </div>

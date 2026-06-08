@@ -74,11 +74,10 @@ function GameScreen({ onDevToggle }: { onDevToggle: () => void }) {
   const title = `level ${String(level.number).padStart(2, '0')} — ${level.title.toLowerCase()}`;
 
   return (
-    <TerminalFrame title={title} onDevToggle={onDevToggle}>
+    <TerminalFrame title={title} onDevToggle={onDevToggle} rightSlot={<RunTimerHUD />}>
       <div className="cc-fade-in flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
           <Room />
-          <RunTimerHUD />
           {state.activePanel?.type === 'challenge' && (
             CONTENT[state.currentLevel].battle ? <BossBattle /> : <ChallengeTerminal />
           )}
