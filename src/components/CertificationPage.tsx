@@ -175,42 +175,29 @@ export function CertificationPage() {
 
     const applyFit = () => {
       const doc = iframe.contentDocument;
-      const html = doc?.documentElement;
       const body = doc?.body;
-      if (!html || !body) return;
+      if (!body) return;
+      // The cert card is the body's single root child. The cert's OWN body
+      // stylesheet (display:flex; align-items:center; justify-content:center;
+      // min-height:100vh) already centers that card in the iframe — so we leave
+      // body/html untouched and ONLY scale the card. Overriding body layout is
+      // what previously knocked the cert off-center and clipped it.
+      const root = body.firstElementChild as HTMLElement | null;
+      if (!root) return;
       const rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
 
-      // Scale the CERT CARD itself, not <body>. The cert's own stylesheet
-      // stretches body to fill the viewport (display:flex; min-height:100vh),
-      // so measuring/scaling body fits the empty page area, leaving the card
-      // tiny. The card is body's first element child (the bundler mounts a
-      // single root). Falling back to body covers any unexpected structure.
-      const root = (body.firstElementChild as HTMLElement | null) ?? body;
-
-      // Reset transforms so we read the card's true natural size.
+      // Reset transform so we read the card's true natural size.
       root.style.transform = 'none';
-      body.style.margin = '0';
-      html.style.margin = '0';
-
+      root.style.transformOrigin = 'center center';
       const r = root.getBoundingClientRect();
       const contentW = r.width || root.scrollWidth;
       const contentH = r.height || root.scrollHeight;
       if (contentW <= 0 || contentH <= 0) return;
 
       const fit = Math.min(rect.width / contentW, rect.height / contentH) * 0.98;
-
-      // Center: html fills the iframe and flex-centers body; body is a block so
-      // it shrink-wraps the card; the card is scaled about its own center.
-      html.style.width = '100%';
-      html.style.height = '100%';
-      html.style.display = 'flex';
-      html.style.alignItems = 'center';
-      html.style.justifyContent = 'center';
-      html.style.overflow = 'hidden';
-      body.style.display = 'block';
-      body.style.minHeight = '0';
-      root.style.transformOrigin = 'center center';
+      // Keep the cert from scrolling if the scaled card is a hair over.
+      body.style.overflow = 'hidden';
       root.style.transform = `scale(${fit})`;
     };
 
