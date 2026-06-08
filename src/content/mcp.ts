@@ -51,11 +51,26 @@ export const mcpContent: LessonContent = {
     template:
       '# 1. Connect the server\nclaude mcp add ____ --scope ____ --env ____\n\n# 2. In .claude/settings.json, default-deny then allow narrowly:\n"permissions": {\n  "allow": [ "____" ],\n  "deny":  [ "____" ]\n}\n\n# 3. Verify the wiring and the guardrails\n/mcp\n/permissions',
     blanks: [
-      { id: 'server', suggestions: ['github', 'slack', 'gdrive'] },
-      { id: 'scope', suggestions: ['user', 'project', 'local'] },
-      { id: 'env', suggestions: ['GITHUB_TOKEN=...', 'SLACK_TOKEN=...', 'GDRIVE_TOKEN=...'] },
-      { id: 'allow-rule', suggestions: ['mcp__slack(post_to_#client-status)', 'mcp__github(search_code)', 'mcp__gdrive(read_folder)'] },
-      { id: 'deny-rule', suggestions: ['mcp__slack(*)', 'mcp__github(*)', 'mcp__gdrive(*)'] },
+      // Lore ('essential-stack'): GitHub is one of the four servers in the recommended essential starter stack.
+      // Slack and gdrive are reasonable additions but not part of the canonical "start here" four — github is
+      // the one suggestion that matches the essential-stack rule directly. Drives a consistent github-themed
+      // answer across the other blanks (env, allow-rule, deny-rule).
+      { id: 'server', suggestions: ['github', 'slack', 'gdrive'], correctIndex: 0 },
+      // Lore ('rack-b' / Connector Duck blank followup): "Pick the narrowest scope that does the job."
+      // For a repo-tied server checked in with the team, `project` is the canonical scope (shared in git,
+      // not personal-global, not session-only). `user` leaks the config to every project; `local` is too
+      // narrow for a setup you want to persist. The NPC conversation literally demos this with project.
+      { id: 'scope', suggestions: ['user', 'project', 'local'], correctIndex: 1 },
+      // Must match the chosen server (github) — GITHUB_TOKEN is the env var that pairs with it.
+      { id: 'env', suggestions: ['GITHUB_TOKEN=...', 'SLACK_TOKEN=...', 'GDRIVE_TOKEN=...'], correctIndex: 0 },
+      // Lore ('rack-c'): "Default-deny, approve narrowly... An allow rule for `mcp__github__list_issues`
+      // is reasonable." For the github server we're adding, the narrowly-scoped named-tool allow is the
+      // matching pattern. The slack/gdrive options don't apply because we didn't add those servers.
+      { id: 'allow-rule', suggestions: ['mcp__slack(post_to_#client-status)', 'mcp__github(search_code)', 'mcp__gdrive(read_folder)'], correctIndex: 1 },
+      // Lore ('rack-c'): "An allow rule for the whole GitHub server is a footgun." Default-deny means
+      // the wildcard for the server we just added goes in the deny list, paired with the narrow allow above.
+      // mcp__slack(*) / mcp__gdrive(*) would be denying servers we didn't even add.
+      { id: 'deny-rule', suggestions: ['mcp__slack(*)', 'mcp__github(*)', 'mcp__gdrive(*)'], correctIndex: 1 },
     ],
     prize: { id: 'integrations-engineer', label: 'INTEGRATIONS ENGINEER' },
   },

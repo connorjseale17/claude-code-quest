@@ -92,7 +92,7 @@ function seedLevelStates(): Record<LevelId, LevelState> {
   ) as Record<LevelId, LevelState>;
 }
 
-const startLevel: LevelId = 'welcome';
+const startLevel: LevelId = 'orientation';
 const startLevelCfg = LEVEL_CONFIGS[startLevel];
 const startChamber: ChamberId = startLevelCfg.startingChamber;
 const startChamberCfg = startLevelCfg.chambers[startChamber];
@@ -330,12 +330,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const ch = state.chambers[t.chamberId] ?? { ...initialChamberState };
       // Fire the one-shot TWiC Issue Intro overlay when the player first enters twic-1.
       const showTwicIssue = t.levelId === 'twic-1';
-      // Route through the Origin Splash before Level 1 gameplay begins —
+      // Route through the Origin Splash before Level 0 gameplay begins —
       // Quest track only, first-time players only. Returning players (those
       // with the ccq-origin-seen localStorage flag) skip straight to playing.
       // DISMISS_ORIGIN flips gamePhase → 'playing' and arms showIntro.
       const showOrigin =
-        t.levelId === 'welcome' &&
+        t.levelId === 'orientation' &&
         state.currentTrack === 'quest' &&
         !state.originSeen;
       return {

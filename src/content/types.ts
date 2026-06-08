@@ -45,8 +45,22 @@ export type BattleQuestion = {
 export type PracticeContent = {
   id: string;
   template: string;
-  blanks: { id: string; suggestions: string[] }[];
+  blanks: PracticeBlank[];
   prize: { id: string; label: string };
+};
+
+export type PracticeBlank = {
+  id: string;
+  suggestions: string[];
+  /**
+   * Index into `suggestions` identifying the correct chip.
+   * - If defined, the blank is GRADED: only `suggestions[correctIndex]` is accepted
+   *   and the player sees per-blank ✓/✗ feedback after submit.
+   * - If omitted, the blank is UNGRADED (legacy behavior): any filled chip wins.
+   * Mixing graded + ungraded blanks in one practice is allowed; the prize is
+   * awarded iff every graded blank is correct and every ungraded blank is filled.
+   */
+  correctIndex?: number;
 };
 
 export type NPCConversation = {
@@ -68,4 +82,14 @@ export type ConversationChoice = {
   reaction: string;
 };
 
-export type BlankSpec = { id: string; suggestions: string[] };
+export type BlankSpec = {
+  id: string;
+  suggestions: string[];
+  /**
+   * Index into `suggestions` identifying the correct chip.
+   * - If defined, the blank is GRADED.
+   * - If omitted, the blank is UNGRADED for backwards compatibility
+   *   (any filled chip is accepted — current behavior preserved).
+   */
+  correctIndex?: number;
+};

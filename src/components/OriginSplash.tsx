@@ -23,7 +23,7 @@ const ORIGIN_SECTIONS: TypewriterSection[] = [
   },
   {
     title: 'The Journey Ahead',
-    text: "Over the next six levels you'll learn to drive it properly. How to control what it can and can't touch. How to give it the context that makes it sharp instead of generic. How to bend it to your firm's way of working, connect it to your real tools, and put whole teams of these agents to work at once. By the end you won't just know what Claude Code is. You'll know how to make it earn its place in how you work.",
+    text: "Over the next seven levels you'll learn to drive it properly. How to control what it can and can't touch. How to give it the context that makes it sharp instead of generic. How to bend it to your firm's way of working, connect it to your real tools, and put whole teams of these agents to work at once. By the end you won't just know what Claude Code is. You'll know how to make it earn its place in how you work.",
   },
   {
     title: 'Begin',

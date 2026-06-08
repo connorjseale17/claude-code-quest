@@ -51,10 +51,18 @@ export const claudemdContent: LessonContent = {
     template:
       'Review my CLAUDE.md at ./CLAUDE.md against the WHY / WHAT / HOW structure.\n1. Cut anything ____ could already figure out from reading the code.\n2. For each remaining rule, ask: would removing this cause ____? If not, delete it.\n3. Tell me which of WHY, WHAT, or HOW is ____, and draft the missing piece.\n4. Flag any line that reads more like ____ than a rule Claude should obey.',
     blanks: [
-      { id: 'reader', suggestions: ['Claude', 'a competent reader', 'any new teammate'] },
-      { id: 'failure-mode', suggestions: ['Claude to make a specific mistake', 'a wasted turn', 'a wrong default'] },
+      // Lore ('log' book): "Cut everything Claude could already figure out by reading the code."
+      // The contract is for Claude specifically; "a competent reader" / "any new teammate" generalize away from the canonical lesson.
+      { id: 'reader', suggestions: ['Claude', 'a competent reader', 'any new teammate'], correctIndex: 0 },
+      // Lore ('log' book): "would removing this cause Claude to make a specific mistake? If yes, keep it."
+      // Verbatim test phrasing — the other two are weaker symptoms, not the canonical test.
+      { id: 'failure-mode', suggestions: ['Claude to make a specific mistake', 'a wasted turn', 'a wrong default'], correctIndex: 0 },
+      // Judgment call: any real CLAUDE.md might have a section that's thinnest, missing entirely, or overstuffed —
+      // the lesson asks the auditor to NAME whichever it is. No single correct chip here. Leave ungraded.
       { id: 'gap', suggestions: ['thinnest', 'missing entirely', 'overstuffed'] },
-      { id: 'genre', suggestions: ['documentation', 'a tutorial', 'a changelog'] },
+      // Lore ('old-note' book): "This file is not documentation and it's not a wiki."
+      // 'documentation' is the canonical anti-pattern in the lore; tutorial/changelog are weaker distractors.
+      { id: 'genre', suggestions: ['documentation', 'a tutorial', 'a changelog'], correctIndex: 0 },
     ],
     prize: { id: 'contract-auditor', label: 'CONTRACT AUDITOR' },
   },

@@ -1,5 +1,6 @@
 import type { LevelId } from '../engine/roomConfigs';
 import type { LessonContent } from './types';
+import { orientationContent } from './orientation';
 import { welcomeContent } from './welcome';
 import { claudemdContent } from './claudemd';
 import { slashContent } from './slash';
@@ -11,6 +12,7 @@ import { twic2Content } from './twic-2';
 import { twic3Content } from './twic-3';
 
 export const CONTENT: Record<LevelId, LessonContent> = {
+  orientation: orientationContent,
   welcome: welcomeContent,
   claudemd: claudemdContent,
   slash: slashContent,

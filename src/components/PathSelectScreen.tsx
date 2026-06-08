@@ -18,12 +18,12 @@ export function PathSelectScreen() {
 
   const select = (track: Choice) => {
     if (track === 'quest') {
-      const cfg = LEVEL_CONFIGS['welcome'];
+      const cfg = LEVEL_CONFIGS['orientation'];
       const chamber = cfg.chambers[cfg.startingChamber];
       dispatch({
         type: 'SELECT_TRACK',
         track: 'quest',
-        levelId: 'welcome',
+        levelId: 'orientation',
         chamberId: cfg.startingChamber,
         spawnX: chamber.spawnX,
         spawnY: chamber.spawnY,
@@ -64,7 +64,7 @@ export function PathSelectScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focused]);
 
-  const questAccent = LEVEL_CONFIGS['welcome'].theme.accentColor;
+  const questAccent = LEVEL_CONFIGS['orientation'].theme.accentColor;
   const twicAccent = LEVEL_CONFIGS['twic-1'].theme.accentColor;
 
   return (
@@ -80,8 +80,8 @@ export function PathSelectScreen() {
         <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
           <PathTile
             label="THE QUEST"
-            description="A 6-level curriculum on Claude Code, start to finish. The full Quest. Recommended for new learners."
-            badge="6 LEVELS · CANON"
+            description="A 7-level curriculum on Claude Code, start to finish. The full Quest. Recommended for new learners."
+            badge="7 LEVELS · CANON"
             accent={questAccent}
             focused={focused === 'quest'}
             onHover={() => setFocused('quest')}

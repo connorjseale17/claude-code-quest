@@ -51,9 +51,22 @@ export const slashContent: LessonContent = {
     template:
       "# .claude/skills/draft-proposal/SKILL.md\n---\nname: draft-proposal\ndescription: Draft a ____ for $ARGUMENTS using the firm's discovery notes.\nallowed-tools: ____\n---\n\nPull discovery notes from ____.\nUse the firm ____ methodology as the structural backbone.\nOutput into the template under ./templates/.\n\nAsk me to review before anything leaves the building.",
     blanks: [
-      { id: 'deliverable', suggestions: ['proposal', 'engagement letter', 'statement of work'] },
-      { id: 'allowed-tools', suggestions: ['Read, Glob, Write', 'Read, Grep, Glob', 'Read, Write'] },
-      { id: 'source', suggestions: ['./notes/', 'a connected notes tool', 'the discovery folder'] },
+      // The skill is named `draft-proposal` and the conversation/lore frame it as bottling the proposal deliverable.
+      // 'proposal' is the canonical match; engagement letter / SOW are different artifacts.
+      { id: 'deliverable', suggestions: ['proposal', 'engagement letter', 'statement of work'], correctIndex: 0 },
+      // Lore ('card-c'): allowed-tools is a least-privilege fence — give the skill EXACTLY what it needs and no more.
+      // This skill must Read notes and Write the proposal output, plus Glob to discover templates/notes.
+      // 'Read, Grep, Glob' is look-only and can't actually write the draft (fails the job).
+      // 'Read, Write' loses Glob discovery. 'Read, Glob, Write' is the minimal-but-sufficient conservative set.
+      { id: 'allowed-tools', suggestions: ['Read, Glob, Write', 'Read, Grep, Glob', 'Read, Write'], correctIndex: 0 },
+      // The practice is the SKILL.md draft-proposal exercise — per the parent architect's guidance,
+      // the canonical answer is the concrete discovery-notes source. './notes/' is the file-system-anchored
+      // discovery notes location (matches the './templates/' style already in the template); the others
+      // are vaguer (a connected tool / "the discovery folder" with no path).
+      { id: 'source', suggestions: ['./notes/', 'a connected notes tool', 'the discovery folder'], correctIndex: 0 },
+      // Judgment call: Pyramid Principle and MECE are both legitimate consulting methodologies a firm
+      // might encode; "firm-specific" is a reasonable placeholder for any house framework. No single
+      // pedagogically-correct answer — the lesson is "name the methodology," not "pick this one." Leave ungraded.
       { id: 'methodology', suggestions: ['Pyramid Principle', 'MECE', 'firm-specific'] },
     ],
     prize: { id: 'command-architect', label: 'COMMAND ARCHITECT' },

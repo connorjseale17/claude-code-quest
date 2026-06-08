@@ -2,7 +2,7 @@ import type { LessonContent } from './types';
 
 export const welcomeContent: LessonContent = {
   roomId: 'welcome',
-  intro: 'Welcome, operator. Talk to Guide-bot first — he walks you through how Claude Code actually works. Read any lore you spot along the way. The boss battle in the sanctum checks what you picked up.',
+  intro: "Now that you know what Claude Code is and how the ask→act→review loop feels, it's time to learn how to control it. Talk to Guide-bot first — he'll show you the four permission modes and how to brief like a pro. The boss battle in the sanctum checks what you picked up.",
   prompt: "You're starting a Claude Code session on a brand-new client repo to scope out a proposal microsite. You've never opened the codebase. Which permission mode should you start in?",
   choices: [
     { id: 'a', label: 'auto — fastest, classifier handles the rest', correct: false },
@@ -39,10 +39,19 @@ export const welcomeContent: LessonContent = {
     template:
       "I'm kicking off a ____ engagement and need a quick internal demo to react to.\nBuild a one-page ____ for ____ using ____.\nUse ____ as the primary brand color.\nStart in plan mode so I can review the approach first.\nThis is a non-confidential demo, so a local preview is fine;\nif it were client-confidential, package it as a zip instead.",
     blanks: [
+      // engagement-type: discovery/pitch/kickoff are all legitimate consulting framings.
+      // No pedagogical "best" — the lesson is naming the engagement at all. UNGRADED.
       { id: 'engagement-type', suggestions: ['discovery', 'pitch', 'kickoff'] },
+      // deliverable: all three are concrete one-pagers. Lesson is "name the deliverable",
+      // not which one — any specific noun beats "a website." UNGRADED.
       { id: 'deliverable', suggestions: ['demo microsite', 'sample landing page', 'mock dashboard'] },
+      // client: all three preserve the non-confidential framing the template already sets.
+      // Lesson is naming an audience; no clear winner among generic stand-ins. UNGRADED.
       { id: 'client', suggestions: ['a fictional sample brand', 'an internal example', 'a generic template'] },
+      // stack: all three are valid for a one-page demo. Lesson is naming the stack, not
+      // picking a "correct" one. UNGRADED.
       { id: 'stack', suggestions: ['Next.js', 'static HTML', 'React + Vite'] },
+      // brand-color: arbitrary hex codes. No pedagogically correct color. UNGRADED.
       { id: 'brand-color', suggestions: ['#B23A1D', '#0B5394', '#2F4858'] },
     ],
     prize: { id: 'proposal-architect', label: 'PROPOSAL ARCHITECT' },
@@ -54,15 +63,15 @@ export const welcomeContent: LessonContent = {
       beats: [
         {
           kind: 'say',
-          text: "Hey. Fresh session? Good. Let me walk you through the basics before we touch real code.",
-        },
-        {
-          kind: 'say',
-          text: "Foundations first. The terminal is just text-mode chat with your computer. `cd` moves you, `ls` lists, `git status` shows what changed. Claude Code lives in there, and it can text the computer too.",
+          text: "Hey. Fresh session? Good. You've got the basics — terminal, the ask→act→review loop, Plan mode as the safe way in. Now we go a level deeper: how you actually steer me through real work.",
         },
         {
           kind: 'say',
           text: "Four permission modes decide how much I can do without asking. Default confirms every action. Accept Edits writes for you — you review the diff after. Plan reads and proposes but changes nothing. Auto decides per-action with a safety check watching.",
+        },
+        {
+          kind: 'say',
+          text: "Watch what happens in practice. You open a new repo and say 'fix the bug in src/auth.ts.' In Plan mode, I read the file, propose three approaches, change nothing. You pick one. We move to Accept Edits, I write the fix, you review the diff after. Each mode is a different speed of trust — and you change gears as the work changes.",
         },
         {
           kind: 'choice',

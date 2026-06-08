@@ -10,6 +10,7 @@ import { LAYOUT_OVERRIDES } from './layoutOverrides';
 // ============================================================================
 
 export type LevelId =
+  | 'orientation'
   | 'welcome'
   | 'claudemd'
   | 'slash'
@@ -174,6 +175,14 @@ function fillRect(tiles: number[][], x0: number, y0: number, x1: number, y1: num
 // THEMES
 // ============================================================================
 
+const THEME_AMBER: Theme = {
+  wallColor: '#0C0B0A',
+  wallShadow: '#A88030',
+  floorColor: '#2E2A1F',
+  floorDot: '#E8C57A',
+  accentColor: '#E8C57A',
+};
+
 const THEME_ORANGE: Theme = {
   wallColor: '#E8633D',
   wallShadow: '#B84A28',
@@ -232,6 +241,77 @@ const THEME_NEWSROOM: Theme = {
 };
 
 // ============================================================================
+// Level 00: Orientation — single chamber (the Orientation Trail)
+// ============================================================================
+//
+// Level 0 is the day-zero on-ramp the Quest used to assume: what Claude Code
+// is, what a terminal/session is, and the core read → plan → review → build →
+// ship loop. Single 16×11 chamber with a guide NPC, three lore plaques, one
+// practice token, a checkpoint challenge, and a locked exit door to Welcome.
+
+function buildOrientationLevel(): LevelConfig {
+  const tW = 16, tH = 11;
+  const tiles = blankTileMap(tW, tH);
+  // East exit door tile (locked until checkpoint passes and key is collected).
+  tiles[5][tW - 1] = 2;
+
+  const trail: ChamberConfig = {
+    id: 'orientation-trail',
+    level: 'orientation',
+    name: 'Orientation Trail',
+    width: tW,
+    height: tH,
+    tiles,
+    spawnX: 1,
+    spawnY: 5,
+    items: [
+      { id: 'what-is-it', type: 'lore', x: 3, y: 2, sprite: 'paper' },
+      { id: 'terminal-primer', type: 'lore', x: 8, y: 2, sprite: 'paper' },
+      { id: 'core-loop', type: 'lore', x: 11, y: 2, sprite: 'paper' },
+      { id: 'orientation-practice', type: 'practice', x: 12, y: 7, sprite: 'hint_token' },
+      { id: 'orientation-checkpoint', type: 'challenge', x: 13, y: 5, sprite: 'slime_a' },
+    ],
+    doors: [
+      {
+        id: 'exit',
+        x: tW - 1,
+        y: 5,
+        target: { kind: 'level', level: 'welcome', chamber: 'welcome-antechamber' },
+        spawnX: 1,
+        spawnY: 5,
+        locked: true,
+        requiresLevelKey: true,
+      },
+    ],
+    npcs: [
+      {
+        id: 'guide-init',
+        x: 4,
+        y: 5,
+        color: '#E8C57A',
+        name: 'Init-bot',
+        dialog: [],
+      },
+    ],
+    decorations: [],
+    keySpawn: { x: 13, y: 6 },
+  };
+
+  return {
+    id: 'orientation',
+    number: 0,
+    title: 'Orientation',
+    subtitle: 'Before you begin',
+    theme: THEME_AMBER,
+    chambers: {
+      [trail.id]: trail,
+    },
+    startingChamber: trail.id,
+    challengeChamber: trail.id,
+  };
+}
+
+// ============================================================================
 // Level 01: Welcome — 2 chambers (Antechamber + Sanctum)
 // ============================================================================
 
@@ -286,12 +366,7 @@ function buildWelcomeLevel(): LevelConfig {
         y: 6,
         color: '#3FB950',
         name: 'Guide-bot',
-        dialog: [
-          "Hey, operator. Fresh session? Good. Let's set you up before you wreck something.",
-          'Four permission modes. PLAN — read-only, drafts an approach. ACCEPT-EDITS — writes for you, review by diff. AUTO — runs free, a classifier watches. ASK — confirms each step.',
-          "Shift+Tab cycles them. Default to PLAN when you're walking into unfamiliar code. ACCEPT-EDITS when you're iterating. AUTO for long boring loops you trust the direction on.",
-          "Building a one-pager for a client? Describe what you want in English. Review the plan. Approve. Vercel hosts it for free. Same as briefing a junior consultant — except this one types.",
-        ],
+        dialog: [],
       },
     ],
     decorations: [],
@@ -435,12 +510,7 @@ function buildClaudemdLevel(): LevelConfig {
         sprite: 'owl',
         color: '#D94DFF',
         name: 'Archivist Owl',
-        dialog: [
-          'Hoo. The Archives. Every engagement lives or dies by the contract in here.',
-          'CLAUDE.md is the contract. Build commands. Test commands. Naming. Repository etiquette. The non-obvious things a new consultant on the project would need on day one.',
-          "Keep it tight. Bloated CLAUDE.md gets ignored — important rules get lost in the noise. Prune like it's your billable hours.",
-          '/compact when the window fills. /clear between unrelated tasks. /rewind if Claude wandered. Tools are sharp, operator. Use them.',
-        ],
+        dialog: [],
       },
     ],
     decorations: [],
@@ -638,12 +708,7 @@ function buildSlashLevel(): LevelConfig {
         sprite: 'cat',
         color: '#3FB950',
         name: 'Clerk Cat',
-        dialog: [
-          'Mrrow. Welcome to the Registry. Three drawers: commands, skills, hooks.',
-          "Type a slash, get a recipe. /review-pr expands into your full review brief. No more 'remind me what we check for race conditions?'",
-          'Hooks fire automatically. Format on save. Lint before commit. Block writes to /client-data. Set once. Trust always.',
-          'Most useful for a firm? Bottle the deliverables. One skill per: /draft-proposal, /summarize-call, /qbr-deck. Your library of moves, executable on demand.',
-        ],
+        dialog: [],
       },
     ],
     decorations: [],
@@ -835,13 +900,7 @@ function buildMcpLevel(): LevelConfig {
         sprite: 'duck',
         color: '#00D4AA',
         name: 'Connector Duck',
-        dialog: [
-          'Quack. Welcome to the Hub. We trade in connections.',
-          'MCP — Model Context Protocol — is how Claude reaches anything outside its own walls.',
-          'Slack. GitHub. Google Drive. Your CRM. Your warehouse. Any of them. All of them.',
-          "Add with `claude mcp add <name>`. Authorize once. Use forever. Yes — I'm a debugging duck. Why do you ask?",
-          "But — every server is a new attack surface. Default-deny. Audit the source. Don't ship the kingdom keys to a server you found in someone's gist.",
-        ],
+        dialog: [],
       },
     ],
     decorations: [],
@@ -1035,10 +1094,7 @@ function buildSubagentsLevel(): LevelConfig {
         y: 6,
         color: '#3FB950',
         name: 'Scout-bot',
-        dialog: [
-          'I run the Explore lane. Read-only — I never touch anything.',
-          "Send me into a 500-file repo with 'find every place we touch client billing'. I come back with paths and line numbers.",
-        ],
+        dialog: [],
       },
       {
         id: 'planner-bot',
@@ -1046,10 +1102,7 @@ function buildSubagentsLevel(): LevelConfig {
         y: 6,
         color: '#6BA8DD',
         name: 'Planner-bot',
-        dialog: [
-          'I plan. Architecture, file structure, deliverable outlines. The boring-but-load-bearing part.',
-          'Hand me a goal and the constraints. I come back with steps. Use me before any big build — saves you the rewrite.',
-        ],
+        dialog: [],
       },
     ],
     decorations: [],
@@ -1110,10 +1163,7 @@ function buildSubagentsLevel(): LevelConfig {
         y: 5,
         color: '#F0C040',
         name: 'Reviewer-bot',
-        dialog: [
-          'Code reviewer. Independent second-opinion energy. Fresh eyes — no conversation context.',
-          "Hand me a diff. I'll tell you what's shaky. I see what your main agent missed.",
-        ],
+        dialog: [],
       },
       {
         id: 'debugger-bot',
@@ -1121,10 +1171,7 @@ function buildSubagentsLevel(): LevelConfig {
         y: 5,
         color: '#FF6B8A',
         name: 'Debugger-bot',
-        dialog: [
-          'I chase bugs through stack traces. Scientific method only — hypothesize, instrument, verify.',
-          'Hand me a repro, I bring back the root cause. No band-aids.',
-        ],
+        dialog: [],
       },
     ],
     decorations: [],
@@ -1493,6 +1540,7 @@ function buildTwic3Level(): LevelConfig {
 /** Hand-authored levels BEFORE any layout overrides — used by getBaseChamber()
  *  so Layout Mode's "Reset to source" can restore the builder geometry. */
 const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
+  orientation: buildOrientationLevel(),
   welcome: buildWelcomeLevel(),
   claudemd: buildClaudemdLevel(),
   slash: buildSlashLevel(),
@@ -1505,6 +1553,7 @@ const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
 };
 
 export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
+  orientation: withOverrides(BASE_LEVEL_CONFIGS.orientation),
   welcome: withOverrides(BASE_LEVEL_CONFIGS.welcome),
   claudemd: withOverrides(BASE_LEVEL_CONFIGS.claudemd),
   slash: withOverrides(BASE_LEVEL_CONFIGS.slash),
