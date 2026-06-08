@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-06-08',
+  publishDate: '2026-06-07',
   framing:
-    "This week in Claude, the throughline is control of the surface — what Claude can touch, what you can see, and what you can hand off. Glob patterns in permission deny rules let a single wildcard fence off a whole family of tools at once, so a client guardrail stops springing leaks every time a server adds new ones. OpenTelemetry resource attributes now ride along as metric labels, turning one undifferentiated usage total into spend you can slice per engagement for an invoice or an ROI story. And the plugin tooling — `claude plugin init` plus auto-loading skills from `.claude/skills` — lets you package your firm's commands and standards into a single installable bundle instead of re-wiring them on every job.",
+    "This week in Claude, the theme is scale and control — bigger jobs, fewer stalls, and a sharper hand on the throttle. Dynamic Workflows, the headline that shipped with Opus 4.8, lets Claude plan an enormous task itself and fan out hundreds of parallel subagents in one session, enough to carry a codebase-scale migration from kickoff to merge. The new `fallbackModel` setting keeps an engagement alive by hopping to a backup roster when your primary model goes dark, and the `/effort` dial lets you decide how hard Claude thinks on any given task — and lock that choice in as your default.",
 };
