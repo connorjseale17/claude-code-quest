@@ -74,7 +74,7 @@ export function DevMenu({ open, onClose, onLayoutMode }: DevMenuProps) {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <span style={{ color: '#E8633D', fontSize: 11, letterSpacing: '0.18em', fontWeight: 700 }}>
-            ⚙ DEV MODE
+            ⚙ MENU
           </span>
           <span
             onClick={onClose}

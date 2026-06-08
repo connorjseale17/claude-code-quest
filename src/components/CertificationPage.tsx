@@ -182,18 +182,24 @@ export function CertificationPage() {
       if (!doc?.body) return;
       const rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
-      // Reset zoom to 1 BEFORE measuring so we read true content dimensions,
-      // not dimensions warped by our previous zoom. Then re-apply.
+      // Reset zoom + iframe size to 1/auto BEFORE measuring so we read true
+      // content dimensions, not dimensions warped by our previous fit.
       const docEl = doc.documentElement as HTMLElement & { style: CSSStyleDeclaration & { zoom?: string } };
       docEl.style.zoom = '1';
       const contentW = Math.max(doc.body.scrollWidth, doc.documentElement.scrollWidth);
       const contentH = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
       if (contentW <= 0 || contentH <= 0) return;
       // Fit to the more-constrained dimension. Tight pad (0.98) so the cert
-      // uses nearly all the available room — user reported the prior 0.96
-      // looked too small.
+      // uses nearly all the available room.
       const fit = Math.min(rect.width / contentW, rect.height / contentH) * 0.98;
       docEl.style.zoom = String(fit);
+      // CRITICAL: also resize the iframe element itself to match the scaled
+      // content. Without this the iframe stays 100%×100% of the preview area
+      // and the cert (now smaller than the iframe) sits at the top-left,
+      // appearing 'stuck' to one corner. With matching dims, the iframe IS
+      // the cert's bounding box and the parent flex centers it.
+      iframe.style.width = `${Math.round(contentW * fit)}px`;
+      iframe.style.height = `${Math.round(contentH * fit)}px`;
     };
 
     const scheduleApply = () => {
@@ -342,18 +348,19 @@ export function CertificationPage() {
             </div>
           )}
           {populated && (
-            // Iframe box fills ALL available space (no aspect lock — the cert
-            // has its own aspect, and the fit-zoom in the useEffect above
-            // sizes the cert to whatever shape this box ends up being). The
-            // cert's body has display:flex/center, so any leftover space
-            // shows as a white margin around the cert rather than dead
-            // black space.
+            // Iframe box fills the preview area for ResizeObserver to measure,
+            // and centers the iframe inside it. The iframe itself is resized
+            // dynamically by applyZoom to exactly match the scaled cert
+            // content, so any leftover space becomes flex margin around the
+            // iframe (centered) instead of dead space inside it.
             <div
               ref={iframeBoxRef}
               style={{
                 width: '100%',
                 height: '100%',
                 display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               <iframe
@@ -365,8 +372,6 @@ export function CertificationPage() {
                 // measure contentDocument + call print() on contentWindow.
                 sandbox="allow-scripts allow-same-origin allow-modals"
                 style={{
-                  width: '100%',
-                  height: '100%',
                   border: 'none',
                   display: 'block',
                   background: '#FFF',

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GameProvider, useGame } from './engine/GameContext';
+import { DevMenuContext } from './engine/DevMenuContext';
 import { ensureAnonAuth } from './lib/firebase';
 import { useMovement } from './engine/useMovement';
 import { DevMenu } from './components/DevMenu';
@@ -66,7 +67,7 @@ function useScale() {
   return scale;
 }
 
-function GameScreen({ onDevToggle }: { onDevToggle: () => void }) {
+function GameScreen() {
   const state = useGame();
   useMovement();
 
@@ -74,7 +75,7 @@ function GameScreen({ onDevToggle }: { onDevToggle: () => void }) {
   const title = `level ${String(level.number).padStart(2, '0')} — ${level.title.toLowerCase()}`;
 
   return (
-    <TerminalFrame title={title} onDevToggle={onDevToggle} rightSlot={<RunTimerHUD />}>
+    <TerminalFrame title={title} rightSlot={<RunTimerHUD />}>
       <div className="cc-fade-in flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
           <Room />
@@ -135,23 +136,25 @@ function PhaseRouter() {
       screen = state.currentTrack === 'twic' ? (
         <TwicStampScreen />
       ) : (
-        <TerminalFrame title="claude-code-quest --complete" accent onDevToggle={toggleDev}>
+        <TerminalFrame title="claude-code-quest --complete" accent>
           <EndScreen />
         </TerminalFrame>
       );
       break;
     case 'playing':
     default:
-      screen = <GameScreen onDevToggle={toggleDev} />;
+      screen = <GameScreen />;
       break;
   }
 
   return (
-    <div className="h-full w-full relative">
-      {screen}
-      <DevMenu open={devOpen} onClose={closeDev} onLayoutMode={() => setLayoutMode(true)} />
-      {layoutMode && <LayoutEditor onExit={() => setLayoutMode(false)} />}
-    </div>
+    <DevMenuContext.Provider value={toggleDev}>
+      <div className="h-full w-full relative">
+        {screen}
+        <DevMenu open={devOpen} onClose={closeDev} onLayoutMode={() => setLayoutMode(true)} />
+        {layoutMode && <LayoutEditor onExit={() => setLayoutMode(false)} />}
+      </div>
+    </DevMenuContext.Provider>
   );
 }
 
