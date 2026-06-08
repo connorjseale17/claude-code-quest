@@ -140,22 +140,29 @@ export function CertificationPage() {
       '</head>',
       `<style>
         @media screen {
-          html { margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; zoom: 0.5; height: 100% !important; }
+          /* html is a flex box that fills the iframe and centers the body.
+             body is scaled via transform (set by JS) — transform respects
+             transform-origin:center, unlike zoom which always shrinks toward
+             the top-left corner. That corner-shrink was why the cert looked
+             'stuck to the bottom' before. */
+          html {
+            margin: 0 !important; padding: 0 !important;
+            width: 100% !important; height: 100% !important;
+            overflow: hidden !important; background: #fff !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+          }
           body {
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: hidden !important;
+            margin: 0 !important; padding: 0 !important;
             background: #fff !important;
-            min-height: 100vh !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
+            transform: scale(0.5);
+            transform-origin: center center !important;
           }
         }
         @media print {
           @page { size: 11in 8.5in; margin: 0; }
-          html { zoom: 1 !important; }
-          html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; display: block !important; }
+          html { display: block !important; }
+          body { transform: none !important; }
+          html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; }
         }
       </style></head>`,
     );
@@ -182,24 +189,19 @@ export function CertificationPage() {
       if (!doc?.body) return;
       const rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
-      // Reset zoom + iframe size to 1/auto BEFORE measuring so we read true
-      // content dimensions, not dimensions warped by our previous fit.
-      const docEl = doc.documentElement as HTMLElement & { style: CSSStyleDeclaration & { zoom?: string } };
-      docEl.style.zoom = '1';
-      const contentW = Math.max(doc.body.scrollWidth, doc.documentElement.scrollWidth);
-      const contentH = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+      const body = doc.body;
+      // Reset the transform BEFORE measuring so we read the cert's true,
+      // unscaled content size. html is flex-centered, so body stays at its
+      // natural content dimensions.
+      body.style.transform = 'none';
+      const contentW = body.scrollWidth;
+      const contentH = body.scrollHeight;
       if (contentW <= 0 || contentH <= 0) return;
-      // Fit to the more-constrained dimension. Tight pad (0.98) so the cert
-      // uses nearly all the available room.
+      // Fit the cert to the more-constrained dimension of the preview pane.
+      // Tight pad (0.98) so it nearly fills the pane.
       const fit = Math.min(rect.width / contentW, rect.height / contentH) * 0.98;
-      docEl.style.zoom = String(fit);
-      // CRITICAL: also resize the iframe element itself to match the scaled
-      // content. Without this the iframe stays 100%×100% of the preview area
-      // and the cert (now smaller than the iframe) sits at the top-left,
-      // appearing 'stuck' to one corner. With matching dims, the iframe IS
-      // the cert's bounding box and the parent flex centers it.
-      iframe.style.width = `${Math.round(contentW * fit)}px`;
-      iframe.style.height = `${Math.round(contentH * fit)}px`;
+      body.style.transformOrigin = 'center center';
+      body.style.transform = `scale(${fit})`;
     };
 
     const scheduleApply = () => {
@@ -359,8 +361,6 @@ export function CertificationPage() {
                 width: '100%',
                 height: '100%',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
               }}
             >
               <iframe
@@ -371,7 +371,11 @@ export function CertificationPage() {
                 // walled off from the parent app. allow-same-origin so we can
                 // measure contentDocument + call print() on contentWindow.
                 sandbox="allow-scripts allow-same-origin allow-modals"
+                // Fills the preview pane; the cert inside is centered + scaled
+                // to fit via the injected CSS + applyZoom transform.
                 style={{
+                  width: '100%',
+                  height: '100%',
                   border: 'none',
                   display: 'block',
                   background: '#FFF',
