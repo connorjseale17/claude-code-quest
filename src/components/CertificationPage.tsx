@@ -140,13 +140,22 @@ export function CertificationPage() {
       '</head>',
       `<style>
         @media screen {
-          html, body { margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
-          html { zoom: 0.5; }
+          html { margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; zoom: 0.5; height: 100% !important; }
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            background: #fff !important;
+            min-height: 100vh !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+          }
         }
         @media print {
           @page { size: 11in 8.5in; margin: 0; }
           html { zoom: 1 !important; }
-          html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; }
+          html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; display: block !important; }
         }
       </style></head>`,
     );
