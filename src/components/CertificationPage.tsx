@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../engine/GameContext';
 import { TerminalFrame, Cursor } from './TerminalFrame';
 import { CREDITS } from '../credits';
+import { LeaderboardCard } from './LeaderboardCard';
+import { useLeaderboard } from '../hooks/useLeaderboard';
+import { currentUid } from '../lib/firebase';
 
 /**
  * Wrap-up Part 2 — the Certification Page.
@@ -68,6 +71,7 @@ function safeFilenameStem(name: string): string {
 
 export function CertificationPage() {
   const state = useGame();
+  const leaderboard = useLeaderboard();
   const [template, setTemplate] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [name, setName] = useState<string>(state.player.name || '');
@@ -298,8 +302,11 @@ export function CertificationPage() {
           </button>
         </div>
 
-        {/* Landscape preview area. The wrapper takes all remaining height; the
-            inner box is forced to 3:2 (the cert's design aspect) and centered. */}
+        {/* Preview area + leaderboard sidebar. Horizontal flex so the cert
+            iframe shares the row with a 280px LeaderboardCard. The cert iframe
+            owns its own fit-zoom (ResizeObserver below) so shrinking its box
+            width just makes the cert smaller — no clipping. */}
+        <div style={{ flex: 1, display: 'flex', gap: 16, minHeight: 220 }}>
         <div
           style={{
             flex: 1,
@@ -358,6 +365,17 @@ export function CertificationPage() {
               />
             </div>
           )}
+        </div>
+          <div style={{ flex: '0 0 280px', display: 'flex', flexDirection: 'column' }}>
+            <LeaderboardCard
+              fastest={leaderboard.fastest}
+              mostPrizes={leaderboard.mostPrizes}
+              totalCompletions={leaderboard.totalCompletions}
+              currentUid={currentUid()}
+              loading={leaderboard.loading}
+              error={leaderboard.error}
+            />
+          </div>
         </div>
 
         {/* Compact footer: cred-id note + bookend credits, single horizontal row */}

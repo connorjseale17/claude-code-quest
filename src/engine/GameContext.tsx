@@ -67,6 +67,18 @@ export type GameState = {
   /** Sticky flag: has the player ever seen the Origin Splash? Persisted to
    *  localStorage so returning Quest players skip straight to gameplay. */
   originSeen: boolean;
+  /** Firestore doc id for the current run. Null until recordRunStart resolves. */
+  runId: string | null;
+  /** Date.now() ms epoch when SELECT_TRACK fired. Null before a run starts. */
+  runStartedAt: number | null;
+  /** Date.now() ms when the most-recent pause began. Null when not paused. */
+  runPausedAt: number | null;
+  /** Cumulative paused ms across the run. Subtracted from elapsed at finish. */
+  runPausedElapsedMs: number;
+  /** Per-level completion timestamps (Date.now() ms). Stamped on level exit. */
+  levelsCompletedAt: Partial<Record<LevelId, number>>;
+  /** Per-prize unlock timestamps (Date.now() ms), keyed by prize id. */
+  prizesUnlockedAt: Record<string, number>;
 };
 
 const initialChamberState: ChamberState = {
@@ -96,6 +108,34 @@ const startLevel: LevelId = 'orientation';
 const startLevelCfg = LEVEL_CONFIGS[startLevel];
 const startChamber: ChamberId = startLevelCfg.startingChamber;
 const startChamberCfg = startLevelCfg.chambers[startChamber];
+
+type SavedRun = Partial<{
+  runId: string | null;
+  runStartedAt: number | null;
+  runPausedElapsedMs: number;
+  levelsCompletedAt: Partial<Record<LevelId, number>>;
+  prizesUnlockedAt: Record<string, number>;
+}>;
+
+const savedRun: SavedRun = (() => {
+  try {
+    const raw = localStorage.getItem('ccq-run');
+    if (raw) return JSON.parse(raw) as SavedRun;
+  } catch { /* ignore */ }
+  return {};
+})();
+
+function persistRun(state: GameState): void {
+  try {
+    localStorage.setItem('ccq-run', JSON.stringify({
+      runId: state.runId,
+      runStartedAt: state.runStartedAt,
+      runPausedElapsedMs: state.runPausedElapsedMs,
+      levelsCompletedAt: state.levelsCompletedAt,
+      prizesUnlockedAt: state.prizesUnlockedAt,
+    }));
+  } catch { /* ignore */ }
+}
 
 export const initialState: GameState = {
   gamePhase: 'boot',
@@ -153,6 +193,12 @@ export const initialState: GameState = {
       return false;
     }
   })(),
+  runId: savedRun.runId ?? null,
+  runStartedAt: savedRun.runStartedAt ?? null,
+  runPausedAt: null,
+  runPausedElapsedMs: savedRun.runPausedElapsedMs ?? 0,
+  levelsCompletedAt: savedRun.levelsCompletedAt ?? {},
+  prizesUnlockedAt: savedRun.prizesUnlockedAt ?? {},
 };
 
 export type GameAction =
@@ -180,7 +226,8 @@ export type GameAction =
   | { type: 'SELECT_TRACK'; track: Track; levelId: LevelId; chamberId: ChamberId; spawnX: number; spawnY: number }
   | { type: 'DISMISS_TWIC_ISSUE_INTRO' }
   | { type: 'DISMISS_ORIGIN' }
-  | { type: 'DISMISS_WRAP_UP' };
+  | { type: 'DISMISS_WRAP_UP' }
+  | { type: 'SET_RUN_ID'; runId: string };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -276,12 +323,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'DISMISS_INTRO':
       return { ...state, showIntro: false };
-    case 'GAME_OVER':
+    case 'GAME_OVER': {
       // Quest path → wrap-up + certification flow. TWiC path → stamp screen
       // (handled by gameOver in App.tsx via currentTrack switch).
-      return state.currentTrack === 'quest'
-        ? { ...state, gameOver: true, gamePhase: 'wrapUp' }
-        : { ...state, gameOver: true, gamePhase: 'gameOver' };
+      const finalLvl = state.levels[state.currentLevel];
+      const levelsCompletedAt = finalLvl.challengePassed && !state.levelsCompletedAt[state.currentLevel]
+        ? { ...state.levelsCompletedAt, [state.currentLevel]: Date.now() }
+        : state.levelsCompletedAt;
+      const next: GameState = state.currentTrack === 'quest'
+        ? { ...state, gameOver: true, gamePhase: 'wrapUp', levelsCompletedAt }
+        : { ...state, gameOver: true, gamePhase: 'gameOver', levelsCompletedAt };
+      if (levelsCompletedAt !== state.levelsCompletedAt) persistRun(next);
+      return next;
+    }
     case 'DEV_WARP_LEVEL': {
       const cfg = LEVEL_CONFIGS[action.levelId];
       const chamberId = cfg.startingChamber;
@@ -316,8 +370,23 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         activePanel: null,
       };
     }
-    case 'TOGGLE_PAUSE':
-      return { ...state, paused: !state.paused };
+    case 'TOGGLE_PAUSE': {
+      const now = Date.now();
+      if (state.paused) {
+        const pausedFor = state.runPausedAt ? now - state.runPausedAt : 0;
+        const next: GameState = {
+          ...state,
+          paused: false,
+          runPausedAt: null,
+          runPausedElapsedMs: state.runPausedElapsedMs + pausedFor,
+        };
+        persistRun(next);
+        return next;
+      }
+      const next: GameState = { ...state, paused: true, runPausedAt: now };
+      persistRun(next);
+      return next;
+    }
     case 'START_LEVEL_TRANSITION':
       return {
         ...state,
@@ -338,7 +407,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         t.levelId === 'orientation' &&
         state.currentTrack === 'quest' &&
         !state.originSeen;
-      return {
+      // Stamp the level we're leaving as completed if both flags are true
+      // and we haven't already stamped it (idempotent for replays).
+      const leavingLevel = state.currentLevel;
+      const leavingLvl = state.levels[leavingLevel];
+      const isLeavingComplete = leavingLvl.challengePassed && leavingLvl.keyCollected;
+      const levelsCompletedAt = isLeavingComplete && !state.levelsCompletedAt[leavingLevel]
+        ? { ...state.levelsCompletedAt, [leavingLevel]: Date.now() }
+        : state.levelsCompletedAt;
+      const next: GameState = {
         ...state,
         gamePhase: showOrigin ? 'origin' : 'playing',
         currentLevel: t.levelId,
@@ -353,7 +430,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         // arm it immediately as before.
         showIntro: !showOrigin,
         twicIssueShown: showTwicIssue || state.twicIssueShown,
+        levelsCompletedAt,
       };
+      if (levelsCompletedAt !== state.levelsCompletedAt) persistRun(next);
+      return next;
     }
     case 'SET_PLAYER': {
       const player = { name: action.name, botColor: action.botColor };
@@ -363,8 +443,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'UNLOCK_PRIZE': {
       if (state.prizesUnlocked.includes(action.prizeId)) return state;
       const prizesUnlocked = [...state.prizesUnlocked, action.prizeId];
+      const prizesUnlockedAt = { ...state.prizesUnlockedAt, [action.prizeId]: Date.now() };
       try { localStorage.setItem('ccq-prizes', JSON.stringify(prizesUnlocked)); } catch {}
-      return { ...state, prizesUnlocked };
+      const next: GameState = { ...state, prizesUnlocked, prizesUnlockedAt };
+      persistRun(next);
+      return next;
     }
     case 'MARK_LESSON_COMPLETED': {
       if (state.lessonsCompleted.includes(action.npcId)) return state;
@@ -386,11 +469,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELECT_TRACK': {
       // Path-select screen dispatches this to queue the chosen track's loading
       // transition. The track flag governs end-screen routing and any
-      // track-specific UI (Issue Intro overlay, stamp screen).
-      return {
+      // track-specific UI (Issue Intro overlay, stamp screen). Also resets the
+      // run clock — Date.now() at this moment is the start-of-run timestamp.
+      const next: GameState = {
         ...state,
         gamePhase: 'loading',
         currentTrack: action.track,
+        runId: null,
+        runStartedAt: Date.now(),
+        runPausedAt: null,
+        runPausedElapsedMs: 0,
+        levelsCompletedAt: {},
+        prizesUnlockedAt: {},
         pendingLevelTransition: {
           levelId: action.levelId,
           chamberId: action.chamberId,
@@ -398,6 +488,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           spawnY: action.spawnY,
         },
       };
+      persistRun(next);
+      return next;
+    }
+    case 'SET_RUN_ID': {
+      const next: GameState = { ...state, runId: action.runId };
+      persistRun(next);
+      return next;
     }
     case 'DISMISS_TWIC_ISSUE_INTRO':
       return { ...state, twicIssueShown: false };

@@ -3,9 +3,13 @@ import { PixelSprite } from './PixelSprite';
 import { useGame } from '../engine/GameContext';
 import { LEVEL_CONFIGS, type LevelId } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
+import { LeaderboardCard } from './LeaderboardCard';
+import { useLeaderboard } from '../hooks/useLeaderboard';
+import { currentUid } from '../lib/firebase';
 
 export function EndScreen() {
   const state = useGame();
+  const { fastest, mostPrizes, totalCompletions, loading, error } = useLeaderboard();
 
   // Quest end-screen only counts Quest levels. TWiC has its own stamp screen
   // and doesn't roll up trophies/lessons here.
@@ -119,6 +123,15 @@ export function EndScreen() {
             })}
           </div>
         )}
+
+        <LeaderboardCard
+          fastest={fastest}
+          mostPrizes={mostPrizes}
+          totalCompletions={totalCompletions}
+          currentUid={currentUid()}
+          loading={loading}
+          error={error}
+        />
       </div>
 
       <div style={{ color: '#7D7D7D', fontSize: 13, textAlign: 'center' }}>

@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
-import { useGameDispatch } from '../engine/GameContext';
+import { useCallback, useEffect, useRef } from 'react';
+import { useGame, useGameDispatch } from '../engine/GameContext';
 import { TypewriterSplash, type TypewriterSection } from './TypewriterSplash';
+import { recordRunFinish } from '../lib/tracking';
 
 /**
  * The wrap-up bookend to the Origin Splash. Plays after Level 6's boss falls,
@@ -40,8 +41,29 @@ const WRAPUP_SECTIONS: TypewriterSection[] = [
 ];
 
 export function WrapUpSplash() {
+  const state = useGame();
   const dispatch = useGameDispatch();
   const advance = useCallback(() => dispatch({ type: 'DISMISS_WRAP_UP' }), [dispatch]);
+
+  // Fire the Firestore finish-write on mount, not on advance — gives the
+  // network the full splash duration to settle so the leaderboard query on the
+  // cert page sees this player's row. Idempotent guard for StrictMode + the
+  // possibility of re-mount on phase toggle.
+  const writtenRef = useRef(false);
+  useEffect(() => {
+    if (writtenRef.current) return;
+    if (!state.runId || !state.runStartedAt) return;
+    writtenRef.current = true;
+    const elapsed_ms = Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs);
+    const levels = Object.entries(state.levelsCompletedAt)
+      .filter(([, t]) => typeof t === 'number')
+      .map(([id, t]) => ({ id, completed_at: t as number }));
+    const prizes = Object.entries(state.prizesUnlockedAt)
+      .map(([id, t]) => ({ id, unlocked_at: t }));
+    void recordRunFinish({ runId: state.runId, elapsed_ms, levels, prizes });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <TypewriterSplash
       sections={WRAPUP_SECTIONS}

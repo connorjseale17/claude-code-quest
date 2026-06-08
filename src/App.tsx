@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GameProvider, useGame } from './engine/GameContext';
+import { ensureAnonAuth } from './lib/firebase';
 import { useMovement } from './engine/useMovement';
 import { DevMenu } from './components/DevMenu';
 import { LEVEL_CONFIGS } from './engine/roomConfigs';
@@ -155,6 +156,10 @@ function PhaseRouter() {
 
 export default function App() {
   const scale = useScale();
+
+  // Boot Firebase anonymous auth once on mount. Fire-and-forget — components
+  // that need UID call ensureAnonAuth() themselves and share the same promise.
+  useEffect(() => { void ensureAnonAuth().catch(() => {}); }, []);
 
   return (
     <GameProvider>

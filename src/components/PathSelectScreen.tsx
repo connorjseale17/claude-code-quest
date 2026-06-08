@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useGameDispatch } from '../engine/GameContext';
+import { useGame, useGameDispatch } from '../engine/GameContext';
 import { LEVEL_CONFIGS } from '../engine/roomConfigs';
 import { TerminalFrame, Cursor } from './TerminalFrame';
 import { TWIC_ISSUE_INTRO } from '../content/twic-issue';
+import { recordRunStart } from '../lib/tracking';
 
 type Choice = 'quest' | 'twic';
 
@@ -13,6 +14,7 @@ type Choice = 'quest' | 'twic';
  * SELECT_TRACK with the right start-level info, which transitions to 'loading'.
  */
 export function PathSelectScreen() {
+  const { player } = useGame();
   const dispatch = useGameDispatch();
   const [focused, setFocused] = useState<Choice>('quest');
 
@@ -28,6 +30,12 @@ export function PathSelectScreen() {
         spawnX: chamber.spawnX,
         spawnY: chamber.spawnY,
       });
+      // Fire-and-forget: kick off the Firestore run-start write. The returned
+      // runId arrives async; SET_RUN_ID stamps it onto state for the eventual
+      // recordRunFinish call on WrapUpSplash mount. Quest-only — TWiC is
+      // intentionally untracked.
+      void recordRunStart({ handle: player.name || 'operator', colorIdx: 0 })
+        .then(runId => { if (runId) dispatch({ type: 'SET_RUN_ID', runId }); });
     } else {
       const cfg = LEVEL_CONFIGS['twic-1'];
       const chamber = cfg.chambers[cfg.startingChamber];
