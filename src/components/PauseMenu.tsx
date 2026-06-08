@@ -2,6 +2,7 @@ import { useGame, useGameDispatch } from '../engine/GameContext';
 import { LEVEL_CONFIGS, type LevelConfig } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
 import { Cursor } from './TerminalFrame';
+import { useRunTimer, formatRunTime } from '../hooks/useRunTimer';
 
 function getObjective(
   level: LevelConfig,
@@ -24,6 +25,7 @@ function getObjective(
 export function PauseMenu() {
   const state = useGame();
   const dispatch = useGameDispatch();
+  const elapsed = useRunTimer();
   if (!state.paused) return null;
 
   const level = LEVEL_CONFIGS[state.currentLevel];
@@ -62,6 +64,12 @@ export function PauseMenu() {
 
   const numLabel = String(level.number).padStart(2, '0');
 
+  // Run-wide stats — Quest only. TWiC has no tracked run.
+  const showRunStats = state.currentTrack === 'quest' && state.runStartedAt !== null;
+  const levelsCompletedCount = Object.keys(state.levelsCompletedAt).length;
+  const prizesEarnedCount = state.prizesUnlocked.length;
+  const lessonsLearnedCount = state.lessonsCompleted.length;
+
   return (
     <div
       className="absolute inset-0 z-40 flex items-center justify-center"
@@ -87,9 +95,37 @@ export function PauseMenu() {
         <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
           LEVEL {numLabel} · {level.title}
         </div>
-        <div style={{ color: '#7D7D7D', fontSize: 13, marginBottom: 22 }}>
+        <div style={{ color: '#7D7D7D', fontSize: 13, marginBottom: showRunStats ? 18 : 22 }}>
           chamber: <span style={{ color: '#E8E8E8' }}>{chamber.name}</span>
         </div>
+
+        {showRunStats && (
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ color: accent, fontSize: 11, letterSpacing: '0.08em', marginBottom: 6 }}>
+              RUN STATS
+            </div>
+            <div style={{
+              paddingLeft: 12,
+              display: 'grid',
+              gridTemplateColumns: 'auto 1fr',
+              columnGap: 10,
+              rowGap: 4,
+              fontSize: 13,
+              alignItems: 'baseline',
+            }}>
+              <span style={{ color: '#7D7D7D' }}>elapsed:</span>
+              <span style={{ color: '#E8E8E8', fontWeight: 700, letterSpacing: '0.06em' }}>
+                {formatRunTime(elapsed)}
+              </span>
+              <span style={{ color: '#7D7D7D' }}>levels done:</span>
+              <span style={{ color: accent }}>{levelsCompletedCount}/7</span>
+              <span style={{ color: '#7D7D7D' }}>prizes earned:</span>
+              <span style={{ color: accent }}>{prizesEarnedCount}</span>
+              <span style={{ color: '#7D7D7D' }}>lessons:</span>
+              <span style={{ color: accent }}>{lessonsLearnedCount}</span>
+            </div>
+          </div>
+        )}
 
         <div style={{ marginBottom: 22 }}>
           <div style={{ color: accent, fontSize: 11, letterSpacing: '0.08em', marginBottom: 6 }}>

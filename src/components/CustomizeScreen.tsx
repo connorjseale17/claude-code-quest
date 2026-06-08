@@ -2,17 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useGame, useGameDispatch } from '../engine/GameContext';
 import { TerminalFrame, Cursor } from './TerminalFrame';
 import { BotIdle } from './PixelSprite';
-
-const COLORS = [
-  { hex: '#E8633D', label: 'orange' },
-  { hex: '#3FB950', label: 'green' },
-  { hex: '#6BA8DD', label: 'blue' },
-  { hex: '#D94DFF', label: 'purple' },
-  { hex: '#F0C040', label: 'gold' },
-  { hex: '#FF6B8A', label: 'pink' },
-  { hex: '#00D4AA', label: 'teal' },
-  { hex: '#E8E8E8', label: 'white' },
-];
+import { COLORS } from '../lib/palette';
 
 export function CustomizeScreen() {
   const { player } = useGame();

@@ -4,6 +4,7 @@ import { LEVEL_CONFIGS } from '../engine/roomConfigs';
 import { TerminalFrame, Cursor } from './TerminalFrame';
 import { TWIC_ISSUE_INTRO } from '../content/twic-issue';
 import { recordRunStart } from '../lib/tracking';
+import { colorIdxFromHex } from '../lib/palette';
 
 type Choice = 'quest' | 'twic';
 
@@ -34,7 +35,8 @@ export function PathSelectScreen() {
       // runId arrives async; SET_RUN_ID stamps it onto state for the eventual
       // recordRunFinish call on WrapUpSplash mount. Quest-only — TWiC is
       // intentionally untracked.
-      void recordRunStart({ handle: player.name || 'operator', colorIdx: 0 })
+      const colorIdx = colorIdxFromHex(player.botColor);
+      void recordRunStart({ handle: player.name || 'operator', colorIdx })
         .then(runId => { if (runId) dispatch({ type: 'SET_RUN_ID', runId }); });
     } else {
       const cfg = LEVEL_CONFIGS['twic-1'];

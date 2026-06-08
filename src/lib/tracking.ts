@@ -110,14 +110,14 @@ export async function fetchLeaderboards(): Promise<{
       runsCol,
       where('finished', '==', true),
       orderBy('elapsed_ms', 'asc'),
-      limit(5),
+      limit(7),
     );
     const mostPrizesQ = query(
       runsCol,
       where('finished', '==', true),
       orderBy('prizes_total', 'desc'),
       orderBy('elapsed_ms', 'asc'),
-      limit(5),
+      limit(7),
     );
 
     const [fastestSnap, mostPrizesSnap, metaSnap] = await Promise.all([

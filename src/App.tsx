@@ -30,6 +30,7 @@ import { TwicStampScreen } from './components/TwicStampScreen';
 import { OriginSplash } from './components/OriginSplash';
 import { WrapUpSplash } from './components/WrapUpSplash';
 import { CertificationPage } from './components/CertificationPage';
+import { RunTimerHUD } from './components/RunTimerHUD';
 
 const BASE_W = 960;
 const BASE_H = 640;
@@ -77,6 +78,7 @@ function GameScreen({ onDevToggle }: { onDevToggle: () => void }) {
       <div className="cc-fade-in flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
           <Room />
+          <RunTimerHUD />
           {state.activePanel?.type === 'challenge' && (
             CONTENT[state.currentLevel].battle ? <BossBattle /> : <ChallengeTerminal />
           )}

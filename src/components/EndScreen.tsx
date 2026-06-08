@@ -131,6 +131,10 @@ export function EndScreen() {
           currentUid={currentUid()}
           loading={loading}
           error={error}
+          currentRun={state.runStartedAt !== null ? {
+            elapsed_ms: Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs),
+            prizes_total: state.prizesUnlocked.length,
+          } : undefined}
         />
       </div>
 

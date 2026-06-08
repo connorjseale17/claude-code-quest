@@ -374,6 +374,10 @@ export function CertificationPage() {
               currentUid={currentUid()}
               loading={leaderboard.loading}
               error={leaderboard.error}
+              currentRun={state.runStartedAt !== null ? {
+                elapsed_ms: Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs),
+                prizes_total: state.prizesUnlocked.length,
+              } : undefined}
             />
           </div>
         </div>

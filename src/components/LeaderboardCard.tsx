@@ -1,3 +1,5 @@
+import { colorHexFromIdx } from '../lib/palette';
+
 type LeaderboardRow = {
   runId: string;
   handle: string;
@@ -14,6 +16,10 @@ interface LeaderboardCardProps {
   currentUid: string | null;
   loading: boolean;
   error: boolean;
+  /** Current player's in-flight or just-finished run stats. When present,
+   *  renders a "your run" footer line so the player always sees where they
+   *  stand even if they didn't make top 7. */
+  currentRun?: { elapsed_ms: number; prizes_total: number };
 }
 
 const CARD_STYLE = {
@@ -34,22 +40,24 @@ const SUBSECTION_STYLE = {
   color: '#7D7D7D',
   fontSize: 10,
   letterSpacing: '0.10em',
-  marginTop: 8,
+  marginTop: 10,
   marginBottom: 4,
 } as const;
 
 const ROW_STYLE = {
   fontSize: 12,
-  lineHeight: 1.8,
+  lineHeight: 1.7,
   color: '#E8E8E8',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
   overflow: 'hidden',
-  textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
 } as const;
 
 const EMPTY_ROW_STYLE = {
   fontSize: 12,
-  lineHeight: 1.8,
+  lineHeight: 1.7,
   color: '#3A3A3A',
 } as const;
 
@@ -61,6 +69,14 @@ const FOOTER_STYLE = {
   fontSize: 11,
 } as const;
 
+const YOU_LINE_STYLE = {
+  marginTop: 8,
+  paddingTop: 6,
+  borderTop: '1px dashed #1F1F1F',
+  fontSize: 11,
+  color: '#7D7D7D',
+} as const;
+
 function formatTime(ms: number): string {
   const mins = Math.floor(ms / 60000);
   const secs = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0');
@@ -68,7 +84,23 @@ function formatTime(ms: number): string {
 }
 
 function truncateHandle(handle: string): string {
-  return handle.length > 12 ? handle.slice(0, 12) : handle;
+  return handle.length > 11 ? handle.slice(0, 11) : handle;
+}
+
+function ColorChip({ colorIdx }: { colorIdx: number }) {
+  return (
+    <span
+      aria-hidden
+      style={{
+        display: 'inline-block',
+        width: 8,
+        height: 8,
+        background: colorHexFromIdx(colorIdx),
+        flex: '0 0 8px',
+        marginRight: 2,
+      }}
+    />
+  );
 }
 
 function renderRow(
@@ -78,12 +110,11 @@ function renderRow(
   showPrizes: boolean,
 ) {
   const isCurrent = currentUid !== null && row.uid === currentUid;
-  const prefix = isCurrent ? '> ' : '  ';
   const handle = truncateHandle(row.handle);
   const time = formatTime(row.elapsed_ms);
-  const body = showPrizes
-    ? `${idx + 1}. ${handle} · ${row.prizes_total} · ${time}`
-    : `${idx + 1}. ${handle} · ${time}`;
+  const tail = showPrizes
+    ? `${row.prizes_total} · ${time}`
+    : time;
   return (
     <div
       key={row.runId}
@@ -92,8 +123,16 @@ function renderRow(
         color: isCurrent ? '#FFD700' : '#E8E8E8',
       }}
     >
-      {prefix}
-      {body}
+      <span style={{ width: 14, color: isCurrent ? '#FFD700' : '#7D7D7D' }}>
+        {isCurrent ? '>' : ' '}{idx + 1}
+      </span>
+      <ColorChip colorIdx={row.colorIdx} />
+      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {handle}
+      </span>
+      <span style={{ color: isCurrent ? '#FFD700' : '#9A9A9A' }}>
+        {tail}
+      </span>
     </div>
   );
 }
@@ -112,8 +151,8 @@ function renderList(
 function renderSkeleton() {
   return (
     <>
-      {[0, 1, 2, 3, 4].map(i => (
-        <div key={i} style={{ ...ROW_STYLE, color: '#3A3A3A' }}>
+      {[0, 1, 2].map(i => (
+        <div key={i} style={{ ...ROW_STYLE, color: '#2A2A2A' }}>
           ──────
         </div>
       ))}
@@ -124,7 +163,7 @@ function renderSkeleton() {
 function renderErrorRows() {
   return (
     <>
-      {[0, 1, 2, 3, 4].map(i => (
+      {[0, 1, 2].map(i => (
         <div key={i} style={EMPTY_ROW_STYLE}>
           —
         </div>
@@ -140,6 +179,7 @@ export function LeaderboardCard({
   currentUid,
   loading,
   error,
+  currentRun,
 }: LeaderboardCardProps) {
   const headerText = error ? 'LEADERBOARD · OFFLINE' : 'LEADERBOARD';
 
@@ -149,7 +189,7 @@ export function LeaderboardCard({
   } else if (error) {
     footerText = "couldn't reach leaderboard";
   } else {
-    footerText = `${totalCompletions} operators have finished`;
+    footerText = `${totalCompletions} operator${totalCompletions === 1 ? '' : 's'} finished`;
   }
 
   return (
@@ -169,6 +209,19 @@ export function LeaderboardCard({
         : error
           ? renderErrorRows()
           : renderList(mostPrizes, currentUid, true)}
+
+      {currentRun && (
+        <div style={YOU_LINE_STYLE}>
+          your run:{' '}
+          <span style={{ color: '#FFD700' }}>
+            {formatTime(currentRun.elapsed_ms)}
+          </span>
+          {' · '}
+          <span style={{ color: '#FFD700' }}>
+            {currentRun.prizes_total} prize{currentRun.prizes_total === 1 ? '' : 's'}
+          </span>
+        </div>
+      )}
 
       <div style={FOOTER_STYLE}>{footerText}</div>
     </div>
