@@ -180,6 +180,15 @@ export function PracticeTerminal() {
       b => pendingMiss.wrongIds.has(b.id) && selections[b.id],
     );
 
+  // The correct chip for each blank the player just got wrong — revealed in the
+  // MISS banner so they learn the answer instead of guessing blindly.
+  const missedAnswers = pendingMiss
+    ? practice.blanks
+        .filter(b => pendingMiss.wrongIds.has(b.id) && typeof b.correctIndex === 'number')
+        .map(b => b.suggestions[b.correctIndex as number])
+        .filter((s): s is string => Boolean(s))
+    : [];
+
   return (
     <RetroChassis
       variant="lab"
@@ -225,6 +234,20 @@ export function PracticeTerminal() {
                     Re-pick the chips marked <span style={{ color: MISS_RED, fontWeight: 700 }}>✗</span>.
                     Your correct picks (<span style={{ color: HIT_GREEN, fontWeight: 700 }}>✓</span>) are locked in.
                   </div>
+                  {missedAnswers.length > 0 && (
+                    <div style={{
+                      marginTop: 10,
+                      paddingTop: 10,
+                      borderTop: '1px dashed rgba(248,81,73,0.25)',
+                      fontSize: 13,
+                      color: '#E8E8E8',
+                    }}>
+                      <span style={{ color: HIT_GREEN, fontWeight: 700 }}>
+                        correct answer{missedAnswers.length > 1 ? 's' : ''}:{' '}
+                      </span>
+                      {missedAnswers.join('  ·  ')}
+                    </div>
+                  )}
                 </div>
               )}
             </>

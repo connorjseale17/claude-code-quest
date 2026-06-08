@@ -1,15 +1,29 @@
+import { useMemo } from 'react';
 import { Cursor } from './TerminalFrame';
 import { PixelSprite } from './PixelSprite';
-import { useGame } from '../engine/GameContext';
+import { useGame, useGameDispatch } from '../engine/GameContext';
 import { LEVEL_CONFIGS, type LevelId } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
 import { LeaderboardCard } from './LeaderboardCard';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { currentUid } from '../lib/firebase';
+import { PlayAgainButton } from './PlayAgainButton';
 
 export function EndScreen() {
   const state = useGame();
-  const { fastest, mostPrizes, totalCompletions, loading, error } = useLeaderboard();
+  const dispatch = useGameDispatch();
+  // Freeze elapsed once on mount so the rank query doesn't refetch in a loop.
+  const finalElapsedMs = useMemo(
+    () => (state.runStartedAt != null
+      ? Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs)
+      : 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+  const hasRun = state.runStartedAt != null;
+  const prizesTotal = state.prizesUnlocked.length;
+  const { fastest, mostPrizes, totalCompletions, speedRank, prizesRank, loading, error } =
+    useLeaderboard(hasRun ? finalElapsedMs : undefined, hasRun ? prizesTotal : undefined);
 
   // Quest end-screen only counts Quest levels. TWiC has its own stamp screen
   // and doesn't roll up trophies/lessons here.
@@ -131,12 +145,16 @@ export function EndScreen() {
           currentUid={currentUid()}
           loading={loading}
           error={error}
-          currentRun={state.runStartedAt !== null ? {
-            elapsed_ms: Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs),
-            prizes_total: state.prizesUnlocked.length,
+          currentRun={hasRun ? {
+            elapsed_ms: finalElapsedMs,
+            prizes_total: prizesTotal,
+            speedRank,
+            prizesRank,
           } : undefined}
         />
       </div>
+
+      <PlayAgainButton accent="#E8633D" onClick={() => dispatch({ type: 'RESTART_RUN' })} />
 
       <div style={{ color: '#7D7D7D', fontSize: 13, textAlign: 'center' }}>
         <span style={{ color: '#E8633D' }}>{'>'}</span> built entirely with claude code · thanks for playing

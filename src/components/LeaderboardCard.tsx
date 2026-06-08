@@ -18,8 +18,14 @@ interface LeaderboardCardProps {
   error: boolean;
   /** Current player's in-flight or just-finished run stats. When present,
    *  renders a "your run" footer line so the player always sees where they
-   *  stand even if they didn't make top 7. */
-  currentRun?: { elapsed_ms: number; prizes_total: number };
+   *  stand even if they didn't make top 7. speedRank/prizesRank, when set,
+   *  show the run's global placement (e.g. "#4 fastest"). */
+  currentRun?: {
+    elapsed_ms: number;
+    prizes_total: number;
+    speedRank?: number | null;
+    prizesRank?: number | null;
+  };
 }
 
 const CARD_STYLE = {
@@ -212,14 +218,33 @@ export function LeaderboardCard({
 
       {currentRun && (
         <div style={YOU_LINE_STYLE}>
-          your run:{' '}
-          <span style={{ color: '#FFD700' }}>
-            {formatTime(currentRun.elapsed_ms)}
-          </span>
-          {' · '}
-          <span style={{ color: '#FFD700' }}>
-            {currentRun.prizes_total} prize{currentRun.prizes_total === 1 ? '' : 's'}
-          </span>
+          <div>
+            your run:{' '}
+            <span style={{ color: '#FFD700' }}>
+              {formatTime(currentRun.elapsed_ms)}
+            </span>
+            {' · '}
+            <span style={{ color: '#FFD700' }}>
+              {currentRun.prizes_total} prize{currentRun.prizes_total === 1 ? '' : 's'}
+            </span>
+          </div>
+          {(currentRun.speedRank != null || currentRun.prizesRank != null) && (
+            <div style={{ marginTop: 2 }}>
+              {currentRun.speedRank != null && (
+                <span style={{ color: '#9A9A9A' }}>
+                  #{currentRun.speedRank} fastest
+                </span>
+              )}
+              {currentRun.speedRank != null && currentRun.prizesRank != null && (
+                <span style={{ color: '#3A3A3A' }}> · </span>
+              )}
+              {currentRun.prizesRank != null && (
+                <span style={{ color: '#9A9A9A' }}>
+                  #{currentRun.prizesRank} prizes
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
 

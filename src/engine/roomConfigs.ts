@@ -74,6 +74,15 @@ export type DecorationConfig = {
   sprite: string;
   /** Optional color override applied to palette key '1' */
   tint?: string;
+  /**
+   * Whether this decoration blocks movement onto its tile.
+   * - If set explicitly, that wins.
+   * - If omitted, collision falls back to a sprite heuristic: flat floor/wall
+   *   decals (puddles, paper, bones, runes…) stay walkable; everything else
+   *   (furniture, crates, braziers, bookshelves…) is solid. See
+   *   isDecorationSolid in collision.ts.
+   */
+  solid?: boolean;
 };
 
 export type ItemConfig = {

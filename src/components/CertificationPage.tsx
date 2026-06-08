@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useGame } from '../engine/GameContext';
+import { useGame, useGameDispatch } from '../engine/GameContext';
 import { TerminalFrame, Cursor } from './TerminalFrame';
 import { CREDITS } from '../credits';
 import { LeaderboardCard } from './LeaderboardCard';
@@ -71,7 +71,22 @@ function safeFilenameStem(name: string): string {
 
 export function CertificationPage() {
   const state = useGame();
-  const leaderboard = useLeaderboard();
+  const dispatch = useGameDispatch();
+  // The run is already finished here, so freeze its elapsed time once on mount
+  // (a fresh Date.now() each render would refetch the rank in a loop).
+  const finalElapsedMs = useMemo(
+    () => (state.runStartedAt != null
+      ? Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs)
+      : 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+  const hasRun = state.runStartedAt != null;
+  const prizesTotal = state.prizesUnlocked.length;
+  const leaderboard = useLeaderboard(
+    hasRun ? finalElapsedMs : undefined,
+    hasRun ? prizesTotal : undefined,
+  );
   const [template, setTemplate] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [name, setName] = useState<string>(state.player.name || '');
@@ -127,54 +142,28 @@ export function CertificationPage() {
       /<title>[^<]*<\/title>/,
       `<title>claude-code-quest-certificate-${titleStem}</title>`,
     );
-    // Inject CSS that does two things:
-    //   1. Screen: scale the cert down via CSS zoom so the full landscape
-    //      design fits inside the preview iframe instead of being cut off
-    //      on the right. The dynamic zoom is applied imperatively after the
-    //      iframe loads (see the useEffect below); this static fallback
-    //      handles the brief flash before measurement.
-    //   2. Print: pin @page to landscape Letter (11in × 8.5in) with zero
-    //      margin and reset zoom to 1 so the printed PDF renders at full
-    //      design fidelity in landscape, not portrait.
-    out = out.replace(
-      '</head>',
-      `<style>
-        @media screen {
-          /* html is a flex box that fills the iframe and centers the body.
-             body is scaled via transform (set by JS) — transform respects
-             transform-origin:center, unlike zoom which always shrinks toward
-             the top-left corner. That corner-shrink was why the cert looked
-             'stuck to the bottom' before. */
-          html {
-            margin: 0 !important; padding: 0 !important;
-            width: 100% !important; height: 100% !important;
-            overflow: hidden !important; background: #fff !important;
-            display: flex !important; align-items: center !important; justify-content: center !important;
-          }
-          body {
-            margin: 0 !important; padding: 0 !important;
-            background: #fff !important;
-            transform: scale(0.5);
-            transform-origin: center center !important;
-          }
-        }
-        @media print {
-          @page { size: 11in 8.5in; margin: 0; }
-          html { display: block !important; }
-          body { transform: none !important; }
-          html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; }
-        }
-      </style></head>`,
-    );
+    // NOTE: we deliberately DON'T inject a <style> into <head> here. The cert
+    // is a self-unpacking bundle whose runtime calls
+    // `document.documentElement.replaceWith(...)` — that nukes the entire
+    // <html> (including any <style> we add) the moment it unpacks. The cert
+    // also self-handles landscape print (its own template carries
+    // `@page { size: 11in 8.5in }`). All screen fit/centering is therefore
+    // applied as INLINE styles on the post-unpack <body> in the effect below,
+    // which survive (nothing replaces the html again) and beat the cert's own
+    // stylesheet rules.
     return out;
   }, [template, name, issueDateLong, expirationDateLong, issueDateIso]);
 
-  // After the iframe is populated, measure the cert's ACTUAL content size
-  // (the cert HTML is a self-contained bundle that unpacks asynchronously, so
-  // the real size isn't known until after the bundler replaces the body) and
-  // set the cert content's CSS zoom so it fits inside the iframe with no
-  // clipping. Re-runs on iframe load, on every container resize, AND on every
-  // DOM mutation inside the iframe (the bundler swap is one such mutation).
+  // Fit + center the unpacked cert inside the preview pane. The cert is a
+  // 1200x800-ish fixed design that unpacks asynchronously via a bundler that
+  // REPLACES document.documentElement. Two consequences shape this code:
+  //   1. We must observe the DOCUMENT node (not body/documentElement) so the
+  //      observer survives the replaceWith and re-fits once the real cert lands.
+  //   2. We apply sizing as inline styles on the post-unpack <body>: neutralize
+  //      its min-height:100vh (which fights centering), make <html> a flex box
+  //      that centers <body>, and transform:scale() the body to fit. transform
+  //      respects transform-origin:center (unlike CSS zoom, which always shrinks
+  //      toward the top-left corner — the old 'stuck to the bottom' bug).
   useEffect(() => {
     if (!populated) return;
     const iframe = iframeRef.current;
@@ -184,50 +173,66 @@ export function CertificationPage() {
     let mo: MutationObserver | null = null;
     let raf = 0;
 
-    const applyZoom = () => {
+    const applyFit = () => {
       const doc = iframe.contentDocument;
-      if (!doc?.body) return;
+      const html = doc?.documentElement;
+      const body = doc?.body;
+      if (!html || !body) return;
       const rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
-      const body = doc.body;
-      // Reset the transform BEFORE measuring so we read the cert's true,
-      // unscaled content size. html is flex-centered, so body stays at its
-      // natural content dimensions.
+
+      // Reset to a clean, measurable layout: kill any prior transform, drop the
+      // cert's min-height:100vh, and let html lay out as a plain block so
+      // body.scrollWidth/Height report the cert's true natural size.
       body.style.transform = 'none';
+      body.style.minHeight = '0';
+      body.style.margin = '0';
+      html.style.display = 'block';
+      html.style.margin = '0';
+
       const contentW = body.scrollWidth;
       const contentH = body.scrollHeight;
       if (contentW <= 0 || contentH <= 0) return;
-      // Fit the cert to the more-constrained dimension of the preview pane.
-      // Tight pad (0.98) so it nearly fills the pane.
+
       const fit = Math.min(rect.width / contentW, rect.height / contentH) * 0.98;
+
+      // Now center: html fills the iframe and flex-centers body; body is scaled
+      // about its own center so it stays put as it shrinks.
+      html.style.width = '100%';
+      html.style.height = '100%';
+      html.style.display = 'flex';
+      html.style.alignItems = 'center';
+      html.style.justifyContent = 'center';
+      html.style.overflow = 'hidden';
       body.style.transformOrigin = 'center center';
       body.style.transform = `scale(${fit})`;
     };
 
     const scheduleApply = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(applyZoom);
+      raf = requestAnimationFrame(applyFit);
+    };
+
+    const attachObserver = () => {
+      const doc = iframe.contentDocument;
+      if (!doc) return;
+      mo?.disconnect();
+      mo = new MutationObserver(scheduleApply);
+      // Observe the DOCUMENT node so we catch documentElement.replaceWith()
+      // (the bundler's swap), plus any subtree changes as the cert renders.
+      mo.observe(doc, { childList: true, subtree: true, characterData: true });
     };
 
     const onLoad = () => {
-      // The bundler unpacks asynchronously after load, so a) measure now (in
-      // case there's nothing to unpack), b) watch for the body swap and
-      // re-measure when the real content lands.
       scheduleApply();
-      const doc = iframe.contentDocument;
-      if (doc?.body) {
-        mo?.disconnect();
-        mo = new MutationObserver(scheduleApply);
-        mo.observe(doc.body, { childList: true, subtree: true, characterData: true });
-        mo.observe(doc.documentElement, { attributes: true, attributeFilter: ['style'] });
-      }
+      attachObserver();
     };
 
     iframe.addEventListener('load', onLoad);
     const ro = new ResizeObserver(scheduleApply);
     ro.observe(box);
-    // First attempt — covers the case where 'load' already fired (e.g. on
-    // re-render).
+    // Cover the case where 'load' already fired before this effect ran.
+    attachObserver();
     scheduleApply();
 
     return () => {
@@ -317,6 +322,26 @@ export function CertificationPage() {
           >
             ⤓ DOWNLOAD PDF
           </button>
+          <button
+            onClick={() => dispatch({ type: 'RESTART_RUN' })}
+            style={{
+              background: 'transparent',
+              border: '1px solid #2A2A2A',
+              color: '#9A9A9A',
+              padding: '11px 18px',
+              fontFamily: 'inherit',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.14em',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flex: '0 0 auto',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#E8633D'; e.currentTarget.style.color = '#E8E8E8'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#2A2A2A'; e.currentTarget.style.color = '#9A9A9A'; }}
+          >
+            ↻ PLAY AGAIN
+          </button>
         </div>
 
         {/* Preview area + leaderboard sidebar. Horizontal flex so the cert
@@ -350,11 +375,9 @@ export function CertificationPage() {
             </div>
           )}
           {populated && (
-            // Iframe box fills the preview area for ResizeObserver to measure,
-            // and centers the iframe inside it. The iframe itself is resized
-            // dynamically by applyZoom to exactly match the scaled cert
-            // content, so any leftover space becomes flex margin around the
-            // iframe (centered) instead of dead space inside it.
+            // Iframe box fills the preview pane (ResizeObserver measures it).
+            // The iframe fills the box; the cert INSIDE is fit + centered by
+            // applyFit (inline styles on the post-unpack body).
             <div
               ref={iframeBoxRef}
               style={{
@@ -371,8 +394,6 @@ export function CertificationPage() {
                 // walled off from the parent app. allow-same-origin so we can
                 // measure contentDocument + call print() on contentWindow.
                 sandbox="allow-scripts allow-same-origin allow-modals"
-                // Fills the preview pane; the cert inside is centered + scaled
-                // to fit via the injected CSS + applyZoom transform.
                 style={{
                   width: '100%',
                   height: '100%',
@@ -392,9 +413,11 @@ export function CertificationPage() {
               currentUid={currentUid()}
               loading={leaderboard.loading}
               error={leaderboard.error}
-              currentRun={state.runStartedAt !== null ? {
-                elapsed_ms: Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs),
-                prizes_total: state.prizesUnlocked.length,
+              currentRun={hasRun ? {
+                elapsed_ms: finalElapsedMs,
+                prizes_total: prizesTotal,
+                speedRank: leaderboard.speedRank,
+                prizesRank: leaderboard.prizesRank,
               } : undefined}
             />
           </div>

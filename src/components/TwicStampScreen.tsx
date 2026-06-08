@@ -2,15 +2,17 @@ import { LEVEL_CONFIGS } from '../engine/roomConfigs';
 import { Cursor, TerminalFrame } from './TerminalFrame';
 import { PixelSprite } from './PixelSprite';
 import { TWIC_ISSUE_INTRO } from '../content/twic-issue';
+import { useGameDispatch } from '../engine/GameContext';
+import { PlayAgainButton } from './PlayAgainButton';
 
 /**
  * Terminal end-state for the TWiC track. Player landed here by walking through
  * twic-3's `{kind:'end'}` exit. Pure stamp + date, no trophy/lesson tally (those
- * belong to the Quest). Behaves like the Quest's EndScreen — dead-end until
- * the player resets or reloads.
+ * belong to the Quest). Offers "play again" back to path-select.
  */
 export function TwicStampScreen() {
   const accent = LEVEL_CONFIGS['twic-1'].theme.accentColor;
+  const dispatch = useGameDispatch();
 
   return (
     <TerminalFrame title="this-week-in-claude --complete" accent>
@@ -58,8 +60,10 @@ export function TwicStampScreen() {
           <span style={{ color: '#E8E8E8' }}>The issue is closed. Next one drops next week.</span>
         </div>
 
-        <div style={{ color: '#7D7D7D', fontSize: 13, textAlign: 'center', marginTop: 16 }}>
-          <span style={{ color: accent }}>{'>'}</span> built with claude code · reload to start again
+        <PlayAgainButton accent={accent} onClick={() => dispatch({ type: 'RESTART_RUN' })} />
+
+        <div style={{ color: '#7D7D7D', fontSize: 13, textAlign: 'center', marginTop: 4 }}>
+          <span style={{ color: accent }}>{'>'}</span> built with claude code
           <Cursor />
         </div>
       </div>

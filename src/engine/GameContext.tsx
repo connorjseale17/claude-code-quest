@@ -227,7 +227,8 @@ export type GameAction =
   | { type: 'DISMISS_TWIC_ISSUE_INTRO' }
   | { type: 'DISMISS_ORIGIN' }
   | { type: 'DISMISS_WRAP_UP' }
-  | { type: 'SET_RUN_ID'; runId: string };
+  | { type: 'SET_RUN_ID'; runId: string }
+  | { type: 'RESTART_RUN' };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -536,6 +537,51 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Advance into the Certification Page where the player enters their
       // name and downloads the PDF.
       return { ...state, gamePhase: 'certification' };
+    }
+    case 'RESTART_RUN': {
+      // "Play again" from the certification / stamp / end screen. Wipe run
+      // progress (prizes, lessons, levels, timing) but KEEP the player's
+      // identity (name + color) and the originSeen flag, then drop them back
+      // at the path-select screen for a fresh run. Clears the run-scoped
+      // localStorage so a subsequent reload doesn't rehydrate stale progress.
+      try {
+        localStorage.removeItem('ccq-prizes');
+        localStorage.removeItem('ccq-lessons');
+        localStorage.removeItem('ccq-run');
+      } catch { /* ignore */ }
+      return {
+        ...state,
+        gamePhase: 'pathSelect',
+        currentLevel: startLevel,
+        currentChamber: startChamber,
+        gameOver: false,
+        bot: {
+          x: startChamberCfg.spawnX,
+          y: startChamberCfg.spawnY,
+          facing: 'right',
+          animation: 'idle',
+        },
+        chambers: {
+          ...seedChamberStates(),
+          [startChamber]: { ...initialChamberState, visited: true },
+        },
+        levels: seedLevelStates(),
+        activePanel: null,
+        showIntro: true,
+        paused: false,
+        pendingLevelTransition: null,
+        prizesUnlocked: [],
+        lessonsCompleted: [],
+        currentTrack: 'quest',
+        twicIssueShown: false,
+        runId: null,
+        runStartedAt: null,
+        runPausedAt: null,
+        runPausedElapsedMs: 0,
+        levelsCompletedAt: {},
+        prizesUnlockedAt: {},
+        // player + originSeen intentionally preserved.
+      };
     }
     default:
       return state;

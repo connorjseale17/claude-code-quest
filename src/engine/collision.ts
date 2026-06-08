@@ -1,5 +1,25 @@
-import type { ChamberConfig, DoorConfig } from './roomConfigs';
+import type { ChamberConfig, DoorConfig, DecorationConfig } from './roomConfigs';
 import type { LevelState } from './GameContext';
+
+/**
+ * Decoration sprites that lie FLAT on the floor or are mounted on walls —
+ * the player walks over/past these, so they never block movement. Everything
+ * NOT in this set is treated as a solid prop (furniture, crates, statues,
+ * braziers, bookshelves, etc.) unless the decoration sets `solid` explicitly.
+ */
+const WALKABLE_DECORATION_SPRITES = new Set<string>([
+  'puddle', 'paper', 'papers', 'bones', 'wall_runes', 'runes', 'rune',
+  'floor', 'floor_lever', 'mat', 'rug', 'vents', 'vent', 'grate', 'tile', 'tiles',
+  'cracked_bricks', 'crack', 'cracks', 'shadow', 'blood', 'stain', 'scroll',
+  'dust', 'ash', 'leaves', 'grass', 'water', 'decal', 'hint_token',
+  'sparkle', 'glow', 'moss', 'web', 'cobweb',
+]);
+
+/** Does this decoration block the tile it sits on? */
+export function isDecorationSolid(deco: DecorationConfig): boolean {
+  if (typeof deco.solid === 'boolean') return deco.solid;
+  return !WALKABLE_DECORATION_SPRITES.has(deco.sprite);
+}
 
 /** Is the door at (x, y) currently passable? */
 export function isDoorPassable(door: DoorConfig, levelState: LevelState): boolean {
@@ -34,6 +54,16 @@ export function canMoveTo(
 
   // NPCs block their tile
   if (chamber.npcs.some(n => n.x === x && n.y === y)) return false;
+
+  // Solid decorations (furniture, crates, braziers, bookshelves…) block their
+  // tile. Flat floor/wall decals stay walkable. A decoration sitting on the
+  // spawn tile is never solid, so the player can't be trapped at entry.
+  if (
+    !(x === chamber.spawnX && y === chamber.spawnY) &&
+    chamber.decorations.some(d => d.x === x && d.y === y && isDecorationSolid(d))
+  ) {
+    return false;
+  }
 
   // Door tile — only passable if door is passable
   const door = getDoorAt(x, y, chamber);

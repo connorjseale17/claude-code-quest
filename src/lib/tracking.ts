@@ -2,6 +2,7 @@ import {
   addDoc,
   collection,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
   increment,
@@ -138,5 +139,41 @@ export async function fetchLeaderboards(): Promise<{
   } catch (err) {
     console.warn('[tracking] fetchLeaderboards failed', err);
     return { fastest: [], mostPrizes: [], totalCompletions: 0 };
+  }
+}
+
+/**
+ * Cheap rank lookup for a finished run: counts how many finished runs beat it
+ * on each axis (faster time / more prizes) and adds 1. Uses server-side count
+ * aggregation so it's a couple of metadata reads, not a full scan. Returns
+ * null on failure so callers just hide the rank.
+ */
+export async function fetchRunRank(run: {
+  elapsed_ms: number;
+  prizes_total: number;
+}): Promise<{ speedRank: number; prizesRank: number } | null> {
+  try {
+    const runsCol = collection(db, RUNS);
+    const fasterQ = query(
+      runsCol,
+      where('finished', '==', true),
+      where('elapsed_ms', '<', run.elapsed_ms),
+    );
+    const morePrizesQ = query(
+      runsCol,
+      where('finished', '==', true),
+      where('prizes_total', '>', run.prizes_total),
+    );
+    const [fasterSnap, morePrizesSnap] = await Promise.all([
+      getCountFromServer(fasterQ),
+      getCountFromServer(morePrizesQ),
+    ]);
+    return {
+      speedRank: fasterSnap.data().count + 1,
+      prizesRank: morePrizesSnap.data().count + 1,
+    };
+  } catch (err) {
+    console.warn('[tracking] fetchRunRank failed', err);
+    return null;
   }
 }
