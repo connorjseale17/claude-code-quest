@@ -43,7 +43,13 @@ export const subagentsContent: LessonContent = {
     template:
       "Spawn a subagent of type ____ to:\n\n____\n\nContext the subagent needs (remember: it cannot see this conversation):\n- ____\n- ____\n- ____\n\nOutput I want back: ____\n\nRun it in the background and notify me when it's done.",
     blanks: [
-      { id: 'agent-type', suggestions: ['Explore', 'general-purpose', 'Plan'] },
+      // Scout-bot NPC: "I run the Explore lane." Lore ('agent-taxonomy'): Explore is the search/find
+      // specialist. All three suggested goals (research, audit, map) are find-and-return tasks — the
+      // canonical fit is Explore. 'general-purpose' is the Utility role (routine work, not deep search);
+      // 'Plan' is for architecture/build planning, not for finding things.
+      { id: 'agent-type', suggestions: ['Explore', 'general-purpose', 'Plan'], correctIndex: 0 },
+      // Judgment call: each suggestion is a valid, specific, well-scoped goal for an Explore subagent.
+      // The lesson is "name the goal in plain terms" (roster lore); any of the three demonstrates that.
       {
         id: 'goal',
         suggestions: [
@@ -52,18 +58,26 @@ export const subagentsContent: LessonContent = {
           'map every place this 500-file repo touches client billing',
         ],
       },
+      // Judgment call: each suggestion is a concrete piece of context a subagent would need handed in
+      // because it can't see this conversation. Drilling "name specific files/docs, don't assume shared
+      // context" — all three pass that test.
       {
         id: 'context-1',
         suggestions: ['the firm methodology doc', 'the list of prior engagements with this client', 'the discovery-call transcript at ./notes/2026-05-01.md'],
       },
+      // Judgment call: same reasoning as context-1 — three valid specific context items, any fits the
+      // "brief like a stranger" rule.
       {
         id: 'context-2',
         suggestions: ['the proposal template under ./templates/', 'the prototype repo', 'the relevant CLAUDE.md section'],
       },
+      // Judgment call: same reasoning — three valid specific context items.
       {
         id: 'context-3',
         suggestions: ['the firm style guide', 'past deliverables in the shared Drive folder', 'the file paths that matter'],
       },
+      // Judgment call: each is a specific, well-shaped return artifact (the roster lore's "exact shape of
+      // output you expect back"). All three demonstrate the lesson; the right one depends on the goal.
       {
         id: 'output',
         suggestions: ['a one-page markdown summary with cited bullets', 'a punch list of risks ranked by severity', 'file paths and line numbers'],

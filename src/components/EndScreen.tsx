@@ -50,7 +50,7 @@ export function EndScreen() {
       </div>
 
       <div style={{ fontSize: 14, lineHeight: 1.6, textAlign: 'center', maxWidth: 540, color: '#7D7D7D' }}>
-        You cleared the welcome antechamber, the claude.md archives, the slash registry, the MCP network, the subagent pool — and the throne room.
+        You stepped onto the orientation trail, cleared the welcome antechamber, the claude.md archives, the slash registry, the MCP network, the subagent pool — and the throne room.
         <br />
         <span style={{ color: '#E8E8E8' }}>Six bosses. One operator. The firm endures.</span>
       </div>

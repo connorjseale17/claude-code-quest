@@ -7,15 +7,15 @@ import { TypewriterSplash, type TypewriterSection } from './TypewriterSplash';
  * before the Certification Page. Same interaction model as the Origin Splash
  * (typewriter, click-to-advance, skip, fade-out exit) — see TypewriterSplash.
  *
- * Content reflects the actual curriculum across the six levels (welcome.ts,
- * claudemd.ts, slash.ts, mcp.ts, subagents.ts, final-boss.ts). If the levels
- * change later, update these strings to match — keep it true to what the game
- * actually teaches, never claim something the levels don't cover.
+ * Content reflects the actual curriculum across the seven levels (orientation.ts,
+ * welcome.ts, claudemd.ts, slash.ts, mcp.ts, subagents.ts, final-boss.ts). If
+ * the levels change later, update these strings to match — keep it true to what
+ * the game actually teaches, never claim something the levels don't cover.
  */
 const WRAPUP_SECTIONS: TypewriterSection[] = [
   {
     title: 'You Crossed It',
-    text: "You did it. Six levels, five bosses, and one final synthesis test in the throne room. You walked in not sure what Claude Code was. You're walking out with a way of working. The gap you stepped over on the title screen — between an idea and something you can actually ship — you just crossed it. Welcome to the other side.",
+    text: "You did it. Seven levels, six bosses, and one final synthesis test in the throne room. You walked in not sure what Claude Code was. You're walking out with a way of working. The gap you stepped over on the title screen — between an idea and something you can actually ship — you just crossed it. Welcome to the other side.",
   },
   {
     title: 'The Dial, The Brief, The Contract',
