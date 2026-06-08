@@ -3,35 +3,16 @@ import type { LessonContent } from './types';
 export const orientationContent: LessonContent = {
   roomId: 'orientation-trail',
   intro:
-    "You're here because you've heard about Claude Code and want to know what it actually is. Not a chatbot you talk to in a browser tab — something else. Before we teach you how to drive it, this room teaches what it IS, where it lives, and the rhythm of one real session. Talk to Init-bot at the trailhead. Read the three primers along the way. The gatekeeper at the end checks that you've actually internalized the basics before you're handed off to the operator track.",
-  prompt:
-    'A friend says: "Claude Code is basically ChatGPT for engineers — same thing, different window." You\'ve just spent five minutes here. What\'s the honest correction?',
-  choices: [
-    {
-      id: 'a',
-      label: 'They\'re right — it\'s a chatbot in a different skin.',
-      correct: false,
-    },
-    {
-      id: 'b',
-      label: 'A browser chatbot only talks. Claude Code lives in your terminal, reads and edits your real files, and runs real commands — with your approval.',
-      correct: true,
-    },
-    {
-      id: 'c',
-      label: "It's the same model but it auto-runs everything without asking.",
-      correct: false,
-    },
-    {
-      id: 'd',
-      label: "It only works if you can already code.",
-      correct: false,
-    },
-  ],
-  passFeedback:
-    '[PASS] That distinction is the whole reason this tool changes the math. Talking vs acting on real files is not a skin — it\'s the product.',
-  failFeedback:
-    '[FAIL] A chatbot only produces text you have to copy somewhere. Claude Code acts on your actual files and commands — that\'s the load-bearing difference.',
+    "You're here because you've heard about Claude Code and want to know what it actually is. Not a chatbot you talk to in a browser tab — something else. Before we teach you how to drive it, this room teaches what it IS, where it lives, and the rhythm of one real session. Talk to Init-bot at the trailhead. Read the three primers along the way. When you're ready, the path east is open — step through and the real Quest begins.",
+  // No battle in Orientation — the door east is open so a new operator can
+  // ease in without being gated by a quiz. The required prompt/choices/feedback
+  // fields below are kept as noop stubs (the rendering chain only fires them
+  // when activePanel.type === 'challenge' AND there's a challenge item to
+  // trigger it; Orientation has neither). Same pattern final-boss.ts uses.
+  prompt: '',
+  choices: [{ id: 'noop', label: 'noop', correct: true }],
+  passFeedback: '',
+  failFeedback: '',
   lore: [
     {
       id: 'what-is-it',
@@ -165,117 +146,9 @@ export const orientationContent: LessonContent = {
         },
         {
           kind: 'say',
-          text: "That's it for the orientation. Head east. The Gatekeeper of First Light blocks the way to the operator track — three questions to make sure the basics took. Answer them and the rest of the Quest opens up: permission modes, the project contract, automation, integrations, the whole stack. Good hunting, operator.",
+          text: "That's it for the orientation. Head east when you're ready — the door's open. There's no test at the end of this room; the real Quest is what teaches you to drive. Permission modes, the project contract, custom commands, integrations, multi-agent — they're all waiting through that door. Good hunting, operator.",
         },
       ],
     },
-  },
-  battle: {
-    name: 'The Gatekeeper of First Light',
-    spriteKey: 'slime',
-    maxHP: 2,
-    playerHP: 5,
-    phases: 1,
-    introLine:
-      "*the gatekeeper stirs* …you want into the operator track… fine… but I don't let confusion through. Three questions. Show me the basics took.",
-    tauntLines: [
-      "*frowns* you skimmed the lore, didn't you…",
-      "*shakes head* that's the chatbot answer. this isn't a chatbot.",
-      "*sighs* one more like that and I send you back to the trailhead…",
-    ],
-    victoryLine:
-      "*steps aside* …good. the foundation is in. the path east is yours, operator. welcome to the real Quest.",
-    questions: [
-      {
-        prompt:
-          "What's the load-bearing difference between Claude Code and a chatbot you talk to in a browser tab?",
-        choices: [
-          {
-            id: 'a',
-            label: "Claude Code uses a newer model — same job, better answers.",
-            correct: false,
-          },
-          {
-            id: 'b',
-            label: "Claude Code lives in your terminal, reads and edits your real files, and runs real commands — with your approval at each step.",
-            correct: true,
-          },
-          {
-            id: 'c',
-            label: "Claude Code is offline and the browser chatbot is online.",
-            correct: false,
-          },
-          {
-            id: 'd',
-            label: "Claude Code answers questions; the browser chatbot writes code.",
-            correct: false,
-          },
-        ],
-        passFeedback:
-          "HIT! That's the whole product. A chatbot talks about the work; Claude Code ships the work, with you approving every real action.",
-        failFeedback:
-          "MISS! It's not a model swap or a connectivity story. It's that this one acts on your actual files and commands — and that's why your day changes.",
-      },
-      {
-        prompt:
-          "You've just opened a client codebase for the very first time. You want Claude to read everything and draft an approach, but you do NOT want a single file written or a single command run until you've reviewed the plan. What do you do?",
-        choices: [
-          {
-            id: 'a',
-            label: "Start the session in Plan mode — Claude can read and propose, but cannot edit files or run commands.",
-            correct: true,
-          },
-          {
-            id: 'b',
-            label: "Start in Auto mode so it works through the project quickly.",
-            correct: false,
-          },
-          {
-            id: 'c',
-            label: "Don't start a Claude session yet — read every file by hand first.",
-            correct: false,
-          },
-          {
-            id: 'd',
-            label: "Start in Accept Edits mode and review the diff at the end.",
-            correct: false,
-          },
-        ],
-        passFeedback:
-          "HIT! Plan mode is the look-don't-touch entry point. Claude reads the codebase, drafts the approach, and you decide whether to let it execute.",
-        failFeedback:
-          "MISS! Auto and Accept Edits both change files. The whole point of Plan mode is 'read and propose, but do not touch.' New work, unfamiliar repo — Plan first.",
-      },
-      {
-        prompt:
-          "Mid-session, Claude says: 'can I edit src/index.html?' and shows you the change it wants to make. What does saying YES actually mean?",
-        choices: [
-          {
-            id: 'a',
-            label: "It enables fully autonomous mode for the rest of the session.",
-            correct: false,
-          },
-          {
-            id: 'b',
-            label: "It's a vague 'I trust the AI' — Claude decides what to write from here on.",
-            correct: false,
-          },
-          {
-            id: 'c',
-            label: "You're authorizing one specific real change to one specific real file. If you regret it later, Esc twice rewinds the file to its previous state.",
-            correct: true,
-          },
-          {
-            id: 'd',
-            label: "Nothing — Claude has already written the file; you're just dismissing the dialog.",
-            correct: false,
-          },
-        ],
-        passFeedback:
-          "HIT! Per-action sign-off, not blanket trust. And Esc twice rewinds — that's why experimenting is cheap.",
-        failFeedback:
-          "MISS! 'Approve' is per-action, not 'go wild for the rest of the day.' You're signing off on this one change — and Esc twice undoes it if you regret it.",
-      },
-    ],
   },
 };

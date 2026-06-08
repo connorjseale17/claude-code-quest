@@ -5,6 +5,7 @@ import type { SerializedChamber } from './roomConfigs';
 // Layout Mode. A chamber id here REPLACES the hand-authored builder geometry
 // at module load. Delete an entry to revert that chamber to its builder layout.
 //
+// Level 00 (orientation) authored 2026-06-08  — open path, no boss
 // Level 01 (welcome)     authored 2026-06-01
 // Level 02 (claudemd)    authored 2026-06-01
 // Level 03 (slash)       authored 2026-06-01
@@ -2267,5 +2268,89 @@ export const LAYOUT_OVERRIDES: Record<string, SerializedChamber> = {
     "spawnX": 2,
     "spawnY": 6,
     "keySpawn": { "x": 14, "y": 6 }
+  },
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 00 — Orientation Trail (open path; no boss; eases the new operator
+  // into the loop). Layout from user LayoutEditor export 2026-06-08, MODIFIED
+  // at import: dropped the `orientation-checkpoint` challenge item (no boss
+  // this round), dropped `keySpawn` (no key needed), flipped the exit door to
+  // unlocked + removed requiresLevelKey so the player just walks through east
+  // when ready. Per-room boss assignment for Orientation = none.
+  // ─────────────────────────────────────────────────────────────────────────
+  "orientation-trail": {
+    "width": 16,
+    "height": 11,
+    "tiles": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1],
+      [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 2],
+      [1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "items": [
+      { "id": "what-is-it", "type": "lore", "x": 3, "y": 8, "sprite": "paper" },
+      { "id": "terminal-primer", "type": "lore", "x": 13, "y": 2, "sprite": "paper" },
+      { "id": "core-loop", "type": "lore", "x": 10, "y": 2, "sprite": "paper" },
+      { "id": "orientation-practice", "type": "practice", "x": 8, "y": 9, "sprite": "hint_token" }
+    ],
+    "doors": [
+      {
+        "id": "exit",
+        "x": 15,
+        "y": 5,
+        "target": { "kind": "level", "level": "welcome", "chamber": "welcome-antechamber" },
+        "spawnX": 1,
+        "spawnY": 6,
+        "locked": false
+      }
+    ],
+    "npcs": [
+      {
+        "id": "guide-init",
+        "x": 3,
+        "y": 2,
+        "color": "#E8C57A",
+        "name": "Init-bot",
+        "dialog": []
+      }
+    ],
+    "decorations": [
+      { "x": 6, "y": 1, "sprite": "sconce" },
+      { "x": 7, "y": 6, "sprite": "brazier" },
+      { "x": 4, "y": 6, "sprite": "brazier" },
+      { "x": 9, "y": 2, "sprite": "bookshelf" },
+      { "x": 2, "y": 9, "sprite": "bookshelf" },
+      { "x": 2, "y": 8, "sprite": "bookshelf" },
+      { "x": 2, "y": 7, "sprite": "bookshelf" },
+      { "x": 9, "y": 3, "sprite": "bookshelf" },
+      { "x": 4, "y": 9, "sprite": "bookshelf" },
+      { "x": 3, "y": 9, "sprite": "bookshelf" },
+      { "x": 9, "y": 1, "sprite": "bookshelf" },
+      { "x": 10, "y": 1, "sprite": "bookshelf" },
+      { "x": 14, "y": 2, "sprite": "bookshelf" },
+      { "x": 14, "y": 1, "sprite": "bookshelf" },
+      { "x": 13, "y": 1, "sprite": "bookshelf" },
+      { "x": 14, "y": 3, "sprite": "bookshelf" },
+      { "x": 11, "y": 1, "sprite": "banner" },
+      { "x": 12, "y": 1, "sprite": "banner" },
+      { "x": 9, "y": 5, "sprite": "cobweb" },
+      { "x": 9, "y": 8, "sprite": "rubble" },
+      { "x": 7, "y": 9, "sprite": "crate" },
+      { "x": 12, "y": 8, "sprite": "bones" },
+      { "x": 5, "y": 1, "sprite": "server_stack" },
+      { "x": 4, "y": 1, "sprite": "server_stack" },
+      { "x": 3, "y": 1, "sprite": "server_stack" },
+      { "x": 2, "y": 1, "sprite": "server_stack" },
+      { "x": 13, "y": 9, "sprite": "cursor_beacon" },
+      { "x": 1, "y": 1, "sprite": "server_stack" }
+    ],
+    "spawnX": 1,
+    "spawnY": 5
   }
 };
