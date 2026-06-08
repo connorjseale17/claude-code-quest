@@ -175,30 +175,38 @@ export function CertificationPage() {
 
     const applyFit = () => {
       const doc = iframe.contentDocument;
+      const html = doc?.documentElement;
       const body = doc?.body;
-      if (!body) return;
-      // The cert card is the body's single root child. The cert's OWN body
-      // stylesheet (display:flex; align-items:center; justify-content:center;
-      // min-height:100vh) already centers that card in the iframe — so we leave
-      // body/html untouched and ONLY scale the card. Overriding body layout is
-      // what previously knocked the cert off-center and clipped it.
+      if (!html || !body) return;
       const root = body.firstElementChild as HTMLElement | null;
       if (!root) return;
       const rect = box.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
 
-      // Reset transform so we read the card's true natural size.
+      // Take the cert's own (flex + min-height:100vh) layout out of the picture
+      // — it's too unpredictable to scale against. Measure the card at its
+      // natural size in normal flow...
+      html.style.overflow = 'hidden';
+      body.style.overflow = 'hidden';
+      body.style.margin = '0';
+      root.style.position = 'static';
       root.style.transform = 'none';
-      root.style.transformOrigin = 'center center';
       const r = root.getBoundingClientRect();
       const contentW = r.width || root.scrollWidth;
       const contentH = r.height || root.scrollHeight;
       if (contentW <= 0 || contentH <= 0) return;
 
       const fit = Math.min(rect.width / contentW, rect.height / contentH) * 0.98;
-      // Keep the cert from scrolling if the scaled card is a hair over.
-      body.style.overflow = 'hidden';
-      root.style.transform = `scale(${fit})`;
+
+      // ...then pin it dead-center of the iframe with fixed positioning + the
+      // classic translate(-50%,-50%) trick, scaled to fit. This is fully
+      // deterministic: it ignores the cert's body/flex entirely, so the card
+      // can't drift off-center or overflow regardless of the cert's own CSS.
+      root.style.position = 'fixed';
+      root.style.top = '50%';
+      root.style.left = '50%';
+      root.style.transformOrigin = 'center center';
+      root.style.transform = `translate(-50%, -50%) scale(${fit})`;
     };
 
     const scheduleApply = () => {
@@ -337,21 +345,17 @@ export function CertificationPage() {
           </button>
         </div>
 
-        {/* Preview area + leaderboard sidebar. Horizontal flex so the cert
-            iframe shares the row with a 280px LeaderboardCard. The cert iframe
-            owns its own fit-zoom (ResizeObserver below) so shrinking its box
-            width just makes the cert smaller — no clipping. */}
+        {/* Cert + leaderboard sidebar. The cert iframe fills its cell directly
+            (no inner "preview pane" chrome) — the certificate itself IS the
+            content, sized + centered by applyFit. */}
         <div style={{ flex: 1, display: 'flex', gap: 16, minHeight: 220 }}>
         <div
           style={{
             flex: 1,
             minHeight: 220,
-            background: '#1A1815',
-            border: '1px solid #2A2A2A',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 8,
             position: 'relative',
             overflow: 'hidden',
           }}
