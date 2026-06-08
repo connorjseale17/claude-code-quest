@@ -415,6 +415,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const levelsCompletedAt = isLeavingComplete && !state.levelsCompletedAt[leavingLevel]
         ? { ...state.levelsCompletedAt, [leavingLevel]: Date.now() }
         : state.levelsCompletedAt;
+      // Arm the run clock when the player actually lands in 'playing' for the
+      // first time this run — returning Quest players who skipped Origin
+      // Splash get their clock started here. First-time players go through
+      // 'origin' first and arm in DISMISS_ORIGIN.
+      const willPlay = !showOrigin;
+      const runStartedAt = willPlay && state.runStartedAt === null
+        ? Date.now()
+        : state.runStartedAt;
       const next: GameState = {
         ...state,
         gamePhase: showOrigin ? 'origin' : 'playing',
@@ -431,8 +439,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         showIntro: !showOrigin,
         twicIssueShown: showTwicIssue || state.twicIssueShown,
         levelsCompletedAt,
+        runStartedAt,
       };
-      if (levelsCompletedAt !== state.levelsCompletedAt) persistRun(next);
+      if (
+        levelsCompletedAt !== state.levelsCompletedAt ||
+        runStartedAt !== state.runStartedAt
+      ) persistRun(next);
       return next;
     }
     case 'SET_PLAYER': {
@@ -469,14 +481,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELECT_TRACK': {
       // Path-select screen dispatches this to queue the chosen track's loading
       // transition. The track flag governs end-screen routing and any
-      // track-specific UI (Issue Intro overlay, stamp screen). Also resets the
-      // run clock — Date.now() at this moment is the start-of-run timestamp.
+      // track-specific UI (Issue Intro overlay, stamp screen). The run clock
+      // is RESET here (cleared to null) but does NOT start ticking yet — it's
+      // armed when the player actually reaches the 'playing' phase, so the
+      // loading screen + Origin Splash don't count as run time.
       const next: GameState = {
         ...state,
         gamePhase: 'loading',
         currentTrack: action.track,
         runId: null,
-        runStartedAt: Date.now(),
+        runStartedAt: null,
         runPausedAt: null,
         runPausedElapsedMs: 0,
         levelsCompletedAt: {},
@@ -502,13 +516,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Origin Splash finished (either by walking the six sections or by
       // hitting Skip). Persist the seen flag so returning players bypass it,
       // flip the phase into gameplay, and arm the in-game IntroOverlay.
+      // ALSO arm the run clock now — first-time Quest players hit gameplay
+      // through this path, and we don't want the typewriter splash time to
+      // count toward their leaderboard run.
       try { localStorage.setItem('ccq-origin-seen', '1'); } catch { /* ignore */ }
-      return {
+      const runStartedAt = state.runStartedAt === null ? Date.now() : state.runStartedAt;
+      const next: GameState = {
         ...state,
         gamePhase: 'playing',
         showIntro: true,
         originSeen: true,
+        runStartedAt,
       };
+      if (runStartedAt !== state.runStartedAt) persistRun(next);
+      return next;
     }
     case 'DISMISS_WRAP_UP': {
       // Final beat of the Wrap-Up Splash was clicked through (or skipped).
