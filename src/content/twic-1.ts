@@ -1,127 +1,126 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — Dynamic Workflows: Claude plans a large task and fans out
- * hundreds of parallel subagents in a single session.
- * Source: Anthropic "Introducing Claude Opus 4.8" (Dynamic Workflows research
- * preview) + Claude Code CHANGELOG 2.1.160 (trigger keyword renamed
- * `workflow` -> `ultracode`).
+ * twic-1 (Feature A) — Glob patterns in permission deny rules: a single wildcard
+ * in the tool-name position of a `deny` rule now matches a whole family of tools.
+ * Source: Claude Code CHANGELOG 2.1.166 ("Glob pattern support added to deny
+ * rules for tool names").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown. The Beat Reporter is buzzing — the headline that shipped with Opus 4.8 is Dynamic Workflows, where Claude takes one enormous task, plans the whole thing, and unleashes hundreds of parallel subagents in a single session. Read the two pages on the desk to see how the fan-out works and where a consultant points it. Then the door asks one question, and the thing guarding the key has opinions about scale.",
+    "Room 1 of this week's rundown. The Beat Reporter has the governance beat today: permission deny rules just learned to speak in wildcards. As of release 2.1.166 you can drop a glob into the tool-name slot of a deny rule, so one pattern fences off an entire family of tools instead of a brittle line-by-line list. Read the two pages on the desk for how the mechanism works and how a consultant fences a client engagement with it — then the door asks one question, and the thing guarding the key is very particular about who gets past the gate.",
   prompt:
-    "You hand Claude a single instruction: migrate a 400,000-line codebase off a deprecated API, kickoff to merge. Instead of grinding file by file, it plans the work and spins up hundreds of subagents that run at the same time inside one session. What capability is this?",
+    "You want to guarantee Claude can never call any tool from the GitHub MCP server on this engagement, and you don't want the block to spring a leak when that server adds new tools next month. What's the right move with the 2.1.166 deny-rule change?",
   choices: [
-    { id: 'a', label: 'Dynamic Workflows — Claude plans the large task itself and runs hundreds of parallel subagents in a single session', correct: true },
-    { id: 'b', label: 'The same as hand-defining custom subagents and invoking them one at a time', correct: false },
-    { id: 'c', label: 'Auto permission mode letting Claude act without stopping to ask', correct: false },
-    { id: 'd', label: 'Opening hundreds of separate Claude Code sessions in parallel terminal tabs yourself', correct: false },
+    { id: 'a', label: 'Add a single glob deny rule like `mcp__github__*` to settings.json — it matches every current and future tool from that server', correct: true },
+    { id: 'b', label: 'List each GitHub tool by its exact name in the deny array and update that list by hand whenever the server changes', correct: false },
+    { id: 'c', label: 'Switch to plan permission mode so Claude cannot run any tools at all', correct: false },
+    { id: 'd', label: 'Move the GitHub tools into the allow list so at least they are tracked in one place', correct: false },
   ],
-  passFeedback: 'HIT! Dynamic Workflows is the research-preview capability where Claude plans a big job and fans out hundreds of parallel subagents in one session — enough to carry a codebase-scale migration from kickoff to merge.',
-  failFeedback: 'MISS! This is not you wiring up subagents by hand, not a permission mode, and not you juggling terminal tabs. Claude does the planning and the fan-out itself — re-read the books.',
+  passFeedback: 'HIT! A glob in a deny rule — `mcp__github__*` — blocks the whole family in one line and keeps matching new tools the server adds, because it was never about the individual names.',
+  failFeedback: 'MISS! A hand-listed deny rots the moment the server grows, a permission mode is not a targeted family block, and the allow list permits rather than forbids. 2.1.166 lets one glob pattern fence the whole family — re-read Book 1.',
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**Dynamic Workflows — One Instruction, a Hundred Hands**
+      text: `**Deny by Pattern — Drawing the Line With a Single Wildcard**
 
-**The ceiling this lifts**
+**Where deny rules actually live**
 
-A normal Claude Code session is essentially one worker holding a single thread of attention. That worker is excellent, but it moves through a job mostly in sequence, and the bigger the job the longer the line. *Dynamic Workflows*, the research-preview capability that arrived alongside Claude Opus 4.8, removes that ceiling. Hand Claude a task too large for one pass and it will *plan the work and run hundreds of parallel subagents in a single session* — decomposing the goal itself and farming the pieces out, rather than asking you to chop the job up first.
+Claude Code's permission system is more than the live modes you cycle with Shift+Tab. Underneath sits a standing rulebook in \`settings.json\`: an \`allow\` list and a \`deny\` list that declare, *regardless of which mode you're in*, what is permitted and what is forbidden outright. A deny rule always wins — even in the most permissive mode, a denied tool stays denied. The catch, until recently, was that each rule had to name a tool more or less exactly, so fencing off a whole category meant a long, brittle list with one line per tool.
 
-**What the fan-out looks like in practice**
+**What 2.1.166 changed**
 
-The example Anthropic leads with is the kind that used to mean a quarter and a war room: a *codebase-scale migration across hundreds of thousands of lines of code, from kickoff to merge*. Claude reads the shape of the problem, drafts a plan, then spawns a swarm of subagents that each own a slice and work concurrently. Because the subagents run together instead of in a queue, wall-clock time stops scaling with the size of the task the way it does for a lone session.
+Release 2.1.166 added *glob pattern support to deny rules for tool names*. The tool-name position now accepts a wildcard, so a single pattern can stand in for an entire family of tools instead of a line apiece. A pattern like \`mcp__github__*\` matches every tool exposed by the GitHub MCP server; a broader \`mcp__*\` fences off every MCP tool at once. The match is on the tool name itself — you describe the *shape* of what you want blocked and let the glob do the enumerating for you.
 
-**The keyword that turns it on**
+**Why a wildcard beats a list**
 
-Inside Claude Code the trigger has a name. As of release 2.1.160 the dynamic-workflow keyword was *renamed from \`workflow\` to \`ultracode\`* — so \`ultracode\` is the dial that tells Claude this is a job worth planning and parallelizing, not a one-shot edit. It sits at the heavy end of the effort range, reserved for work whose scale actually justifies the planning overhead.
+A hand-maintained deny list rots. A server ships three new tools next month and your careful block now has three new holes you didn't know to plug. A pattern has no such failure mode: it matches those new tools the instant they appear, because it was never tied to the individual names. You write the intent once — *"nothing from this server"* — and the rule keeps meaning exactly that as the surface underneath it grows and shifts.
 
-> Takeaway: Dynamic Workflows lets Claude turn a single oversized instruction into its own plan and hundreds of subagents running at once — you bring the goal, it brings the parallelism.`,
+> Takeaway: A glob in a deny rule turns "block these named tools" into "block this whole family" — one pattern that stays correct as the toolset grows.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Pointing the Swarm — When a Consultant Reaches for ultracode**
+      text: `**Fencing the Engagement — Deny Globs as Client Guardrails**
 
-**The jobs that have been stuck in the backlog**
+**The blast radius nobody scoped**
 
-Every engagement has the task nobody schedules: the framework upgrade across three hundred files, the rename that touches every module, the dead-API sweep that's been "next quarter" for a year. They're not hard — they're *big*, and bigness is what burns a junior's week. Dynamic Workflows is built for exactly this shape. When the work is large, mechanical, and decomposable, that's the signal to let Claude plan it and fan it out instead of pairing on it edit by edit.
+On a client engagement the risk that bites you is rarely Claude editing a file you watched it edit. It's a tool you forgot was even connected. An MCP server wired up for one narrow task can expose a dozen actions, and *"I didn't realize it could do that"* is not a sentence you want to say to a client's security lead. A glob deny rule is how you draw the fence *before* the first session runs, instead of explaining a surprise after it happens.
 
-**Scope it like you'd scope a crew**
+**Think in boundaries, not tools**
 
-You don't point a hundred-person crew at a vague brief, and you shouldn't point a hundred subagents at one either. The leverage comes from a sharp goal and clear boundaries: which directories are in play, what "done" means, what the merge gate is. Claude does the planning, but the quality of the plan still tracks the quality of the framing — name the target state and the constraints, then let the swarm carry the load.
+The move is to stop enumerating tools and start naming boundaries. If the rule for this engagement is "Claude may read our repo but must never reach our cloud," you don't hunt down every individual cloud action — you deny the one pattern that covers that server and move on. Because the rule expresses a boundary rather than a list, it reads like a policy a non-engineer stakeholder could actually nod along to: this family is off-limits, full stop.
 
-**Match the tool to the size of the task**
+**A fence that survives the toolset growing**
 
-Because it's a research preview and the heavy end of the effort range, \`ultracode\` is not the gear for a two-file tweak — the planning overhead would dwarf the work. Reserve it for the genuinely large jobs and review the result the way you'd review any big merge: read the diff, run the suite, sanity-check the edges. Used on the right task it collapses a week of grunt migration into a single supervised session; used on the wrong one it's a sledgehammer for a thumbtack.
+Check that \`settings.json\` into the repo and the guardrail travels with the work — every teammate's session inherits the same fence with nothing to remember and nothing to re-key. And when the client's platform team adds new tools to that server mid-engagement, your pattern already covers them; the boundary you promised on day one is still the boundary on day ninety. That durability is the real deliverable. A static list is a snapshot that's wrong the moment anything moves; a pattern is a commitment that holds.
 
-> Takeaway: Save Dynamic Workflows for the large, decomposable jobs that have been clogging the backlog — sharp goal in, supervised swarm out.`,
+> Takeaway: Express each engagement's limits as a glob deny pattern, check it into the repo, and the boundary holds for every teammate and every new tool the server grows.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `This is a big, mechanical job, so plan it as a Dynamic Workflow and fan it out.
-Goal: migrate the ____ off the deprecated ____ across the whole repo.
-Scope it to ____ and leave everything else untouched.
-"Done" means ____ — that's the merge gate.
-Plan the work yourself, run the subagents in parallel, then show me one diff to review.`,
+    template: `We're starting an engagement on ____ and I want the permission fence set before anyone runs a session.
+In settings.json, add a deny rule that blocks ____ using a single glob pattern, not a tool-by-tool list.
+The rule should keep meaning "____" even after that server adds new tools next month.
+Leave ____ allowed so the actual work can still happen.
+Check the settings file into the repo so every teammate's session inherits the same guardrail.`,
     blanks: [
-      { id: 'target', suggestions: ['Acme billing service', 'client data layer', 'internal reporting app'] },
-      { id: 'api', suggestions: ['v1 payments SDK', 'legacy auth library', 'old charting package'] },
-      { id: 'scope', suggestions: ['the src/ and tests/ trees', 'the services/billing directory', 'everything except vendored code'] },
-      { id: 'done', suggestions: ['the full test suite passes', 'zero references to the old API remain', 'the type-check and lint are clean'] },
+      { id: 'target', suggestions: ['the Acme client repo', 'a regulated fintech codebase', 'a healthcare data project'] },
+      { id: 'deny-target', suggestions: ['every tool from the cloud MCP server', 'all MCP tools at once', 'the entire GitHub MCP toolset'] },
+      { id: 'intent', suggestions: ['nothing from that server can run', 'no cloud actions are reachable', 'that whole family stays blocked'] },
+      { id: 'allowed', suggestions: ['local file reads and edits', 'the test runner and linter', 'read-only access to the repo'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "Dynamic Workflows (research preview, shipped with Opus 4.8): hand Claude one oversized task and it plans the work itself and runs hundreds of parallel subagents in a single session — enough to carry a codebase-scale migration across hundreds of thousands of lines from kickoff to merge. In Claude Code the trigger keyword was renamed from `workflow` to `ultracode` (2.1.160), and it sits at the heavy end of the effort range. Reach for it on large, decomposable jobs with a sharp goal; review the result like any big merge.",
+        "Permission deny rules in settings.json forbid tools regardless of mode, and a deny always wins. As of 2.1.166 the tool-name slot of a deny rule accepts a glob, so one pattern (e.g. `mcp__github__*`, or `mcp__*` for all MCP tools) blocks a whole family instead of a brittle line-per-tool list. The win is durability: a pattern matches new tools the moment a server adds them, so a hand-listed deny can't spring leaks. For a consultant, express each engagement's limits as a boundary pattern, check settings.json into the repo, and the fence travels to every teammate and survives the toolset growing.",
       beats: [
-        { kind: 'say', text: "Big lead this week, straight out of the Opus 4.8 launch: Dynamic Workflows. The pitch is simple and kind of wild — you hand Claude one enormous task and it *plans the work and runs hundreds of parallel subagents in a single session*." },
-        { kind: 'say', text: "The headline example is a `codebase-scale migration across hundreds of thousands of lines of code, from kickoff to merge`. Not you slicing it up — Claude reads the shape of the job, drafts the plan, then spawns a swarm where each subagent owns a slice and they all run at once." },
-        { kind: 'say', text: "That's the part that matters: the subagents run *concurrently*, not in a line. So wall-clock time stops scaling with the size of the task the way it does for a single worker grinding through sequentially." },
+        { kind: 'say', text: "Governance beat this week, and it's a small change with real teeth. You know the permission *modes* you cycle with Shift+Tab? Sitting underneath them is a standing rulebook in `settings.json` — an `allow` list and a `deny` list that hold no matter what mode you're in." },
+        { kind: 'say', text: "Key fact about deny: it always wins. Even in the most permissive mode, a tool on the deny list stays blocked. The annoyance, until now, was that you basically had to name each tool exactly — so fencing off a whole category meant a long, fragile list." },
+        { kind: 'say', text: "Release 2.1.166 fixed that. The tool-name slot of a deny rule now takes a glob. So `mcp__github__*` blocks every tool from the GitHub MCP server in one line, and `mcp__*` fences off every MCP tool at once. You describe the shape, the wildcard does the enumerating." },
         {
           kind: 'choice',
-          prompt: "Quick gut-check. What's the actual difference between Dynamic Workflows and just defining a few custom subagents yourself?",
+          prompt: "Here's the gut-check. Why is a glob deny rule actually better than a hand-written list of the same tools — beyond just being shorter?",
           options: [
-            { id: 'self-define', label: 'No difference — it\'s the same as me writing subagent definitions and calling them', correct: false, reaction: "Not quite. With hand-defined subagents you do the decomposing and the delegating. Dynamic Workflows has Claude plan the whole task and fan out the swarm itself — that's the leap." },
-            { id: 'claude-plans', label: 'Claude does the planning and the fan-out itself, spinning up hundreds in one session', correct: true, reaction: "Exactly. You bring one big goal; Claude turns it into its own plan and hundreds of parallel subagents. The orchestration moves from your hands to its own." },
-            { id: 'permission', label: 'It\'s a permission setting that lets Claude skip approvals', correct: false, reaction: "Different axis entirely. Permission modes govern *whether* Claude can act without asking; Dynamic Workflows is about *how much* it can plan and parallelize in one shot." },
+            { id: 'durable', label: 'It keeps matching new tools the server adds later, so it can\'t spring a leak', correct: true, reaction: "That's the heart of it. A list is a snapshot that's wrong the moment the server grows; a pattern is a commitment that still holds when three new tools show up next month." },
+            { id: 'faster', label: 'It makes Claude run faster by checking fewer rules', correct: false, reaction: "Not the point — this isn't a performance feature. The value is that the pattern stays correct as the toolset changes, where a static list quietly develops holes." },
+            { id: 'override', label: 'It overrides the allow list in a way exact names can\'t', correct: false, reaction: "Deny already beats allow regardless of how the rule is written. The glob's advantage is durability — it matches tools that don't exist yet, so the boundary doesn't rot." },
           ],
         },
-        { kind: 'say', text: "In Claude Code there's a keyword for it. As of 2.1.160 the dynamic-workflow trigger was renamed from `workflow` to `ultracode` — that's the dial that says 'this job is big enough to plan and parallelize,' and it lives at the heavy end of the effort range." },
-        { kind: 'say', text: "Consultant's caveat: it's a research preview and it's a sledgehammer. Point it at the large, mechanical, decomposable jobs — the framework upgrade across three hundred files, the dead-API sweep that's been 'next quarter' forever. Give it a sharp goal and clear boundaries, not a two-file tweak." },
-        { kind: 'say', text: "And review the output like any big merge: read the diff, run the suite, check the edges. The books on the desk have the mechanics and the playbook. The door wants to know what this capability actually *is* — answer that and the key's yours." },
+        { kind: 'say', text: "For us on an engagement, that durability *is* the deliverable. The thing that bites you isn't the edit you watched — it's a tool you forgot was connected. Draw the fence as a pattern before the first session, and 'I didn't know it could do that' stops being a sentence you have to say." },
+        { kind: 'say', text: "Think in boundaries, not tools. 'Claude reads our repo but never touches our cloud' becomes one deny pattern covering that server — a policy a non-engineer stakeholder could nod along to. Check the settings file into the repo and every teammate inherits the same fence." },
+        { kind: 'say', text: "The books on the desk have the mechanism and the consulting playbook. The door wants to know the *right* way to block a whole tool family without it leaking later — answer that and the key's yours." },
       ],
     },
   },
   battle: {
-    name: 'The Hundredfold Husk',
+    name: 'Glob-Bones, Warden of the Wildcard',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*rattles apart into a hundred clattering copies, all moving at once* …one of me for every file you've got… still think you'll do this by hand…?",
+    introLine: "*bones rattle into a lattice across the doorway, each one carved with a tool name* …name them all, mortal… every tool you'd keep out… miss one and I let it through…",
     tauntLines: [
-      "*a hundred skulls grin in unison* one at a time, mortal, one bone at a time, the way you've always done it…",
-      "*scatters across the chamber* you can't be everywhere — but I can, that's the whole point you keep missing…",
+      "*a new bone clatters into the gate* the server grew overnight and your little list didn't — see the gap? I do…",
+      "*grinning sockets swivel* you can't write fast enough to fence a thing that keeps changing shape…",
     ],
-    victoryLine: "*the copies snap back into a single heap* …fine… you understood the swarm… take the key before I reassemble…",
+    victoryLine: "*the lattice collapses into a tidy heap* …one pattern… you fenced the whole family with one pattern… take the key, warden's beaten at the warden's game…",
     questions: [
       {
         prompt:
-          "You hand Claude a single instruction: migrate a 400,000-line codebase off a deprecated API, kickoff to merge. Instead of grinding file by file, it plans the work and spins up hundreds of subagents that run at the same time inside one session. What capability is this?",
+          "You want to guarantee Claude can never call any tool from the GitHub MCP server on this engagement, and you don't want the block to spring a leak when that server adds new tools next month. What's the right move with the 2.1.166 deny-rule change?",
         choices: [
-          { id: 'a', label: 'Dynamic Workflows — Claude plans the large task itself and runs hundreds of parallel subagents in a single session', correct: true },
-          { id: 'b', label: 'The same as hand-defining custom subagents and invoking them one at a time', correct: false },
-          { id: 'c', label: 'Auto permission mode letting Claude act without stopping to ask', correct: false },
-          { id: 'd', label: 'Opening hundreds of separate Claude Code sessions in parallel terminal tabs yourself', correct: false },
+          { id: 'a', label: 'Add a single glob deny rule like `mcp__github__*` to settings.json — it matches every current and future tool from that server', correct: true },
+          { id: 'b', label: 'List each GitHub tool by its exact name in the deny array and update that list by hand whenever the server changes', correct: false },
+          { id: 'c', label: 'Switch to plan permission mode so Claude cannot run any tools at all', correct: false },
+          { id: 'd', label: 'Move the GitHub tools into the allow list so at least they are tracked in one place', correct: false },
         ],
-        passFeedback: 'HIT! Dynamic Workflows is the research-preview capability where Claude plans a big job and fans out hundreds of parallel subagents in one session — enough to carry a codebase-scale migration from kickoff to merge.',
-        failFeedback: 'MISS! This is not you wiring up subagents by hand, not a permission mode, and not you juggling terminal tabs. Claude does the planning and the fan-out itself — re-read the books.',
+        passFeedback: 'HIT! A glob in a deny rule — `mcp__github__*` — blocks the whole family in one line and keeps matching new tools the server adds, because it was never about the individual names.',
+        failFeedback: 'MISS! A hand-listed deny rots the moment the server grows, a permission mode is not a targeted family block, and the allow list permits rather than forbids. 2.1.166 lets one glob pattern fence the whole family — re-read Book 1.',
       },
     ],
   },
