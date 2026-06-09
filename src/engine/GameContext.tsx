@@ -112,6 +112,10 @@ const startChamberCfg = startLevelCfg.chambers[startChamber];
 type SavedRun = Partial<{
   runId: string | null;
   runStartedAt: number | null;
+  /** Wall-clock ms at the moment of pause, if a pause was active when the
+   *  player last refreshed. Folded into runPausedElapsedMs at boot so a paused
+   *  refresh doesn't count the in-flight pause as run time. */
+  runPausedAt: number | null;
   runPausedElapsedMs: number;
   levelsCompletedAt: Partial<Record<LevelId, number>>;
   prizesUnlockedAt: Record<string, number>;
@@ -130,6 +134,7 @@ function persistRun(state: GameState): void {
     localStorage.setItem('ccq-run', JSON.stringify({
       runId: state.runId,
       runStartedAt: state.runStartedAt,
+      runPausedAt: state.runPausedAt,
       runPausedElapsedMs: state.runPausedElapsedMs,
       levelsCompletedAt: state.levelsCompletedAt,
       prizesUnlockedAt: state.prizesUnlockedAt,
@@ -160,8 +165,21 @@ export const initialState: GameState = {
   player: (() => {
     try {
       const saved = localStorage.getItem('ccq-player');
-      if (saved) return JSON.parse(saved);
-    } catch {}
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Shape-guard the rehydrated player. A tampered/legacy value could be
+        // a number, an array, or an object missing the keys we render — fall
+        // back to defaults rather than propagating garbage into the UI.
+        if (
+          parsed !== null &&
+          typeof parsed === 'object' &&
+          typeof parsed.name === 'string' &&
+          typeof parsed.botColor === 'string'
+        ) {
+          return { name: parsed.name.slice(0, 12), botColor: parsed.botColor };
+        }
+      }
+    } catch { /* ignore */ }
     return { name: '', botColor: '#E8633D' };
   })(),
   prizesUnlocked: (() => {
@@ -196,7 +214,18 @@ export const initialState: GameState = {
   runId: savedRun.runId ?? null,
   runStartedAt: savedRun.runStartedAt ?? null,
   runPausedAt: null,
-  runPausedElapsedMs: savedRun.runPausedElapsedMs ?? 0,
+  // If a pause was active when the player last refreshed, fold the
+  // wall-clock interval since runPausedAt into the elapsed-pause counter so
+  // the run timer doesn't count it as play time. The game resumes unpaused
+  // (we don't try to restore the PauseMenu mid-render).
+  runPausedElapsedMs: (() => {
+    const base = savedRun.runPausedElapsedMs ?? 0;
+    const pausedAt = savedRun.runPausedAt;
+    if (typeof pausedAt === 'number') {
+      return base + Math.max(0, Date.now() - pausedAt);
+    }
+    return base;
+  })(),
   levelsCompletedAt: savedRun.levelsCompletedAt ?? {},
   prizesUnlockedAt: savedRun.prizesUnlockedAt ?? {},
 };
@@ -211,8 +240,6 @@ export type GameAction =
   | { type: 'MARK_LORE_SEEN'; chamberId: ChamberId; loreId: string }
   | { type: 'MARK_NPC_SEEN'; chamberId: ChamberId; npcId: string }
   | { type: 'TRANSITION_CHAMBER'; chamberId: ChamberId; spawnX: number; spawnY: number }
-  | { type: 'TRANSITION_LEVEL'; levelId: LevelId; chamberId: ChamberId; spawnX: number; spawnY: number }
-  | { type: 'DISMISS_INTRO' }
   | { type: 'GAME_OVER' }
   | { type: 'ADVANCE_PHASE' }
   | { type: 'TOGGLE_PAUSE' }
@@ -308,22 +335,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         showIntro: false,
       };
     }
-    case 'TRANSITION_LEVEL': {
-      const ch = state.chambers[action.chamberId] ?? { ...initialChamberState };
-      return {
-        ...state,
-        currentLevel: action.levelId,
-        currentChamber: action.chamberId,
-        bot: { x: action.spawnX, y: action.spawnY, facing: 'right', animation: 'idle' },
-        chambers: {
-          ...state.chambers,
-          [action.chamberId]: { ...ch, visited: true },
-        },
-        showIntro: true,
-      };
-    }
-    case 'DISMISS_INTRO':
-      return { ...state, showIntro: false };
     case 'GAME_OVER': {
       // Quest path → wrap-up + certification flow. TWiC path → stamp screen
       // (handled by gameOver in App.tsx via currentTrack switch).

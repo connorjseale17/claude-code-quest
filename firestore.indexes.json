@@ -1,0 +1,22 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "runs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "finished", "order": "ASCENDING" },
+        { "fieldPath": "elapsed_ms", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "runs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "finished", "order": "ASCENDING" },
+        { "fieldPath": "prizes_total", "order": "DESCENDING" },
+        { "fieldPath": "elapsed_ms", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

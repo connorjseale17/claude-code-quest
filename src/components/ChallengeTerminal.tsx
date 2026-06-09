@@ -112,71 +112,85 @@ export function ChallengeTerminal() {
       topbarSub="BOSS.BATTLE"
       onClose={closePanel}
     >
-      <div onClick={skipTypewriter} style={{ cursor: 'default', height: '100%' }}>
-        {/* Prompt */}
-        <div style={{ fontSize: 13, lineHeight: 1.5, color: '#E8E8E8', marginBottom: 14, whiteSpace: 'pre-wrap' }}>
-          {displayedText}
-          {!textDone && <Cursor color={accent} />}
+      <div
+        onClick={skipTypewriter}
+        style={{
+          cursor: 'default',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Scrollable content area — sits above the absolute footer with
+            paddingBottom to clear it. Without this, long prompts + choices +
+            the new "correct answer" reveal could clip out the bottom of the
+            RetroChassis CRT (which is overflow:hidden). */}
+        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 36 }}>
+          {/* Prompt */}
+          <div style={{ fontSize: 13, lineHeight: 1.5, color: '#E8E8E8', marginBottom: 14, whiteSpace: 'pre-wrap' }}>
+            {displayedText}
+            {!textDone && <Cursor color={accent} />}
+          </div>
+
+          {/* Choices */}
+          {textDone && (
+            <ChoicePicker
+              choices={content.choices.map(c => ({ id: c.id, label: c.label }))}
+              accent={accent}
+              selectedId={selected}
+              result={result}
+              onSelect={handleChoice}
+              enableNumberKeys={textDone && !result}
+            />
+          )}
+
+          {/* Feedback */}
+          {result === 'pass' && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: '8px 10px',
+                border: '1px solid rgba(63, 185, 80, 0.3)',
+                background: '#0F1A12',
+                fontSize: 12,
+                lineHeight: 1.4,
+              }}
+            >
+              <span style={{ color: '#3FB950' }}>{content.passFeedback.split(']')[0]}]</span>
+              {content.passFeedback.split(']').slice(1).join(']')}
+            </div>
+          )}
+          {result === 'fail' && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: '10px 12px',
+                border: '1px solid rgba(248, 81, 73, 0.3)',
+                background: '#1A0F0F',
+                fontSize: 12,
+                lineHeight: 1.5,
+              }}
+            >
+              <div>
+                <span style={{ color: '#F85149' }}>{content.failFeedback.split(']')[0]}]</span>
+                {content.failFeedback.split(']').slice(1).join(']')}
+              </div>
+              {correctChoice && (
+                <div style={{
+                  marginTop: 8,
+                  paddingTop: 8,
+                  borderTop: '1px dashed rgba(248, 81, 73, 0.25)',
+                  color: '#E8E8E8',
+                }}>
+                  <span style={{ color: '#3FB950', fontWeight: 700 }}>correct answer: </span>
+                  {correctChoice.label}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Choices */}
-        {textDone && (
-          <ChoicePicker
-            choices={content.choices.map(c => ({ id: c.id, label: c.label }))}
-            accent={accent}
-            selectedId={selected}
-            result={result}
-            onSelect={handleChoice}
-            enableNumberKeys={textDone && !result}
-          />
-        )}
-
-        {/* Feedback */}
-        {result === 'pass' && (
-          <div
-            style={{
-              marginTop: 12,
-              padding: '8px 10px',
-              border: '1px solid rgba(63, 185, 80, 0.3)',
-              background: '#0F1A12',
-              fontSize: 12,
-              lineHeight: 1.4,
-            }}
-          >
-            <span style={{ color: '#3FB950' }}>{content.passFeedback.split(']')[0]}]</span>
-            {content.passFeedback.split(']').slice(1).join(']')}
-          </div>
-        )}
-        {result === 'fail' && (
-          <div
-            style={{
-              marginTop: 12,
-              padding: '10px 12px',
-              border: '1px solid rgba(248, 81, 73, 0.3)',
-              background: '#1A0F0F',
-              fontSize: 12,
-              lineHeight: 1.5,
-            }}
-          >
-            <div>
-              <span style={{ color: '#F85149' }}>{content.failFeedback.split(']')[0]}]</span>
-              {content.failFeedback.split(']').slice(1).join(']')}
-            </div>
-            {correctChoice && (
-              <div style={{
-                marginTop: 8,
-                paddingTop: 8,
-                borderTop: '1px dashed rgba(248, 81, 73, 0.25)',
-                color: '#E8E8E8',
-              }}>
-                <span style={{ color: '#3FB950', fontWeight: 700 }}>correct answer: </span>
-                {correctChoice.label}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Footer hint */}
+        {/* Footer hint — absolute over the scroll area */}
         <div
           style={{
             position: 'absolute',

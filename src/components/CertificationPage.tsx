@@ -69,6 +69,17 @@ function safeFilenameStem(name: string): string {
   return cleaned || 'operator';
 }
 
+/** Escape the five HTML-significant chars so user-supplied strings can't
+ *  break out of a text node and inject markup/script into the iframe. */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function CertificationPage() {
   const state = useGame();
   const dispatch = useGameDispatch();
@@ -130,16 +141,23 @@ export function CertificationPage() {
     if (!template) return null;
     const finalName = (name.trim() || 'Operator');
     const credId = credentialId(finalName, issueDateIso);
+    // SECURITY: escape the player name before injecting it into the cert
+    // template. The {{RECIPIENT_NAME}} placeholder lands inside a text node in
+    // the cert, but the iframe sandbox grants allow-scripts + allow-same-origin,
+    // so a name like `<img src=x onerror=…>` (or a `</script>` breakout) would
+    // execute script in this app's origin. The escape closes that door.
+    const safeName = escapeHtml(finalName);
     // String-replace the four placeholders. The cert HTML is a self-contained
     // bundle (its own __bundler runtime that unpacks assets), so we treat it
     // as a black box — only swap the {{...}} tokens, never touch its DOM.
     let out = template
-      .replace(/\{\{RECIPIENT_NAME\}\}/g, finalName)
+      .replace(/\{\{RECIPIENT_NAME\}\}/g, safeName)
       .replace(/\{\{ISSUE_DATE\}\}/g, issueDateLong)
       .replace(/\{\{EXPIRATION_DATE\}\}/g, expirationDateLong)
       .replace(/\{\{CREDENTIAL_ID\}\}/g, credId);
     // Override the <title> so the browser's print dialog defaults to a
-    // sensible filename when the user picks "Save as PDF".
+    // sensible filename when the user picks "Save as PDF". safeFilenameStem
+    // strips to [a-z0-9-] already, so it's XSS-safe — no escape needed.
     const titleStem = safeFilenameStem(finalName);
     out = out.replace(
       /<title>[^<]*<\/title>/,
@@ -338,6 +356,7 @@ export function CertificationPage() {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Operator"
+              maxLength={48}
               autoFocus
               style={{
                 background: '#141414',

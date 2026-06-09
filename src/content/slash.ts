@@ -247,7 +247,7 @@ export const slashContent: LessonContent = {
           { id: 'd', label: 'Nothing is restricted; the field is just documentation', correct: false },
         ],
         passFeedback: "HIT! Read, Grep, Glob means look, search, match. With only those, the skill physically can't write or run commands. A hard boundary on the skill.",
-        failFeedback: '`MISS! allowed-tools` is a permission fence. Leave Write and Bash off the list and the skill simply cannot do them.',
+        failFeedback: 'MISS! `allowed-tools` is a permission fence. Leave Write and Bash off the list and the skill simply cannot do them.',
       },
       {
         prompt: "You want to make sure NO ONE — Claude or human — ever commits a `.env` file. Which approach is strongest?",

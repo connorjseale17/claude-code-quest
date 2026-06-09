@@ -45,10 +45,12 @@ export function WrapUpSplash() {
   const dispatch = useGameDispatch();
   const advance = useCallback(() => dispatch({ type: 'DISMISS_WRAP_UP' }), [dispatch]);
 
-  // Fire the Firestore finish-write on mount, not on advance — gives the
-  // network the full splash duration to settle so the leaderboard query on the
-  // cert page sees this player's row. Idempotent guard for StrictMode + the
-  // possibility of re-mount on phase toggle.
+  // Fire the Firestore finish-write once runId + runStartedAt are both set.
+  // The effect deps include runId so if recordRunStart's network round-trip
+  // hasn't completed by the time WrapUpSplash mounts (slow network / very
+  // fast run), the write fires the moment SET_RUN_ID lands instead of being
+  // silently dropped. writtenRef guards against StrictMode + re-mount, so it
+  // still fires exactly once.
   const writtenRef = useRef(false);
   useEffect(() => {
     if (writtenRef.current) return;
@@ -62,7 +64,7 @@ export function WrapUpSplash() {
       .map(([id, t]) => ({ id, unlocked_at: t }));
     void recordRunFinish({ runId: state.runId, elapsed_ms, levels, prizes });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [state.runId, state.runStartedAt]);
 
   return (
     <TypewriterSplash

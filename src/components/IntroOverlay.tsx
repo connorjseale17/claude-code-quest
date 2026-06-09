@@ -18,7 +18,7 @@ export function IntroOverlay() {
 
   return (
     <div
-      className="absolute bottom-4 left-1/2 z-30"
+      className="absolute bottom-4 left-1/2 z-20"
       style={{
         transform: 'translateX(-50%)',
         background: '#1A1A1A',

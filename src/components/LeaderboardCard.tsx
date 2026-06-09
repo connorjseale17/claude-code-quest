@@ -33,6 +33,12 @@ const CARD_STYLE = {
   border: '1px solid #2A2A2A',
   padding: '14px 18px',
   background: '#0F0F0F',
+  // Keep a full 7+7 board + currentRun + footer from pushing the EndScreen
+  // column past the 640px canvas or overflowing the cert sidebar. Internal
+  // scroll keeps the card stable.
+  maxHeight: '100%',
+  overflowY: 'auto',
+  boxSizing: 'border-box',
 } as const;
 
 const HEADER_STYLE = {
@@ -90,7 +96,10 @@ function formatTime(ms: number): string {
 }
 
 function truncateHandle(handle: string): string {
-  return handle.length > 11 ? handle.slice(0, 11) : handle;
+  // Hard-cut at 11 chars + ellipsis so the player can SEE that the row was
+  // truncated. The row's textOverflow:ellipsis only fires when the slot is
+  // narrower than its content; pre-slicing here was previously silent.
+  return handle.length > 11 ? handle.slice(0, 11) + '…' : handle;
 }
 
 function ColorChip({ colorIdx }: { colorIdx: number }) {

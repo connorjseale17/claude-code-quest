@@ -22,7 +22,19 @@ export function HPBar({ current, max, accent, align, label }: HPBarProps) {
       }}
     >
       {label && (
-        <div style={{ fontSize: 11, color: '#7D7D7D', letterSpacing: '0.12em' }}>
+        <div
+          title={label}
+          style={{
+            fontSize: 11,
+            color: '#7D7D7D',
+            letterSpacing: '0.12em',
+            maxWidth: 280,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            textAlign: align,
+          }}
+        >
           {label.toUpperCase()}
         </div>
       )}
