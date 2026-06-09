@@ -145,6 +145,8 @@ export function DevMenu({ open, onClose, onLayoutMode }: DevMenuProps) {
                 localStorage.removeItem('ccq-player');
                 localStorage.removeItem('ccq-prizes');
                 localStorage.removeItem('ccq-lessons');
+                localStorage.removeItem('ccq-run');
+                localStorage.removeItem('ccq-game');
                 localStorage.removeItem('ccq-layout-draft');
               } catch { /* ignore */ }
               window.location.reload();

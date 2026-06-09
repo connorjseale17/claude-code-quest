@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, type Dispatch } from 'react';
+import { createContext, useContext, useEffect, useReducer, type Dispatch } from 'react';
 import {
   LEVEL_CONFIGS,
   ALL_CHAMBER_IDS,
@@ -142,24 +142,129 @@ function persistRun(state: GameState): void {
   } catch { /* ignore */ }
 }
 
+// ===========================================================================
+// Level-resume persistence — `ccq-game` holds the slice of state needed to
+// drop the player back into the room/level they were on after a refresh.
+// Saved only during real-run phases so a refresh on customize/splash doesn't
+// trap them on those screens. Versioned so future schema changes can be
+// rejected gracefully rather than silently rehydrating broken state.
+// ===========================================================================
+
+const SAVED_GAME_VERSION = 1;
+
+const PERSISTABLE_PHASES: ReadonlySet<GamePhase> = new Set([
+  'origin', 'playing', 'wrapUp', 'certification', 'gameOver',
+]);
+
+type SavedGame = Partial<{
+  v: number;
+  gamePhase: GamePhase;
+  currentLevel: LevelId;
+  currentChamber: ChamberId;
+  bot: { x: number; y: number; facing: Direction };
+  chambers: Record<ChamberId, ChamberState>;
+  levels: Record<LevelId, LevelState>;
+  currentTrack: Track;
+  twicIssueShown: boolean;
+}>;
+
+const savedGame: SavedGame = (() => {
+  try {
+    const raw = localStorage.getItem('ccq-game');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object' && parsed.v === SAVED_GAME_VERSION) {
+        return parsed as SavedGame;
+      }
+    }
+  } catch { /* ignore */ }
+  return {};
+})();
+
+function persistGame(state: GameState): void {
+  if (!PERSISTABLE_PHASES.has(state.gamePhase)) return;
+  try {
+    const payload: Required<Omit<SavedGame, 'v'>> & { v: number } = {
+      v: SAVED_GAME_VERSION,
+      gamePhase: state.gamePhase,
+      currentLevel: state.currentLevel,
+      currentChamber: state.currentChamber,
+      bot: { x: state.bot.x, y: state.bot.y, facing: state.bot.facing },
+      chambers: state.chambers,
+      levels: state.levels,
+      currentTrack: state.currentTrack,
+      twicIssueShown: state.twicIssueShown,
+    };
+    localStorage.setItem('ccq-game', JSON.stringify(payload));
+  } catch { /* ignore */ }
+}
+
+// Derive the restored slice once at module load. Validates every saved field
+// against the live config (LEVEL_CONFIGS / LevelId / ChamberId) so a saved
+// game from a build where a level was renamed/removed cleanly falls back to
+// the start instead of crashing.
+const restoredPhase: GamePhase =
+  savedGame.gamePhase && PERSISTABLE_PHASES.has(savedGame.gamePhase)
+    ? savedGame.gamePhase
+    : 'boot';
+const isRestoring = restoredPhase !== 'boot';
+
+const restoredLevel: LevelId =
+  isRestoring && savedGame.currentLevel && savedGame.currentLevel in LEVEL_CONFIGS
+    ? savedGame.currentLevel
+    : startLevel;
+const restoredLevelCfg = LEVEL_CONFIGS[restoredLevel];
+
+const restoredChamber: ChamberId =
+  isRestoring && savedGame.currentChamber && restoredLevelCfg.chambers[savedGame.currentChamber]
+    ? savedGame.currentChamber
+    : restoredLevelCfg.startingChamber;
+const restoredChamberCfg = restoredLevelCfg.chambers[restoredChamber];
+
+const restoredBot =
+  isRestoring && savedGame.bot &&
+  typeof savedGame.bot.x === 'number' &&
+  typeof savedGame.bot.y === 'number'
+    ? {
+        x: savedGame.bot.x,
+        y: savedGame.bot.y,
+        facing: (savedGame.bot.facing ?? 'right') as Direction,
+        animation: 'idle' as const,
+      }
+    : {
+        x: restoredChamberCfg.spawnX,
+        y: restoredChamberCfg.spawnY,
+        facing: 'right' as Direction,
+        animation: 'idle' as const,
+      };
+
+const seededChambers = seedChamberStates();
+const restoredChambers: Record<ChamberId, ChamberState> =
+  isRestoring && savedGame.chambers && typeof savedGame.chambers === 'object'
+    ? { ...seededChambers, ...savedGame.chambers }
+    : { ...seededChambers, [restoredChamber]: { ...initialChamberState, visited: true } };
+
+const seededLevels = seedLevelStates();
+const restoredLevels: Record<LevelId, LevelState> =
+  isRestoring && savedGame.levels && typeof savedGame.levels === 'object'
+    ? { ...seededLevels, ...savedGame.levels }
+    : seededLevels;
+
 export const initialState: GameState = {
-  gamePhase: 'boot',
-  currentLevel: startLevel,
-  currentChamber: startChamber,
-  gameOver: false,
-  bot: {
-    x: startChamberCfg.spawnX,
-    y: startChamberCfg.spawnY,
-    facing: 'right',
-    animation: 'idle',
-  },
-  chambers: {
-    ...seedChamberStates(),
-    [startChamber]: { ...initialChamberState, visited: true },
-  },
-  levels: seedLevelStates(),
+  gamePhase: restoredPhase,
+  currentLevel: restoredLevel,
+  currentChamber: restoredChamber,
+  // Recompute from phase so a restored end-screen has the flag set.
+  gameOver:
+    restoredPhase === 'wrapUp' ||
+    restoredPhase === 'certification' ||
+    restoredPhase === 'gameOver',
+  bot: restoredBot,
+  chambers: restoredChambers,
+  levels: restoredLevels,
   activePanel: null,
-  showIntro: true,
+  // Skip the chamber-intro bubble on restored runs — the player has been here.
+  showIntro: !isRestoring,
   paused: false,
   pendingLevelTransition: null,
   player: (() => {
@@ -202,8 +307,8 @@ export const initialState: GameState = {
     } catch {}
     return [];
   })(),
-  currentTrack: 'quest',
-  twicIssueShown: false,
+  currentTrack: isRestoring && savedGame.currentTrack ? savedGame.currentTrack : 'quest',
+  twicIssueShown: isRestoring ? Boolean(savedGame.twicIssueShown) : false,
   originSeen: (() => {
     try {
       return localStorage.getItem('ccq-origin-seen') === '1';
@@ -551,14 +656,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'RESTART_RUN': {
       // "Play again" from the certification / stamp / end screen. Wipe run
-      // progress (prizes, lessons, levels, timing) but KEEP the player's
-      // identity (name + color) and the originSeen flag, then drop them back
-      // at the path-select screen for a fresh run. Clears the run-scoped
-      // localStorage so a subsequent reload doesn't rehydrate stale progress.
+      // progress (prizes, lessons, levels, timing, level-resume save) but KEEP
+      // the player's identity (name + color) and the originSeen flag, then
+      // drop them back at the path-select screen for a fresh run.
       try {
         localStorage.removeItem('ccq-prizes');
         localStorage.removeItem('ccq-lessons');
         localStorage.removeItem('ccq-run');
+        localStorage.removeItem('ccq-game');
       } catch { /* ignore */ }
       return {
         ...state,
@@ -604,6 +709,24 @@ const GameDispatchContext = createContext<Dispatch<GameAction>>(() => {});
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  // Persist the level-resume slice whenever any of these fields changes. The
+  // useEffect deps capture the exact slice persistGame reads; persistGame
+  // itself early-returns for non-real-run phases (boot/splash/customize/…)
+  // so a refresh on a pre-game screen won't lock the player there.
+  useEffect(() => {
+    persistGame(state);
+  }, [
+    state.gamePhase,
+    state.currentLevel,
+    state.currentChamber,
+    state.bot.x,
+    state.bot.y,
+    state.bot.facing,
+    state.chambers,
+    state.levels,
+    state.currentTrack,
+    state.twicIssueShown,
+  ]);
   return (
     <GameContext.Provider value={state}>
       <GameDispatchContext.Provider value={dispatch}>
