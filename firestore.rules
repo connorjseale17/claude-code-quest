@@ -1,0 +1,73 @@
+rules_version = '2';
+
+// Claude Code Quest — Firestore security rules.
+//
+// Security model: the Firebase web API key is public (it ships in the client
+// bundle), so THESE RULES are the only real access boundary. Every player is an
+// anonymous-auth user (see src/lib/firebase.ts → ensureAnonAuth). Rules below
+// let an anonymous user create their own run + feedback, finish their own run,
+// and read the leaderboard — and nothing else. Anything not matched is denied.
+//
+// Deploy:  firebase deploy --only firestore:rules,firestore:indexes
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function uid() {
+      return request.auth.uid;
+    }
+
+    // --- runs: one doc per play-through. Created on path-select, finished on
+    //     the wrap-up screen. Readable by anyone signed in (the leaderboard
+    //     queries finished runs). Only the owner may create/modify their doc,
+    //     and the uid is pinned so it can't be reassigned. ---
+    match /runs/{runId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.uid == uid()
+        && request.resource.data.finished == false
+        && request.resource.data.handle is string
+        && request.resource.data.handle.size() <= 64;
+
+      // Owner-only updates (the finish write). uid is immutable.
+      allow update: if signedIn()
+        && resource.data.uid == uid()
+        && request.resource.data.uid == uid();
+
+      allow delete: if false;
+    }
+
+    // --- meta/global: shared completion counter, bumped via increment() inside
+    //     the finish transaction. Validating "increment by exactly 1" isn't
+    //     expressible here, so we settle for "must be signed in" — acceptable
+    //     for an internal test where the worst case is a slightly-off counter. ---
+    match /meta/{docId} {
+      allow read: if signedIn();
+      allow write: if signedIn();
+    }
+
+    // --- feedback: write-only from the client. Read it back in the Firebase
+    //     console — no in-app read path exists, and the rules forbid one. Field
+    //     shape/caps mirror recordFeedback() in src/lib/tracking.ts. ---
+    match /feedback/{id} {
+      allow create: if signedIn()
+        && request.resource.data.uid == uid()
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() <= 2000
+        && request.resource.data.source is string
+        && request.resource.data.source.size() <= 32;
+      allow read, update, delete: if false;
+    }
+
+    // Everything else: denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

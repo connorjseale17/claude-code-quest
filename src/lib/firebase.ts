@@ -21,8 +21,15 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 
 const app = initializeApp(firebaseConfig);
 
+// The Firestore instance on this project is a NAMED database ("ccqdatabase"),
+// not the unnamed "(default)" one. getFirestore(app) with no id targets
+// "(default)", which doesn't exist here — so the id must be passed explicitly
+// or every read/write fails. Mirror this in firebase.json so rules deploy to
+// the same database.
+const FIRESTORE_DATABASE_ID = 'ccqdatabase';
+
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = getFirestore(app, FIRESTORE_DATABASE_ID);
 
 let signInPromise: Promise<string> | null = null;
 

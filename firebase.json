@@ -1,0 +1,7 @@
+{
+  "firestore": {
+    "database": "ccqdatabase",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}
