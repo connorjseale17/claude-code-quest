@@ -360,7 +360,8 @@ export type GameAction =
   | { type: 'DISMISS_ORIGIN' }
   | { type: 'DISMISS_WRAP_UP' }
   | { type: 'SET_RUN_ID'; runId: string }
-  | { type: 'RESTART_RUN' };
+  | { type: 'RESTART_RUN' }
+  | { type: 'FULL_RESET' };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -697,6 +698,50 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         levelsCompletedAt: {},
         prizesUnlockedAt: {},
         // player + originSeen intentionally preserved.
+      };
+    }
+    case 'FULL_RESET': {
+      try {
+        localStorage.removeItem('ccq-prizes');
+        localStorage.removeItem('ccq-lessons');
+        localStorage.removeItem('ccq-run');
+        localStorage.removeItem('ccq-game');
+        localStorage.removeItem('ccq-player');
+        localStorage.removeItem('ccq-origin-seen');
+      } catch { /* ignore */ }
+      return {
+        ...state,
+        gamePhase: 'boot',
+        currentLevel: startLevel,
+        currentChamber: startChamber,
+        gameOver: false,
+        bot: {
+          x: startChamberCfg.spawnX,
+          y: startChamberCfg.spawnY,
+          facing: 'right',
+          animation: 'idle',
+        },
+        chambers: {
+          ...seedChamberStates(),
+          [startChamber]: { ...initialChamberState, visited: true },
+        },
+        levels: seedLevelStates(),
+        activePanel: null,
+        showIntro: true,
+        paused: false,
+        pendingLevelTransition: null,
+        player: { name: '', botColor: '#E8633D' },
+        prizesUnlocked: [],
+        lessonsCompleted: [],
+        currentTrack: 'quest',
+        twicIssueShown: false,
+        originSeen: false,
+        runId: null,
+        runStartedAt: null,
+        runPausedAt: null,
+        runPausedElapsedMs: 0,
+        levelsCompletedAt: {},
+        prizesUnlockedAt: {},
       };
     }
     default:

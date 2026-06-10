@@ -176,8 +176,34 @@ export function PauseMenu() {
           </div>
         </div>
 
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, display: 'flex', gap: 10 }}>
           <FeedbackButton accent={accent} source="pause" label="✎ LEAVE FEEDBACK" />
+          <button
+            onClick={() => dispatch({ type: 'FULL_RESET' })}
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              padding: '9px 20px',
+              background: 'transparent',
+              color: '#7D7D7D',
+              border: '1px solid #2A2A2A',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'border-color 120ms ease, color 120ms ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = '#F85149';
+              e.currentTarget.style.color = '#F85149';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = '#2A2A2A';
+              e.currentTarget.style.color = '#7D7D7D';
+            }}
+          >
+            ↻ NEW GAME
+          </button>
         </div>
 
         <div style={{
