@@ -2,6 +2,7 @@ import { useGame, useGameDispatch } from '../engine/GameContext';
 import { LEVEL_CONFIGS, type LevelConfig } from '../engine/roomConfigs';
 import { CONTENT } from '../content';
 import { Cursor } from './TerminalFrame';
+import { FeedbackButton } from './FeedbackButton';
 import { useRunTimer, formatRunTime } from '../hooks/useRunTimer';
 
 function getObjective(
@@ -173,6 +174,10 @@ export function PauseMenu() {
               {levelState.keyCollected ? '✓' : '—'}
             </span>
           </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <FeedbackButton accent={accent} source="pause" label="✎ LEAVE FEEDBACK" />
         </div>
 
         <div style={{

@@ -18,6 +18,7 @@ import {
 import { db, ensureAnonAuth } from './firebase';
 
 const RUNS = 'runs';
+const FEEDBACK = 'feedback';
 const META_GLOBAL = doc(db, 'meta', 'global');
 
 export type LeaderboardRow = {
@@ -85,6 +86,46 @@ export async function recordRunFinish(input: {
     });
   } catch (err) {
     console.warn('[tracking] recordRunFinish failed', err);
+  }
+}
+
+/**
+ * Write one feedback submission to the `feedback` collection. Fire-and-forget
+ * from the caller's perspective — resolves `true` on success, `false` on any
+ * failure (never throws), so the UI can show a thank-you or a retry without a
+ * crash path. Read these back in the Firebase console; there's no in-app read.
+ *
+ * Field caps (comment 2000, ua 300) are enforced here AND mirrored in
+ * firestore.rules so a hand-rolled client can't bloat a doc.
+ */
+export async function recordFeedback(input: {
+  rating: number;
+  comment: string;
+  source: string;
+  track?: string | null;
+  handle?: string | null;
+  runId?: string | null;
+  level?: string | null;
+}): Promise<boolean> {
+  try {
+    const uid = await ensureAnonAuth();
+    const rating = Math.max(1, Math.min(5, Math.round(input.rating)));
+    await addDoc(collection(db, FEEDBACK), {
+      uid,
+      rating,
+      comment: (input.comment ?? '').trim().slice(0, 2000),
+      source: input.source,
+      track: input.track ?? null,
+      handle: input.handle ?? null,
+      runId: input.runId ?? null,
+      level: input.level ?? null,
+      ua: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 300) : null,
+      created_at: serverTimestamp(),
+    });
+    return true;
+  } catch (err) {
+    console.warn('[tracking] recordFeedback failed', err);
+    return false;
   }
 }
 

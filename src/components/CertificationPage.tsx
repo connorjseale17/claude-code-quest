@@ -3,6 +3,7 @@ import { useGame, useGameDispatch } from '../engine/GameContext';
 import { TerminalFrame, Cursor } from './TerminalFrame';
 import { CREDITS } from '../credits';
 import { LeaderboardCard } from './LeaderboardCard';
+import { FeedbackButton } from './FeedbackButton';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { currentUid } from '../lib/firebase';
 
@@ -411,6 +412,7 @@ export function CertificationPage() {
           >
             ↻ PLAY AGAIN
           </button>
+          <FeedbackButton accent="#E8633D" source="quest-end" />
         </div>
 
         {/* Cert + leaderboard sidebar. The cert iframe fills its cell directly

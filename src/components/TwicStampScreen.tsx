@@ -4,6 +4,7 @@ import { PixelSprite } from './PixelSprite';
 import { TWIC_ISSUE_INTRO } from '../content/twic-issue';
 import { useGameDispatch } from '../engine/GameContext';
 import { PlayAgainButton } from './PlayAgainButton';
+import { FeedbackButton } from './FeedbackButton';
 
 /**
  * Terminal end-state for the TWiC track. Player landed here by walking through
@@ -60,7 +61,10 @@ export function TwicStampScreen() {
           <span style={{ color: '#E8E8E8' }}>The issue is closed. Next one drops next week.</span>
         </div>
 
-        <PlayAgainButton accent={accent} onClick={() => dispatch({ type: 'RESTART_RUN' })} />
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <PlayAgainButton accent={accent} onClick={() => dispatch({ type: 'RESTART_RUN' })} />
+          <FeedbackButton accent={accent} source="twic-end" />
+        </div>
 
         <div style={{ color: '#7D7D7D', fontSize: 13, textAlign: 'center', marginTop: 4 }}>
           <span style={{ color: accent }}>{'>'}</span> built with claude code
