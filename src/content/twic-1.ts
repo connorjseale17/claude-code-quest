@@ -1,127 +1,126 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — Dynamic Workflows: Claude plans a large task and fans out
- * hundreds of parallel subagents in a single session.
- * Source: Anthropic "Introducing Claude Opus 4.8" (Dynamic Workflows research
- * preview) + Claude Code CHANGELOG 2.1.160 (trigger keyword renamed
- * `workflow` -> `ultracode`).
+ * twic-1 (Feature A) — /simplify: a cleanup-only review that finds reuse,
+ * simplification, efficiency, and altitude improvements and applies the fixes.
+ * Source: Claude Code CHANGELOG 2.1.154 ("`/simplify` now runs a cleanup-only
+ * review (reuse, simplification, efficiency, altitude) and applies the fixes").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown. The Beat Reporter is buzzing — the headline that shipped with Opus 4.8 is Dynamic Workflows, where Claude takes one enormous task, plans the whole thing, and unleashes hundreds of parallel subagents in a single session. Read the two pages on the desk to see how the fan-out works and where a consultant points it. Then the door asks one question, and the thing guarding the key has opinions about scale.",
+    "Room 1 of this week's rundown. The Beat Reporter is leading with the unglamorous workhorse that landed in the Opus 4.8 release: the `/simplify` command. Point it at code that already works and it runs a cleanup-only pass — reuse, simplification, efficiency, altitude — and then applies the fixes itself instead of just listing them. Read the two pages on the desk for how the pass works and when a consultant reaches for it, then the door asks one question, and the thing guarding the key is built entirely out of the mess you left behind.",
   prompt:
-    "You hand Claude a single instruction: migrate a 400,000-line codebase off a deprecated API, kickoff to merge. Instead of grinding file by file, it plans the work and spins up hundreds of subagents that run at the same time inside one session. What capability is this?",
+    "A teammate runs `/simplify` on a module that's already passing its tests and asks you what it just did. What's the accurate answer?",
   choices: [
-    { id: 'a', label: 'Dynamic Workflows — Claude plans the large task itself and runs hundreds of parallel subagents in a single session', correct: true },
-    { id: 'b', label: 'The same as hand-defining custom subagents and invoking them one at a time', correct: false },
-    { id: 'c', label: 'Auto permission mode letting Claude act without stopping to ask', correct: false },
-    { id: 'd', label: 'Opening hundreds of separate Claude Code sessions in parallel terminal tabs yourself', correct: false },
+    { id: 'a', label: 'It ran a cleanup-only review — reuse, simplification, efficiency, altitude — and applied the fixes itself', correct: true },
+    { id: 'b', label: 'It hunted for correctness bugs and security holes and printed a report for you to fix by hand', correct: false },
+    { id: 'c', label: 'It reformatted whitespace and ran your linter without touching any logic', correct: false },
+    { id: 'd', label: 'It deleted every file it judged unnecessary from the repository', correct: false },
   ],
-  passFeedback: 'HIT! Dynamic Workflows is the research-preview capability where Claude plans a big job and fans out hundreds of parallel subagents in one session — enough to carry a codebase-scale migration from kickoff to merge.',
-  failFeedback: 'MISS! This is not you wiring up subagents by hand, not a permission mode, and not you juggling terminal tabs. Claude does the planning and the fan-out itself — re-read the books.',
+  passFeedback: 'HIT! `/simplify` is a cleanup-only review across four lenses — reuse, simplification, efficiency, altitude — and it does not stop at a report: it applies the fixes for you.',
+  failFeedback: "MISS! It's not a bug-or-security hunt, not a whitespace pass, and it doesn't delete files. It's a quality cleanup that finds and then applies the improvements — re-read the books.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**Dynamic Workflows — One Instruction, a Hundred Hands**
+      text: `**/simplify — The Cleanup Pass That Finishes the Job**
 
-**The ceiling this lifts**
+**A review with a narrow, deliberate scope**
 
-A normal Claude Code session is essentially one worker holding a single thread of attention. That worker is excellent, but it moves through a job mostly in sequence, and the bigger the job the longer the line. *Dynamic Workflows*, the research-preview capability that arrived alongside Claude Opus 4.8, removes that ceiling. Hand Claude a task too large for one pass and it will *plan the work and run hundreds of parallel subagents in a single session* — decomposing the goal itself and farming the pieces out, rather than asking you to chop the job up first.
+Most reviews you ask for cast a wide net: correctness, bugs, security, the works. \`/simplify\`, which shipped in the Claude Opus 4.8 release, does the opposite on purpose. It *runs a cleanup-only review* — it isn't hunting for what's broken, it's hunting for what's messy. The code it looks at is assumed to already work; the question it asks is whether the same behavior could be expressed more cleanly. That narrow scope is the feature, not a limitation: you get a pass that won't get distracted re-litigating logic that's already correct.
 
-**What the fan-out looks like in practice**
+**The four lenses it reviews through**
 
-The example Anthropic leads with is the kind that used to mean a quarter and a war room: a *codebase-scale migration across hundreds of thousands of lines of code, from kickoff to merge*. Claude reads the shape of the problem, drafts a plan, then spawns a swarm of subagents that each own a slice and work concurrently. Because the subagents run together instead of in a queue, wall-clock time stops scaling with the size of the task the way it does for a lone session.
+The command looks at code through four named lenses: *reuse, simplification, efficiency, altitude*. Reuse asks whether something here duplicates what already exists and could lean on it instead. Simplification asks whether the same result could be reached with less ceremony. Efficiency asks whether the code does wasteful work it doesn't need to. Altitude asks whether the code sits at the right level of abstraction for its neighbors, rather than dropping into needless detail. Together they cover the quiet ways a working codebase drifts toward clutter.
 
-**The keyword that turns it on**
+**It applies the fixes, it doesn't just file them**
 
-Inside Claude Code the trigger has a name. As of release 2.1.160 the dynamic-workflow keyword was *renamed from \`workflow\` to \`ultracode\`* — so \`ultracode\` is the dial that tells Claude this is a job worth planning and parallelizing, not a one-shot edit. It sits at the heavy end of the effort range, reserved for work whose scale actually justifies the planning overhead.
+The part that changes how you use it: \`/simplify\` *applies the fixes*. It doesn't hand you a list of suggestions to work through later — it makes the cleanup edits itself, so the review and the remediation are one step. That means the output is a diff to read, not a backlog to schedule, which is exactly why it's worth running while the context of the work is still fresh.
 
-> Takeaway: Dynamic Workflows lets Claude turn a single oversized instruction into its own plan and hundreds of subagents running at once — you bring the goal, it brings the parallelism.`,
+> Takeaway: \`/simplify\` is a cleanup-only review across reuse, simplification, efficiency, and altitude — and it closes the loop by applying the fixes, not just reporting them.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Pointing the Swarm — When a Consultant Reaches for ultracode**
+      text: `**Leaving the Codebase Better Than You Found It — Where /simplify Earns Its Keep**
 
-**The jobs that have been stuck in the backlog**
+**The first draft is fast; the cleanup is the part that slips**
 
-Every engagement has the task nobody schedules: the framework upgrade across three hundred files, the rename that touches every module, the dead-API sweep that's been "next quarter" for a year. They're not hard — they're *big*, and bigness is what burns a junior's week. Dynamic Workflows is built for exactly this shape. When the work is large, mechanical, and decomposable, that's the signal to let Claude plan it and fan it out instead of pairing on it edit by edit.
+Working with Claude, you tend to get to "it works" quickly — and then the pressure to move on is enormous. The duplication you meant to factor out, the function that grew three responsibilities, the abstraction that's a notch too low for everything around it: that's the debt that never gets logged and never gets paid. \`/simplify\` is built for precisely that moment. The instant a feature passes its tests, before you context-switch away, you run the cleanup pass and let it tidy what the rush left behind.
 
-**Scope it like you'd scope a crew**
+**A professional standard, not a personal preference**
 
-You don't point a hundred-person crew at a vague brief, and you shouldn't point a hundred subagents at one either. The leverage comes from a sharp goal and clear boundaries: which directories are in play, what "done" means, what the merge gate is. Claude does the planning, but the quality of the plan still tracks the quality of the framing — name the target state and the constraints, then let the swarm carry the load.
+On client work, the state you leave a codebase in is part of the deliverable, whether or not anyone says so. Code that's clean — no obvious duplication, no needless complexity, consistent in altitude — is code the next person can extend without cursing your name. Running a dedicated cleanup pass before a handoff turns "it works on my machine" into "it works and it reads well," and that difference is what separates a contractor who shipped from a consultant who left the place better than they found it.
 
-**Match the tool to the size of the task**
+**Read the diff like you'd read any change**
 
-Because it's a research preview and the heavy end of the effort range, \`ultracode\` is not the gear for a two-file tweak — the planning overhead would dwarf the work. Reserve it for the genuinely large jobs and review the result the way you'd review any big merge: read the diff, run the suite, sanity-check the edges. Used on the right task it collapses a week of grunt migration into a single supervised session; used on the wrong one it's a sledgehammer for a thumbtack.
+Because the command applies its edits rather than proposing them, treat its output the way you'd treat any automated change: read the diff before you commit it. The pass is sharp, but it's making judgment calls about your code's shape, and you own the result. Run it, scan what it touched, confirm the behavior is unchanged by re-running the suite, and then commit a single clean refactor. Used this way it's a finishing tool — the pass you make routine right before you hand work over.
 
-> Takeaway: Save Dynamic Workflows for the large, decomposable jobs that have been clogging the backlog — sharp goal in, supervised swarm out.`,
+> Takeaway: Make \`/simplify\` the last thing you run before a handoff — tidy the rush out while the work is fresh, then read the diff and ship a codebase the next person thanks you for.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `This is a big, mechanical job, so plan it as a Dynamic Workflow and fan it out.
-Goal: migrate the ____ off the deprecated ____ across the whole repo.
-Scope it to ____ and leave everything else untouched.
-"Done" means ____ — that's the merge gate.
-Plan the work yourself, run the subagents in parallel, then show me one diff to review.`,
+    template: `The ____ feature passes its tests now, but I rushed the first draft and I want it clean before the handoff.
+Run /simplify on ____ as a cleanup-only pass — I'm not asking you to hunt for bugs, just for mess.
+Focus the cleanup on ____ in particular.
+Apply the fixes, then show me one diff so I can ____ before we commit.
+Re-run the suite afterward to prove the behavior didn't change.`,
     blanks: [
-      { id: 'target', suggestions: ['Acme billing service', 'client data layer', 'internal reporting app'] },
-      { id: 'api', suggestions: ['v1 payments SDK', 'legacy auth library', 'old charting package'] },
-      { id: 'scope', suggestions: ['the src/ and tests/ trees', 'the services/billing directory', 'everything except vendored code'] },
-      { id: 'done', suggestions: ['the full test suite passes', 'zero references to the old API remain', 'the type-check and lint are clean'] },
+      { id: 'feature', suggestions: ['billing export', 'onboarding flow', 'reporting dashboard'] },
+      { id: 'scope', suggestions: ['the src/billing directory', 'the file you just edited', 'the new module only'] },
+      { id: 'lens', suggestions: ['duplication I can factor out', 'functions doing too much at once', 'abstractions sitting at the wrong level'] },
+      { id: 'review', suggestions: ['read the refactor', 'sanity-check what changed', 'confirm nothing logic moved'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "Dynamic Workflows (research preview, shipped with Opus 4.8): hand Claude one oversized task and it plans the work itself and runs hundreds of parallel subagents in a single session — enough to carry a codebase-scale migration across hundreds of thousands of lines from kickoff to merge. In Claude Code the trigger keyword was renamed from `workflow` to `ultracode` (2.1.160), and it sits at the heavy end of the effort range. Reach for it on large, decomposable jobs with a sharp goal; review the result like any big merge.",
+        "/simplify (shipped in the Opus 4.8 release) runs a cleanup-only review across four lenses — reuse, simplification, efficiency, altitude — on code that already works, and it applies the fixes itself rather than just reporting them. It is not a bug or security hunt; it tidies shape, not correctness. The output is a diff to read, so review it and re-run the suite before committing. Reach for it right after a feature passes its tests and before a handoff, so the rush gets tidied while the context is still fresh.",
       beats: [
-        { kind: 'say', text: "Big lead this week, straight out of the Opus 4.8 launch: Dynamic Workflows. The pitch is simple and kind of wild — you hand Claude one enormous task and it *plans the work and runs hundreds of parallel subagents in a single session*." },
-        { kind: 'say', text: "The headline example is a `codebase-scale migration across hundreds of thousands of lines of code, from kickoff to merge`. Not you slicing it up — Claude reads the shape of the job, drafts the plan, then spawns a swarm where each subagent owns a slice and they all run at once." },
-        { kind: 'say', text: "That's the part that matters: the subagents run *concurrently*, not in a line. So wall-clock time stops scaling with the size of the task the way it does for a single worker grinding through sequentially." },
+        { kind: 'say', text: "First story this week is the kind that saves you from yourself: the `/simplify` command, in since the Opus 4.8 release. You point it at code that already works, and it runs a *cleanup-only* review and then applies the fixes." },
+        { kind: 'say', text: "Lean on those two words — *cleanup-only*. It isn't hunting for bugs or security holes; it assumes the logic is correct and asks a different question: could this same behavior be expressed more cleanly? That narrow scope is the whole point." },
+        { kind: 'say', text: "It reviews through four named lenses: reuse, simplification, efficiency, and altitude. Duplication you could fold away, ceremony you could cut, wasteful work, and code sitting at the wrong level of abstraction for its neighbors. That's the quiet drift it's built to catch." },
         {
           kind: 'choice',
-          prompt: "Quick gut-check. What's the actual difference between Dynamic Workflows and just defining a few custom subagents yourself?",
+          prompt: "Gut-check before you go further. What separates `/simplify` from asking Claude for a normal code review?",
           options: [
-            { id: 'self-define', label: 'No difference — it\'s the same as me writing subagent definitions and calling them', correct: false, reaction: "Not quite. With hand-defined subagents you do the decomposing and the delegating. Dynamic Workflows has Claude plan the whole task and fan out the swarm itself — that's the leap." },
-            { id: 'claude-plans', label: 'Claude does the planning and the fan-out itself, spinning up hundreds in one session', correct: true, reaction: "Exactly. You bring one big goal; Claude turns it into its own plan and hundreds of parallel subagents. The orchestration moves from your hands to its own." },
-            { id: 'permission', label: 'It\'s a permission setting that lets Claude skip approvals', correct: false, reaction: "Different axis entirely. Permission modes govern *whether* Claude can act without asking; Dynamic Workflows is about *how much* it can plan and parallelize in one shot." },
+            { id: 'bugs', label: 'Nothing — it\'s just a faster way to find bugs', correct: false, reaction: "Not it. A normal review chases correctness and security. `/simplify` deliberately skips all that and only looks at cleanup — shape, not bugs." },
+            { id: 'cleanup-apply', label: 'It\'s cleanup-only in scope, and it applies the fixes instead of just listing them', correct: true, reaction: "Exactly. Two things at once: it narrows to reuse/simplification/efficiency/altitude, and it closes the loop by making the edits — so you get a diff, not a to-do list." },
+            { id: 'lint', label: 'It just runs your formatter and linter', correct: false, reaction: "Deeper than that. Formatting is cosmetic; `/simplify` restructures for reuse, simplicity, and altitude — judgment calls a linter can't make." },
           ],
         },
-        { kind: 'say', text: "In Claude Code there's a keyword for it. As of 2.1.160 the dynamic-workflow trigger was renamed from `workflow` to `ultracode` — that's the dial that says 'this job is big enough to plan and parallelize,' and it lives at the heavy end of the effort range." },
-        { kind: 'say', text: "Consultant's caveat: it's a research preview and it's a sledgehammer. Point it at the large, mechanical, decomposable jobs — the framework upgrade across three hundred files, the dead-API sweep that's been 'next quarter' forever. Give it a sharp goal and clear boundaries, not a two-file tweak." },
-        { kind: 'say', text: "And review the output like any big merge: read the diff, run the suite, check the edges. The books on the desk have the mechanics and the playbook. The door wants to know what this capability actually *is* — answer that and the key's yours." },
+        { kind: 'say', text: "Here's the part that changes how you work: it *applies* the fixes. You don't get a backlog of suggestions to schedule — you get a diff to read. So run it while the context of the work is still fresh, not three weeks later." },
+        { kind: 'say', text: "Consultant's habit to build: make `/simplify` the last thing you run before a handoff. You get to 'it works' fast with Claude, but the cleanup is what slips. One pass tidies the rush out, and the state you leave the codebase in is part of the deliverable whether anyone says so or not." },
+        { kind: 'say', text: "One discipline, though — because it applies edits, read the diff before you commit, and re-run the suite to prove the behavior didn't move. The books on the desk have the four lenses and the playbook. The door wants to know what `/simplify` actually does — answer that and the key's yours." },
       ],
     },
   },
   battle: {
-    name: 'The Hundredfold Husk',
+    name: 'Cruft, the Bone-Hoarder',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*rattles apart into a hundred clattering copies, all moving at once* …one of me for every file you've got… still think you'll do this by hand…?",
+    introLine: "*rises out of a heap of duplicated bones, dead branches, and copy-pasted ribs* …every shortcut you ever took, i kept… look how much mess you call 'done'…",
     tauntLines: [
-      "*a hundred skulls grin in unison* one at a time, mortal, one bone at a time, the way you've always done it…",
-      "*scatters across the chamber* you can't be everywhere — but I can, that's the whole point you keep missing…",
+      "*rattles a fistful of redundant bones* why factor anything out when you can paste it again, and again, and again…",
+      "*stacks needless complexity into a teetering tower* it works, doesn't it? leave the clutter, walk away, that's what they all do…",
     ],
-    victoryLine: "*the copies snap back into a single heap* …fine… you understood the swarm… take the key before I reassemble…",
+    victoryLine: "*collapses as the duplicate bones dissolve into a single clean pile* …you ran the cleanup pass… fine… take the key, tidy one…",
     questions: [
       {
         prompt:
-          "You hand Claude a single instruction: migrate a 400,000-line codebase off a deprecated API, kickoff to merge. Instead of grinding file by file, it plans the work and spins up hundreds of subagents that run at the same time inside one session. What capability is this?",
+          "A teammate runs `/simplify` on a module that's already passing its tests and asks you what it just did. What's the accurate answer?",
         choices: [
-          { id: 'a', label: 'Dynamic Workflows — Claude plans the large task itself and runs hundreds of parallel subagents in a single session', correct: true },
-          { id: 'b', label: 'The same as hand-defining custom subagents and invoking them one at a time', correct: false },
-          { id: 'c', label: 'Auto permission mode letting Claude act without stopping to ask', correct: false },
-          { id: 'd', label: 'Opening hundreds of separate Claude Code sessions in parallel terminal tabs yourself', correct: false },
+          { id: 'a', label: 'It ran a cleanup-only review — reuse, simplification, efficiency, altitude — and applied the fixes itself', correct: true },
+          { id: 'b', label: 'It hunted for correctness bugs and security holes and printed a report for you to fix by hand', correct: false },
+          { id: 'c', label: 'It reformatted whitespace and ran your linter without touching any logic', correct: false },
+          { id: 'd', label: 'It deleted every file it judged unnecessary from the repository', correct: false },
         ],
-        passFeedback: 'HIT! Dynamic Workflows is the research-preview capability where Claude plans a big job and fans out hundreds of parallel subagents in one session — enough to carry a codebase-scale migration from kickoff to merge.',
-        failFeedback: 'MISS! This is not you wiring up subagents by hand, not a permission mode, and not you juggling terminal tabs. Claude does the planning and the fan-out itself — re-read the books.',
+        passFeedback: 'HIT! `/simplify` is a cleanup-only review across four lenses — reuse, simplification, efficiency, altitude — and it does not stop at a report: it applies the fixes for you.',
+        failFeedback: "MISS! It's not a bug-or-security hunt, not a whitespace pass, and it doesn't delete files. It's a quality cleanup that finds and then applies the improvements — re-read the books.",
       },
     ],
   },

@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-06-07',
+  publishDate: '2026-06-15',
   framing:
-    "This week in Claude, the theme is scale and control — bigger jobs, fewer stalls, and a sharper hand on the throttle. Dynamic Workflows, the headline that shipped with Opus 4.8, lets Claude plan an enormous task itself and fan out hundreds of parallel subagents in one session, enough to carry a codebase-scale migration from kickoff to merge. The new `fallbackModel` setting keeps an engagement alive by hopping to a backup roster when your primary model goes dark, and the `/effort` dial lets you decide how hard Claude thinks on any given task — and lock that choice in as your default.",
+    "This week in Claude, the theme is craft and control — leaving the work cleaner, keeping the rules airtight, and refusing to wait on slow jobs. The `/simplify` command runs a cleanup-only pass across reuse, simplification, efficiency, and altitude, and applies the fixes itself so you hand off a tidy codebase instead of a backlog. The new `enforceAvailableModels` managed setting closes the gap an allowlist left open, binding even the Default model to your approved list so a model policy actually holds. And inside `claude agents`, typing `! <command>` runs a shell command as a background session you can detach from and attach back to, so a twenty-minute build never pins you to a progress bar.",
 };
