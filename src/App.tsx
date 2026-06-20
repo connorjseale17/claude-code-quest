@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GameProvider, useGame } from './engine/GameContext';
 import { DevMenuContext } from './engine/DevMenuContext';
-import { ensureAnonAuth } from './lib/firebase';
 import { useMovement } from './engine/useMovement';
 import { DevMenu } from './components/DevMenu';
 import { LEVEL_CONFIGS } from './engine/roomConfigs';
@@ -161,9 +160,10 @@ function PhaseRouter() {
 export default function App() {
   const scale = useScale();
 
-  // Boot Firebase anonymous auth once on mount. Fire-and-forget — components
-  // that need UID call ensureAnonAuth() themselves and share the same promise.
-  useEffect(() => { void ensureAnonAuth().catch(() => {}); }, []);
+  // No eager Firebase warm-up here: the SDK is a lazy chunk that loads on first
+  // real use (run start on the path-select screen, or a leaderboard view), so
+  // the boot/splash/instructions screens never pay for it. Every tracking call
+  // arms anonymous auth itself before reading or writing.
 
   return (
     <GameProvider>

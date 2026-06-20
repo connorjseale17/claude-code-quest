@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { Cursor } from './TerminalFrame';
 import { PixelSprite } from './PixelSprite';
 import { useGame, useGameDispatch } from '../engine/GameContext';
@@ -12,13 +12,12 @@ import { PlayAgainButton } from './PlayAgainButton';
 export function EndScreen() {
   const state = useGame();
   const dispatch = useGameDispatch();
-  // Freeze elapsed once on mount so the rank query doesn't refetch in a loop.
-  const finalElapsedMs = useMemo(
-    () => (state.runStartedAt != null
+  // Freeze elapsed once on mount (lazy state initializer runs exactly once) so
+  // the rank query doesn't refetch in a loop.
+  const [finalElapsedMs] = useState(() =>
+    state.runStartedAt != null
       ? Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs)
-      : 0),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+      : 0,
   );
   const hasRun = state.runStartedAt != null;
   const prizesTotal = state.prizesUnlocked.length;

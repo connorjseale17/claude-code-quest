@@ -85,13 +85,12 @@ export function CertificationPage() {
   const state = useGame();
   const dispatch = useGameDispatch();
   // The run is already finished here, so freeze its elapsed time once on mount
-  // (a fresh Date.now() each render would refetch the rank in a loop).
-  const finalElapsedMs = useMemo(
-    () => (state.runStartedAt != null
+  // (a lazy state initializer runs exactly once; a fresh Date.now() each render
+  // would refetch the rank in a loop).
+  const [finalElapsedMs] = useState(() =>
+    state.runStartedAt != null
       ? Math.max(0, Date.now() - state.runStartedAt - state.runPausedElapsedMs)
-      : 0),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+      : 0,
   );
   const hasRun = state.runStartedAt != null;
   const prizesTotal = state.prizesUnlocked.length;

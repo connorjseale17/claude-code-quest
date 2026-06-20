@@ -1,10 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import {
-  getAuth,
-  signInAnonymously,
-  onAuthStateChanged,
-} from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import type { Auth } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,12 +10,6 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-  console.warn('[firebase] VITE_FIREBASE_* env vars are missing; auth/firestore will fail.');
-}
-
-const app = initializeApp(firebaseConfig);
-
 // The Firestore instance on this project is a NAMED database ("ccqdatabase"),
 // not the unnamed "(default)" one. getFirestore(app) with no id targets
 // "(default)", which doesn't exist here — so the id must be passed explicitly
@@ -28,40 +17,81 @@ const app = initializeApp(firebaseConfig);
 // the same database.
 const FIRESTORE_DATABASE_ID = 'ccqdatabase';
 
-export const auth = getAuth(app);
-export const db = getFirestore(app, FIRESTORE_DATABASE_ID);
+type FirebaseBundle = { auth: Auth; db: Firestore };
+
+let bundlePromise: Promise<FirebaseBundle> | null = null;
+// Mirror of the live Auth instance once the SDK has loaded, so currentUid()
+// can stay synchronous for render-time callers. Null until first load.
+let authInstance: Auth | null = null;
+
+/**
+ * Lazily import + initialize the Firebase SDK. The firebase/app, /auth and
+ * /firestore modules are ~300KB minified; importing them dynamically keeps
+ * them out of the main bundle and in a separate chunk that only downloads the
+ * first time anything touches auth or Firestore (i.e. when a run starts or a
+ * leaderboard is shown — never on the boot/splash/instructions screens).
+ * Cached after the first call: one app, one auth, one db for the session.
+ */
+function loadFirebase(): Promise<FirebaseBundle> {
+  if (bundlePromise) return bundlePromise;
+  bundlePromise = (async () => {
+    const [{ initializeApp }, { getAuth }, { getFirestore }] = await Promise.all([
+      import('firebase/app'),
+      import('firebase/auth'),
+      import('firebase/firestore'),
+    ]);
+    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+      console.warn('[firebase] VITE_FIREBASE_* env vars are missing; auth/firestore will fail.');
+    }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app, FIRESTORE_DATABASE_ID);
+    authInstance = auth;
+    return { auth, db };
+  })();
+  return bundlePromise;
+}
+
+/** Resolve the Firestore instance, loading the SDK on first use. */
+export async function getDb(): Promise<Firestore> {
+  return (await loadFirebase()).db;
+}
 
 let signInPromise: Promise<string> | null = null;
 
 export function ensureAnonAuth(): Promise<string> {
-  if (auth.currentUser) return Promise.resolve(auth.currentUser.uid);
   if (signInPromise) return signInPromise;
 
-  signInPromise = new Promise<string>((resolve, reject) => {
-    const unsub = onAuthStateChanged(
-      auth,
-      user => {
-        if (user) {
+  signInPromise = (async () => {
+    const { auth } = await loadFirebase();
+    if (auth.currentUser) return auth.currentUser.uid;
+    const { signInAnonymously, onAuthStateChanged } = await import('firebase/auth');
+    return new Promise<string>((resolve, reject) => {
+      const unsub = onAuthStateChanged(
+        auth,
+        user => {
+          if (user) {
+            unsub();
+            resolve(user.uid);
+          }
+        },
+        err => {
           unsub();
-          resolve(user.uid);
-        }
-      },
-      err => {
+          signInPromise = null;
+          reject(err);
+        },
+      );
+      signInAnonymously(auth).catch(err => {
         unsub();
         signInPromise = null;
         reject(err);
-      },
-    );
-    signInAnonymously(auth).catch(err => {
-      unsub();
-      signInPromise = null;
-      reject(err);
+      });
     });
-  });
+  })();
 
   return signInPromise;
 }
 
 export function currentUid(): string | null {
-  return auth.currentUser?.uid ?? null;
+  return authInstance?.currentUser?.uid ?? null;
 }

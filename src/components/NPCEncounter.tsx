@@ -457,7 +457,6 @@ function BlankBeat({
   blankSubmitted,
   onSubmitBlank,
   subText,
-  advance: _advance,
 }: {
   beat: Extract<ConversationBeat, { kind: 'blank' }>;
   accent: string;

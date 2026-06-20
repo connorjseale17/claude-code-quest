@@ -1,25 +1,14 @@
-import {
-  addDoc,
-  collection,
-  doc,
-  getCountFromServer,
-  getDoc,
-  getDocs,
-  increment,
-  limit,
-  orderBy,
-  query,
-  runTransaction,
-  serverTimestamp,
-  Timestamp,
-  where,
-  type QueryDocumentSnapshot,
-} from 'firebase/firestore';
-import { db, ensureAnonAuth } from './firebase';
+import type { QueryDocumentSnapshot } from 'firebase/firestore';
+import { ensureAnonAuth, getDb } from './firebase';
+
+// The Firestore SDK is imported dynamically inside each function (via
+// `import('firebase/firestore')`, the same chunk firebase.ts loads) so it stays
+// out of the main bundle. Every function also awaits ensureAnonAuth() first:
+// it guarantees the anonymous session exists before any read/write (the
+// security rules require it) and triggers the one-time SDK load.
 
 const RUNS = 'runs';
 const FEEDBACK = 'feedback';
-const META_GLOBAL = doc(db, 'meta', 'global');
 
 export type LeaderboardRow = {
   runId: string;
@@ -35,12 +24,16 @@ export async function recordRunStart(input: {
   colorIdx: number;
 }): Promise<string | null> {
   try {
-    const uid = await ensureAnonAuth();
-    const ref = await addDoc(collection(db, RUNS), {
+    const [uid, db, fs] = await Promise.all([
+      ensureAnonAuth(),
+      getDb(),
+      import('firebase/firestore'),
+    ]);
+    const ref = await fs.addDoc(fs.collection(db, RUNS), {
       uid,
       handle: input.handle,
       colorIdx: input.colorIdx,
-      started_at: serverTimestamp(),
+      started_at: fs.serverTimestamp(),
       finished: false,
       levels: [],
       prizes: [],
@@ -60,20 +53,26 @@ export async function recordRunFinish(input: {
   prizes: Array<{ id: string; unlocked_at: number }>;
 }): Promise<void> {
   try {
-    const runRef = doc(db, RUNS, input.runId);
+    const [, db, fs] = await Promise.all([
+      ensureAnonAuth(),
+      getDb(),
+      import('firebase/firestore'),
+    ]);
+    const runRef = fs.doc(db, RUNS, input.runId);
+    const metaGlobal = fs.doc(db, 'meta', 'global');
     const levels = input.levels.map(l => ({
       id: l.id,
-      completed_at: Timestamp.fromMillis(l.completed_at),
+      completed_at: fs.Timestamp.fromMillis(l.completed_at),
     }));
     const prizes = input.prizes.map(p => ({
       id: p.id,
-      unlocked_at: Timestamp.fromMillis(p.unlocked_at),
+      unlocked_at: fs.Timestamp.fromMillis(p.unlocked_at),
     }));
-    await runTransaction(db, async tx => {
+    await fs.runTransaction(db, async tx => {
       tx.set(
         runRef,
         {
-          finished_at: serverTimestamp(),
+          finished_at: fs.serverTimestamp(),
           finished: true,
           elapsed_ms: input.elapsed_ms,
           levels,
@@ -82,7 +81,7 @@ export async function recordRunFinish(input: {
         },
         { merge: true },
       );
-      tx.set(META_GLOBAL, { completions: increment(1) }, { merge: true });
+      tx.set(metaGlobal, { completions: fs.increment(1) }, { merge: true });
     });
   } catch (err) {
     console.warn('[tracking] recordRunFinish failed', err);
@@ -108,9 +107,13 @@ export async function recordFeedback(input: {
   level?: string | null;
 }): Promise<boolean> {
   try {
-    const uid = await ensureAnonAuth();
+    const [uid, db, fs] = await Promise.all([
+      ensureAnonAuth(),
+      getDb(),
+      import('firebase/firestore'),
+    ]);
     const rating = Math.max(1, Math.min(5, Math.round(input.rating)));
-    await addDoc(collection(db, FEEDBACK), {
+    await fs.addDoc(fs.collection(db, FEEDBACK), {
       uid,
       rating,
       comment: (input.comment ?? '').trim().slice(0, 2000),
@@ -120,7 +123,7 @@ export async function recordFeedback(input: {
       runId: input.runId ?? null,
       level: input.level ?? null,
       ua: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 300) : null,
-      created_at: serverTimestamp(),
+      created_at: fs.serverTimestamp(),
     });
     return true;
   } catch (err) {
@@ -147,25 +150,31 @@ export async function fetchLeaderboards(): Promise<{
   totalCompletions: number;
 }> {
   try {
-    const runsCol = collection(db, RUNS);
-    const fastestQ = query(
+    const [, db, fs] = await Promise.all([
+      ensureAnonAuth(),
+      getDb(),
+      import('firebase/firestore'),
+    ]);
+    const runsCol = fs.collection(db, RUNS);
+    const metaGlobal = fs.doc(db, 'meta', 'global');
+    const fastestQ = fs.query(
       runsCol,
-      where('finished', '==', true),
-      orderBy('elapsed_ms', 'asc'),
-      limit(7),
+      fs.where('finished', '==', true),
+      fs.orderBy('elapsed_ms', 'asc'),
+      fs.limit(7),
     );
-    const mostPrizesQ = query(
+    const mostPrizesQ = fs.query(
       runsCol,
-      where('finished', '==', true),
-      orderBy('prizes_total', 'desc'),
-      orderBy('elapsed_ms', 'asc'),
-      limit(7),
+      fs.where('finished', '==', true),
+      fs.orderBy('prizes_total', 'desc'),
+      fs.orderBy('elapsed_ms', 'asc'),
+      fs.limit(7),
     );
 
     const [fastestSnap, mostPrizesSnap, metaSnap] = await Promise.all([
-      getDocs(fastestQ),
-      getDocs(mostPrizesQ),
-      getDoc(META_GLOBAL),
+      fs.getDocs(fastestQ),
+      fs.getDocs(mostPrizesQ),
+      fs.getDoc(metaGlobal),
     ]);
 
     const metaData = metaSnap.data();
@@ -194,20 +203,25 @@ export async function fetchRunRank(run: {
   prizes_total: number;
 }): Promise<{ speedRank: number; prizesRank: number } | null> {
   try {
-    const runsCol = collection(db, RUNS);
-    const fasterQ = query(
+    const [, db, fs] = await Promise.all([
+      ensureAnonAuth(),
+      getDb(),
+      import('firebase/firestore'),
+    ]);
+    const runsCol = fs.collection(db, RUNS);
+    const fasterQ = fs.query(
       runsCol,
-      where('finished', '==', true),
-      where('elapsed_ms', '<', run.elapsed_ms),
+      fs.where('finished', '==', true),
+      fs.where('elapsed_ms', '<', run.elapsed_ms),
     );
-    const morePrizesQ = query(
+    const morePrizesQ = fs.query(
       runsCol,
-      where('finished', '==', true),
-      where('prizes_total', '>', run.prizes_total),
+      fs.where('finished', '==', true),
+      fs.where('prizes_total', '>', run.prizes_total),
     );
     const [fasterSnap, morePrizesSnap] = await Promise.all([
-      getCountFromServer(fasterQ),
-      getCountFromServer(morePrizesQ),
+      fs.getCountFromServer(fasterQ),
+      fs.getCountFromServer(morePrizesQ),
     ]);
     return {
       speedRank: fasterSnap.data().count + 1,
