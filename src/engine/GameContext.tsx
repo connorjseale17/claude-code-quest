@@ -294,7 +294,7 @@ export const initialState: GameState = {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed;
       }
-    } catch {}
+    } catch { /* ignore */ }
     return [];
   })(),
   lessonsCompleted: (() => {
@@ -304,7 +304,7 @@ export const initialState: GameState = {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed;
       }
-    } catch {}
+    } catch { /* ignore */ }
     return [];
   })(),
   currentTrack: isRestoring && savedGame.currentTrack ? savedGame.currentTrack : 'quest',
@@ -567,14 +567,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'SET_PLAYER': {
       const player = { name: action.name, botColor: action.botColor };
-      try { localStorage.setItem('ccq-player', JSON.stringify(player)); } catch {}
+      try { localStorage.setItem('ccq-player', JSON.stringify(player)); } catch { /* ignore */ }
       return { ...state, player };
     }
     case 'UNLOCK_PRIZE': {
       if (state.prizesUnlocked.includes(action.prizeId)) return state;
       const prizesUnlocked = [...state.prizesUnlocked, action.prizeId];
       const prizesUnlockedAt = { ...state.prizesUnlockedAt, [action.prizeId]: Date.now() };
-      try { localStorage.setItem('ccq-prizes', JSON.stringify(prizesUnlocked)); } catch {}
+      try { localStorage.setItem('ccq-prizes', JSON.stringify(prizesUnlocked)); } catch { /* ignore */ }
       const next: GameState = { ...state, prizesUnlocked, prizesUnlockedAt };
       persistRun(next);
       return next;
@@ -582,7 +582,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'MARK_LESSON_COMPLETED': {
       if (state.lessonsCompleted.includes(action.npcId)) return state;
       const lessonsCompleted = [...state.lessonsCompleted, action.npcId];
-      try { localStorage.setItem('ccq-lessons', JSON.stringify(lessonsCompleted)); } catch {}
+      try { localStorage.setItem('ccq-lessons', JSON.stringify(lessonsCompleted)); } catch { /* ignore */ }
       return { ...state, lessonsCompleted };
     }
     case 'ADVANCE_PHASE': {

@@ -18,7 +18,7 @@ interface BossSpriteProps {
  * attack lunge, hurt flash, and defeat fade. No drop-shadow glow — it gets
  * clipped by the stage's overflow-hidden and creates a boxed look.
  */
-const PHASE_STYLE = (_accent: string): Record<BossDisplayPhase, React.CSSProperties> => ({
+const PHASE_STYLE: Record<BossDisplayPhase, React.CSSProperties> = {
   idle: {
     animation: 'cc-boss-bob 2.4s ease-in-out infinite',
     transition: 'transform 140ms ease-out, filter 140ms ease-out, opacity 300ms ease-out',
@@ -38,7 +38,7 @@ const PHASE_STYLE = (_accent: string): Record<BossDisplayPhase, React.CSSPropert
     transform: 'rotate(8deg) translateY(12px)',
     transition: 'transform 300ms, filter 300ms, opacity 300ms',
   },
-});
+};
 
 // The image (PNG) path used to have its own slightly-different drop-shadow
 // glow on idle/attack — also clips against the stage. The PNG branch below
@@ -53,14 +53,14 @@ export function BossSprite({ spriteKey, phase, accent, scale = 8, art }: BossSpr
       imageRendering: 'pixelated',
       transition: 'transform 140ms ease-out, filter 140ms ease-out, opacity 300ms ease-out',
     };
-    return <img src={art.src} alt="" draggable={false} style={{ ...base, ...PHASE_STYLE(accent)[phase] }} />;
+    return <img src={art.src} alt="" draggable={false} style={{ ...base, ...PHASE_STYLE[phase] }} />;
   }
 
   // --- Bestiary path: `${key}_a`/`_b` pair animates, CSS does the phase. ---
   // Sprite palette is fixed per-enemy (no theme tint), so we don't pass accent.
   if (FRAMES[`${spriteKey}_a`] && FRAMES[`${spriteKey}_b`]) {
     return (
-      <div style={PHASE_STYLE(accent)[phase]}>
+      <div style={PHASE_STYLE[phase]}>
         <AnimatedSprite
           frames={[`${spriteKey}_a`, `${spriteKey}_b`]}
           fps={2.2}
