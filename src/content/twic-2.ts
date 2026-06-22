@@ -1,126 +1,128 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-2 (Feature B) — /cd: move a running session to a new working directory
- * without breaking it, keeping the conversation and context intact.
- * Source: Claude Code CHANGELOG 2.1.169 ("Added `/cd` command to move a session
- * to a new working directory without breaking").
+ * twic-2 (Feature B) — the `MessageDisplay` hook event: a hook that fires as an
+ * assistant message is about to be shown and can transform the text or hide it
+ * before it reaches the screen.
+ * Source: Claude Code CHANGELOG 2.1.152 ("`MessageDisplay` hook-event
+ * assistant-message-text transform/hide capability").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic2Content: LessonContent = {
   roomId: 'twic-room-2',
   intro:
-    "Room 2. The Beat Reporter's mid-week story is the small quality-of-life fix that anyone juggling more than one repo will feel immediately: the new `/cd` command. It moves your running session to a different working directory without breaking it — same conversation, same context, new folder. No more quitting and relaunching just to work somewhere else. Read the two pages for how the move works and why a consultant living across client repos reaches for it, then face the thing in the doorway — it haunts the space between folders and would love to strand you in the wrong one.",
+    "Room 2, and the Beat Reporter has a story about the very last step before words hit your screen. There's a new hook event called `MessageDisplay`: it fires as an assistant message is about to be shown, and the hook you wire to it can rewrite that text — or hide it entirely — before you ever read it. The two pages on the desk cover how the event sits in the pipeline and the redaction work it was built for, plus the one caveat that keeps you honest about what it does and doesn't guarantee. Answer the door's question and the key is yours; the thing in here is a wraith that bends every message before it reaches your eyes.",
   prompt:
-    "You're mid-session in one repo and you need Claude to start operating in a different project directory — without losing the conversation you've built up. What do you do?",
+    "Your firm screen-records client sessions, and you need Claude's replies scrubbed of the client's name before they ever appear on screen. Which hook event is built to do that?",
   choices: [
-    { id: 'a', label: 'Use `/cd` to move the session to the new working directory — it keeps running, conversation and context intact', correct: true },
-    { id: 'b', label: 'Quit Claude and relaunch it from the other directory', correct: false },
-    { id: 'c', label: 'Run `cd` as a shell command and the session will follow you into the new folder', correct: false },
-    { id: 'd', label: "You can't — a session is pinned to one directory for its whole lifetime", correct: false },
+    { id: 'a', label: '`MessageDisplay` — it fires as an assistant message is about to be shown and can transform or hide its text', correct: true },
+    { id: 'b', label: '`PostToolUse` — it runs after a tool call finishes, so it can edit the words of a reply', correct: false },
+    { id: 'c', label: '`SessionStart` — it runs once when the session opens, which is when message text gets filtered', correct: false },
+    { id: 'd', label: '`PreToolUse` — it gates each tool call before it runs, including the text of replies', correct: false },
   ],
-  passFeedback: 'HIT! `/cd` moves the running session to a new working directory without breaking it — you keep the whole conversation and just point Claude at a different folder.',
-  failFeedback: "MISS! You don't have to relaunch, a shell `cd` doesn't move the session, and a session isn't pinned for life. `/cd` relocates the live session and keeps your context — re-read the books.",
+  passFeedback: 'HIT! `MessageDisplay` fires as an assistant message is about to be displayed, and your hook can rewrite the text — scrub the name — or hide the message outright before it reaches the screen.',
+  failFeedback: "MISS! The other events fire around tool calls or at session start; none of them sit on the message-display path. `MessageDisplay` is the one event that can transform or hide a reply's text — re-read the books.",
   lore: [
     {
       id: 'twic-2-lore-a',
-      text: `**/cd — Move the Session, Keep the Conversation**
+      text: `**\`MessageDisplay\` — A Hook on the Last Step Before You Read It**
 
-**The anchor that used to come with a session**
+**Where the event sits in the pipeline**
 
-When you start Claude Code, the session is anchored to the directory you launched it in. That's where it reads files, where its commands run, where "the project" is. The trouble shows up the moment your work moves somewhere else — a sibling repo, a different subproject, the folder one level up. Until now the session couldn't simply follow you. Release 2.1.169 added the *\`/cd\` command to move a session to a new working directory without breaking it*, and "without breaking it" is the whole point: the session relocates instead of having to be torn down.
+Claude Code already lets you hang hooks on moments in a session: before a tool runs, after it finishes, when a session starts. The \`MessageDisplay\` event, added in the 2.1.152 release, opens up a new moment — the one right at the end. After Claude has composed a reply but *before* that reply is painted to your screen, the \`MessageDisplay\` hook fires. It's the final checkpoint between the model's words and your eyes, and until now there was nothing wired there.
 
-**Why "without breaking" is the headline**
+**Two powers: transform, or hide**
 
-Before this, your two options for working elsewhere were both bad. You could quit and relaunch Claude from the new directory — and lose the entire conversation you'd built up, every bit of context you'd established. Or you could try to \`cd\` in a shell and discover the session didn't come with you; it was still anchored where it started. \`/cd\` removes that choice between context and location. The session stays alive, the thread stays intact, and the working directory changes underneath it.
+A hook on this event gets the assistant's message text, and it can do one of two things with it. It can *transform* the text — return a modified version, so what you read is the rewritten string rather than the original. Or it can *hide* the message altogether, suppressing it so nothing is shown. Transform is for changing what appears; hide is for deciding that, under some condition you define, nothing should appear at all. Both are driven by a command you control, so the logic is yours: match a pattern, swap it out, or pull the whole message.
 
-**What changes after you move**
+**It's a hook like any other**
 
-Once you've run \`/cd\`, the new directory is where the session lives: file lookups and commands resolve against it, the same way they did against the original. Everything you and Claude have discussed carries over — you've moved the workshop, not started a new one. That continuity is exactly what makes it more than a convenience: the cost of changing location drops to a single command, so location stops being a reason to break your flow.
+Mechanically there's nothing exotic here. You wire \`MessageDisplay\` the same way you wire any hook — an event name pointed at a command — and that command runs each time an assistant message is about to be displayed. What's new is purely the *event*: a place to intercept output text, where before you could only intercept tool calls and session lifecycle moments. Everything you already know about authoring hooks carries straight over.
 
-> Takeaway: \`/cd\` relocates a live session to a new working directory and keeps the conversation, so changing folders no longer means losing your context.`,
+> Takeaway: \`MessageDisplay\` is a hook event on the final step before a reply is shown; the hook it runs can transform the message text or hide it entirely, giving you a checkpoint on Claude's output you never had before.`,
     },
     {
       id: 'twic-2-lore-b',
-      text: `**One Session, Many Repos — Working the Way an Engagement Actually Sprawls**
+      text: `**Controlling What Lands On Screen — and the Line You Shouldn't Cross**
 
-**Client work rarely sits in one folder**
+**Redaction for the moment of display**
 
-A real engagement is almost never a single tidy directory. There's the API repo and the frontend repo; the monorepo with a dozen subprojects; the throwaway scratch folder next to the real one. Over a single working session you cross those boundaries constantly. \`/cd\` is built for exactly that sprawl. You can carry one continuous session — and all the context you've loaded into it about the client, the goal, the constraints — across every directory the work touches, instead of starting cold each time you change rooms.
+The clearest use is redaction. Consultants demo Claude in front of clients, record screen-shares for training, and drop screenshots into deliverables — and any of those can splash a client's name, an internal project codename, an API token, or a connection string across a screen that the wrong people are watching. A \`MessageDisplay\` hook is a standing filter for exactly that risk: write a command that scans each outgoing message for the strings you care about and rewrites them — *Acme Corp* becomes *the client*, a token becomes \`••••\` — and the substitution happens automatically on every reply, with no discipline required from you in the moment. The same hook can simply hide a message that trips a rule you'd rather not display at all.
 
-**The pattern: pivot without losing the thread**
+**Presentation polish, too**
 
-The move it enables is a clean pivot. You finish a change in one repo, you \`/cd\` into the next, and you keep going with everything you'd already established still in play — no re-explaining the engagement, no re-establishing what "done" means, no warm-up. That continuity compounds: the longer a session runs and the more context it accumulates, the more expensive a restart would have been, and the more \`/cd\` saves you by making the restart unnecessary.
+It isn't only about secrets. Because the hook can rewrite any displayed text, it's also a house-style pass: prepend a banner to flagged messages, tag replies with a marker your team scans for, or normalize formatting before it lands. Anywhere you want a consistent surface in front of an audience, this is the layer to enforce it.
 
-**Mind which room you're standing in**
+**The caveat that keeps you honest**
 
-The flip side of moving freely is that you have to track where you are. After a \`/cd\`, Claude's file operations and commands target the *new* directory — which is the point, but it also means a command you'd have run safely in one repo could land somewhere you didn't intend in another. Build a small habit around it: when you move, confirm the working directory before you ask for anything that writes or runs, especially on a client's machine. Move deliberately, and check the room you've moved into.
+Here's the line to hold. \`MessageDisplay\` acts on what is *displayed* — it's a presentation filter, not a security boundary on the underlying work. It changes the words on the screen; it does not unsend a request, scrub a file Claude already wrote, or guarantee a secret never existed in the session. So lean on it to keep sensitive strings off a shared display, and *also* keep your real controls — permission rules, what you let Claude touch — doing the actual protecting. Treat the hook as the polish on the glass, not the lock on the door.
 
-> Takeaway: Use \`/cd\` to carry one context-rich session across all the repos an engagement spans — pivot without re-explaining, but always confirm which directory you've landed in before you act.`,
+> Takeaway: Use \`MessageDisplay\` to redact and polish what an audience sees on screen, but remember it filters the display, not the deed — it's presentation, not your security boundary.`,
     },
   ],
   practice: {
     id: 'twic-2-practice',
-    template: `I've been working with you in ____ and built up a lot of context I don't want to lose.
-Now I need to pivot to ____, which lives in a different directory.
-Use /cd to move this session over there without restarting — keep everything we've discussed.
-Once we're in the new directory, ____ so I know your file operations point at the right place.
-If I ask you to jump back later, ____ instead of spinning up a fresh session.`,
+    template: `We're recording a walkthrough of this build for ____, and I don't want anything sensitive flashing on screen.
+Wire up a MessageDisplay hook so that before any reply is shown, it ____.
+Specifically, have it rewrite ____ to a neutral placeholder, and hide any message that ____.
+Keep in mind this is a display filter — it cleans what's on screen, not ____.
+So leave my permission rules in place to do the real protecting.`,
     blanks: [
-      { id: 'origin', suggestions: ['the API repo', 'the parent workspace folder', "this client's main project"] },
-      { id: 'target', suggestions: ['the frontend repo', 'a sibling microservice', "the new engagement's codebase"] },
-      { id: 'confirm', suggestions: ['confirm the working directory', 'show me where we are', 'list what\'s in it'] },
-      { id: 'jumpback', suggestions: ['/cd back to the original', 'move the session back', 'switch directories again'] },
+      { id: 'audience', suggestions: ['a client demo', 'an internal training library', 'a public conference talk'] },
+      { id: 'action', suggestions: ['scans the text for the strings we flag', 'runs our redaction command', 'checks each message against a rule'] },
+      { id: 'target', suggestions: ['the client name', 'any API token or connection string', 'the internal project codename'] },
+      { id: 'condition', suggestions: ['trips a rule we set', 'contains a flagged secret', 'mentions the unreleased feature'] },
+      { id: 'underlying', suggestions: ['what Claude actually did', 'the files already written', 'the request that was sent'] },
     ],
     prize: { id: 'twic-2-prize', label: 'TWIC · MID-WEEK' },
   },
   conversations: {
     'twic-npc-2': {
       summary:
-        "/cd (Claude Code 2.1.169) moves a running session to a new working directory without breaking it — the conversation and context carry over, so you don't restart. It replaces the old bad choice between quitting and relaunching (losing the thread) or running a shell `cd` that didn't move the session at all. After the move, Claude's file operations and commands target the new directory. For consultants it means carrying one context-rich session across all the repos an engagement spans; the discipline is to confirm which directory you've landed in before running anything that writes.",
+        "`MessageDisplay` (added in 2.1.152) is a hook event that fires as an assistant message is about to be shown — the last checkpoint before text reaches your screen. A hook on it can transform the message text (return a rewritten version) or hide the message entirely. You wire it like any other hook: an event pointed at a command you control. The headline use is redaction for shared screens, recordings, and screenshots — scrub client names, tokens, codenames automatically — plus presentation polish like banners or formatting. The caveat: it filters what's displayed, not the underlying work, so it's presentation, not a security boundary — keep your permission rules doing the real protecting.",
       beats: [
-        { kind: 'say', text: "Mid-week story is a small one that anyone with more than one repo open will feel right away: the `/cd` command, new in 2.1.169. It moves your running session to a different working directory *without breaking it*." },
-        { kind: 'say', text: "Here's the friction it kills. A session is anchored to wherever you launched it — that's where it reads files and runs commands. The second your work moves to another folder, that anchor was a problem." },
-        { kind: 'say', text: "Your old options were both bad: quit and relaunch Claude in the new directory, and lose the whole conversation you'd built up — or try a shell `cd` and find the session didn't follow you, it was still anchored where it started. `/cd` ends that trade-off. The session relocates and the context comes with it." },
+        { kind: 'say', text: "Second story is about the very last step before words reach your screen. New hook event, landed in 2.1.152: `MessageDisplay`. It fires after Claude has written a reply but *before* that reply is painted in front of you." },
+        { kind: 'say', text: "You already hang hooks before a tool runs, after it finishes, when a session starts. This opens a spot nobody could reach until now — the output itself. A checkpoint sitting right between the model's words and your eyes." },
+        { kind: 'say', text: "Your hook gets the message text and can do one of two things: *transform* it — hand back a rewritten version, so you read the edited string — or *hide* it, suppressing the message so nothing shows. Swap, or pull entirely. Your command, your logic." },
         {
           kind: 'choice',
-          prompt: "Quick check. You're deep in a session and want to start working in a sibling repo. You run a plain `cd ../other-repo` in a shell. What happens to your Claude session?",
+          prompt: "Put it to work. Your firm records client demos and you need the client's name scrubbed from Claude's replies before it ever hits the screen. What does a `MessageDisplay` hook give you?",
           options: [
-            { id: 'follows', label: 'It follows the shell into the new directory automatically', correct: false, reaction: "That's the trap — it doesn't. A shell `cd` moves the shell, not the session; Claude's still anchored where it launched. Moving the session is exactly what `/cd` is for." },
-            { id: 'stays', label: 'Nothing — the session stays anchored where it launched; you need `/cd` to actually move it', correct: true, reaction: "Right. The shell and the session are different things. `/cd` is the command that relocates the session itself, conversation and all." },
-            { id: 'crashes', label: 'It breaks the session and you lose your context', correct: false, reaction: "It won't crash — it just ignores the shell move and stays put. To actually relocate without losing context, that's `/cd`." },
+            { id: 'standing-filter', label: 'A standing filter that rewrites the name to a placeholder on every reply, automatically', correct: true, reaction: "Exactly. Write the command once, point it at the strings you care about, and every message gets scrubbed on the way to the screen — no remembering, no manual editing mid-demo." },
+            { id: 'after-the-fact', label: 'A way to go back and edit the recording after the session ends', correct: false, reaction: "No — it works live, in the moment of display, not on a saved file afterward. It catches the name *before* it ever appears, which is the whole point." },
+            { id: 'blocks-tools', label: 'A block on the tool calls that produced the name', correct: false, reaction: "That's a different event. `MessageDisplay` doesn't gate tools — it sits on the *message text* and rewrites or hides it as it's shown." },
           ],
         },
-        { kind: 'say', text: "After you `/cd`, the new directory is where the session lives — file lookups and commands resolve against it now, exactly like they did against the old one. You've moved the workshop, not started a new one." },
-        { kind: 'say', text: "Consultant angle: an engagement never sits in one folder. API repo, frontend repo, the monorepo with a dozen subprojects. `/cd` lets you carry one continuous session — all the context about the client and the goal — across every directory the work touches, instead of starting cold each time." },
-        { kind: 'say', text: "One discipline, though: track which room you're standing in. After a move, commands target the *new* directory, so confirm where you are before you ask for anything that writes or runs — especially on a client's machine. The books have the rest. The door wants to know how you relocate a live session without losing your context — answer that and the key's yours." },
+        { kind: 'say', text: "It's not only secrets. Because it can rewrite any displayed text, it doubles as a house-style pass — prepend a banner, tag flagged replies, normalize formatting before it lands. Anywhere you want a consistent surface in front of an audience, that's the layer." },
+        { kind: 'say', text: "Now the line you don't cross. `MessageDisplay` acts on what's *displayed*. It changes the words on the glass; it does not unsend a request or scrub a file Claude already wrote. It's a presentation filter, not a security boundary." },
+        { kind: 'say', text: "So use it to keep sensitive strings off a shared screen — and keep your permission rules doing the actual protecting underneath. The books have the transform-or-hide split and that caveat in full. The door wants to know which event sits on the display path. Name it and the key drops." },
       ],
     },
   },
   battle: {
-    name: 'The Lost-Path Wraith',
+    name: 'Veil, the Message-Bender',
     spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*coalesces in the dead space between two folders* …lost, are we? wrong directory, wrong repo… and to leave, you'll have to abandon everything you've built…",
+    introLine: "*flickers between the model and your eyes, every word passing through its hands first* …you think you read what Claude said… you read what I let reach you…",
     tauntLines: [
-      "*drifts you toward the wrong path* relaunch, then — start over, lose the thread, that's the only way out you know…",
-      "*scrambles the folders around you* a shell step won't save you here; your session never followed, it never does…",
+      "*smears a reply into static* wrong hook, operator — that one fires around tools, it never touches the words you're staring at…",
+      "*dangles a half-hidden message just out of sight* session start? too early — there's no reply to bend yet… try again…",
     ],
-    victoryLine: "*unravels as the path snaps straight* …you moved the session and kept the thread… of course… take the key and go…",
+    victoryLine: "*solidifies into a plain, unedited line of text* …MessageDisplay… you found the one checkpoint on the words themselves… nothing of mine hidden now… take the key…",
     questions: [
       {
         prompt:
-          "You're mid-session in one repo and you need Claude to start operating in a different project directory — without losing the conversation you've built up. What do you do?",
+          "Your firm screen-records client sessions, and you need Claude's replies scrubbed of the client's name before they ever appear on screen. Which hook event is built to do that?",
         choices: [
-          { id: 'a', label: 'Use `/cd` to move the session to the new working directory — it keeps running, conversation and context intact', correct: true },
-          { id: 'b', label: 'Quit Claude and relaunch it from the other directory', correct: false },
-          { id: 'c', label: 'Run `cd` as a shell command and the session will follow you into the new folder', correct: false },
-          { id: 'd', label: "You can't — a session is pinned to one directory for its whole lifetime", correct: false },
+          { id: 'a', label: '`MessageDisplay` — it fires as an assistant message is about to be shown and can transform or hide its text', correct: true },
+          { id: 'b', label: '`PostToolUse` — it runs after a tool call finishes, so it can edit the words of a reply', correct: false },
+          { id: 'c', label: '`SessionStart` — it runs once when the session opens, which is when message text gets filtered', correct: false },
+          { id: 'd', label: '`PreToolUse` — it gates each tool call before it runs, including the text of replies', correct: false },
         ],
-        passFeedback: 'HIT! `/cd` moves the running session to a new working directory without breaking it — you keep the whole conversation and just point Claude at a different folder.',
-        failFeedback: "MISS! You don't have to relaunch, a shell `cd` doesn't move the session, and a session isn't pinned for life. `/cd` relocates the live session and keeps your context — re-read the books.",
+        passFeedback: 'HIT! `MessageDisplay` fires as an assistant message is about to be displayed, and your hook can rewrite the text — scrub the name — or hide the message outright before it reaches the screen.',
+        failFeedback: "MISS! The other events fire around tool calls or at session start; none of them sit on the message-display path. `MessageDisplay` is the one event that can transform or hide a reply's text — re-read the books.",
       },
     ],
   },
