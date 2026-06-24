@@ -101,6 +101,17 @@ function PhaseRouter() {
   const toggleDev = () => setDevOpen(v => !v);
   const closeDev = () => setDevOpen(false);
 
+  // SCORM bridge: when the learner reaches a terminal phase — the certification
+  // page (Quest) or the end/stamp screen (Quest or TWiC) — flag the module
+  // complete to the host LMS. window.SCORM exists only in the SCORM/LMS build
+  // (injected by scorm/scorm-api.js); the optional chaining makes this a
+  // harmless no-op on the standalone web build.
+  useEffect(() => {
+    if (state.gamePhase === 'certification' || state.gamePhase === 'gameOver') {
+      window.SCORM?.setComplete?.();
+    }
+  }, [state.gamePhase]);
+
   let screen: React.ReactNode;
   switch (state.gamePhase) {
     case 'boot':
