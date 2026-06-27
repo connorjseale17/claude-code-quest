@@ -20,7 +20,13 @@ export type LevelId =
   | 'twic-1'
   | 'twic-2'
   | 'twic-3'
-  | 'cowork-1';
+  | 'cowork-1'
+  | 'cowork-2'
+  | 'cowork-3'
+  | 'cowork-4'
+  | 'cowork-5'
+  | 'cowork-6'
+  | 'cowork-7';
 
 export type ChamberId = string;
 
@@ -248,6 +254,24 @@ const THEME_NEWSROOM: Theme = {
   floorColor: '#1B2230',
   floorDot: '#6EAAEF',
   accentColor: '#6EAAEF',
+};
+
+/** Cowork Module 2 — Steel-Blue Vault (least-privilege / permissions). */
+const THEME_STEELBLUE: Theme = {
+  wallColor: '#0C0B0A',
+  wallShadow: '#2F5BA8',
+  floorColor: '#18202C',
+  floorDot: '#6EAAEF',
+  accentColor: '#6EAAEF',
+};
+
+/** Cowork Module 6 — Slate-Green Citadel (review / sentinel). */
+const THEME_SLATEGREEN: Theme = {
+  wallColor: '#0C0B0A',
+  wallShadow: '#2A6B45',
+  floorColor: '#1A2A22',
+  floorDot: '#3FB950',
+  accentColor: '#3FB950',
 };
 
 // ============================================================================
@@ -1548,50 +1572,68 @@ function buildTwic3Level(): LevelConfig {
 }
 
 // ============================================================================
-// COWORK QUEST — Module 1: The Delegation Gate (track: 'cowork')
+// COWORK QUEST — third track (additive; does not touch quest/twic)
 // ============================================================================
 //
-// Third track, taught additively (does not touch quest/twic). Module 1 is the
-// "what Cowork actually is" on-ramp for consultants. Single 16×11 chamber
-// modeled on the Orientation Trail: a greeter NPC (Onboard-bot), five lore
-// primers, one practice token, a boss-gated locked exit. Exits to {kind:'end'}
-// for this scaffold pass → CoworkStampScreen; re-point to cowork-2 when later
-// modules land. Reuses THEME_AMBER and the bestiary 'ghost' boss sprite — no
-// new art. Item/NPC ids below MUST match the ids in src/content/cowork-1.ts.
+// Seven single-chamber modules teaching Claude Cowork to consultants. Every
+// module shares the same 16×11 layout (built by buildCoworkModule): a greeter
+// NPC, five lore primers, one practice token, and a boss-gated locked exit that
+// chains to the next module — the last exits to {kind:'end'} → CoworkStampScreen.
+// Reuses existing themes + bestiary boss sprites (no new art). The item/NPC ids
+// in each module's opts MUST match the ids in its src/content/cowork-N.ts file.
 
-function buildCowork1Level(): LevelConfig {
+type CoworkModuleOpts = {
+  id: LevelId;
+  number: number;
+  title: string;
+  subtitle: string;
+  theme: Theme;
+  chamberId: ChamberId;
+  chamberName: string;
+  npc: { id: string; name: string; color: string; sprite?: string };
+  /** 5 lore item ids — must equal the lore[].id values in the content file. */
+  loreIds: [string, string, string, string, string];
+  /** Practice item id — must equal practice.id in the content file. */
+  practiceId: string;
+  /** Boss challenge item id (referenced only by the panel machinery). */
+  challengeId: string;
+  /** In-room boss sprite — a bestiary '<key>_a' frame, e.g. 'ghost_a'. */
+  bossSpriteA: string;
+  /** Exit door target: the next module ({kind:'level'}) or {kind:'end'}. */
+  exit: DoorTarget;
+};
+
+/** Builds one Cowork module's single 16×11 chamber + LevelConfig. Same proven
+ *  geometry as the Orientation Trail; only ids/theme/boss/exit vary per module. */
+function buildCoworkModule(o: CoworkModuleOpts): LevelConfig {
   const tW = 16, tH = 11;
   const tiles = blankTileMap(tW, tH);
-  // East exit door tile (locked until the boss is beaten and the key collected).
-  tiles[5][tW - 1] = 2;
+  tiles[5][tW - 1] = 2; // east exit door tile (locked until boss beaten + key)
 
-  const atrium: ChamberConfig = {
-    id: 'cowork-atrium',
-    level: 'cowork-1',
-    name: 'Amber Atrium',
+  const chamber: ChamberConfig = {
+    id: o.chamberId,
+    level: o.id,
+    name: o.chamberName,
     width: tW,
     height: tH,
     tiles,
     spawnX: 1,
     spawnY: 5,
     items: [
-      // Lore ids must equal the lore[].id values in cowork-1.ts content.
-      { id: 'three-ways', type: 'lore', x: 3, y: 2, sprite: 'paper' },
-      { id: 'around-outcome', type: 'lore', x: 6, y: 2, sprite: 'paper' },
-      { id: 'where-it-lives', type: 'lore', x: 9, y: 2, sprite: 'paper' },
-      { id: 'five-part-test', type: 'lore', x: 12, y: 2, sprite: 'paper' },
-      { id: 'acts-on-behalf', type: 'lore', x: 3, y: 8, sprite: 'paper' },
-      // practice id must equal practice.id in content.
-      { id: 'delegation-practice', type: 'practice', x: 12, y: 8, sprite: 'hint_token' },
-      // boss challenge — in-room sprite is the bestiary 'ghost' idle frame.
-      { id: 'delegation-boss', type: 'challenge', x: 13, y: 5, sprite: 'ghost_a' },
+      { id: o.loreIds[0], type: 'lore', x: 3, y: 2, sprite: 'paper' },
+      { id: o.loreIds[1], type: 'lore', x: 6, y: 2, sprite: 'paper' },
+      { id: o.loreIds[2], type: 'lore', x: 9, y: 2, sprite: 'paper' },
+      { id: o.loreIds[3], type: 'lore', x: 12, y: 2, sprite: 'paper' },
+      { id: o.loreIds[4], type: 'lore', x: 3, y: 8, sprite: 'paper' },
+      { id: o.practiceId, type: 'practice', x: 12, y: 8, sprite: 'hint_token' },
+      { id: o.challengeId, type: 'challenge', x: 13, y: 5, sprite: o.bossSpriteA },
     ],
     doors: [
       {
         id: 'exit',
         x: tW - 1,
         y: 5,
-        target: { kind: 'end' },
+        target: o.exit,
         spawnX: 1,
         spawnY: 5,
         locked: true,
@@ -1600,13 +1642,13 @@ function buildCowork1Level(): LevelConfig {
     ],
     npcs: [
       {
-        // NPC id must equal the conversations key in cowork-1.ts content.
-        id: 'onboard-bot',
+        id: o.npc.id,
         x: 4,
         y: 5,
-        color: '#E8C57A',
-        name: 'Onboard-bot',
+        color: o.npc.color,
+        name: o.npc.name,
         dialog: [],
+        ...(o.npc.sprite ? { sprite: o.npc.sprite } : {}),
       },
     ],
     decorations: [],
@@ -1614,18 +1656,121 @@ function buildCowork1Level(): LevelConfig {
   };
 
   return {
-    id: 'cowork-1',
-    number: 10,
-    title: 'The Delegation Gate',
-    subtitle: 'What Cowork actually is',
-    theme: THEME_AMBER,
-    chambers: {
-      [atrium.id]: atrium,
-    },
-    startingChamber: atrium.id,
-    challengeChamber: atrium.id,
+    id: o.id,
+    number: o.number,
+    title: o.title,
+    subtitle: o.subtitle,
+    theme: o.theme,
+    chambers: { [chamber.id]: chamber },
+    startingChamber: chamber.id,
+    challengeChamber: chamber.id,
     track: 'cowork',
   };
+}
+
+function buildCowork1Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-1', number: 10,
+    title: 'The Delegation Gate', subtitle: 'What Cowork actually is',
+    theme: THEME_AMBER,
+    chamberId: 'cowork-atrium', chamberName: 'Amber Atrium',
+    npc: { id: 'onboard-bot', name: 'Onboard-bot', color: '#E8C57A' },
+    loreIds: ['three-ways', 'around-outcome', 'where-it-lives', 'five-part-test', 'acts-on-behalf'],
+    practiceId: 'delegation-practice',
+    challengeId: 'delegation-boss',
+    bossSpriteA: 'ghost_a',
+    exit: { kind: 'level', level: 'cowork-2', chamber: 'cowork-2-room' },
+  });
+}
+
+function buildCowork2Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-2', number: 11,
+    title: 'The Permission Vault', subtitle: 'Safe day-one setup',
+    theme: THEME_STEELBLUE,
+    chamberId: 'cowork-2-room', chamberName: 'Steel-Blue Vault',
+    npc: { id: 'warden-volt', name: 'Warden Volt', color: '#6EAAEF' },
+    loreIds: ['third-tab', 'least-privilege', 'sandbox', 'two-dials', 'delete-asks'],
+    practiceId: 'permission-practice',
+    challengeId: 'permission-boss',
+    bossSpriteA: 'goblin_a',
+    exit: { kind: 'level', level: 'cowork-3', chamber: 'cowork-3-room' },
+  });
+}
+
+function buildCowork3Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-3', number: 12,
+    title: 'The Briefing Room', subtitle: 'Brief like a sharp analyst',
+    theme: THEME_ORANGE,
+    chamberId: 'cowork-3-room', chamberName: 'Orange Drafting Room',
+    npc: { id: 'brief-bot', name: 'Brief-bot', color: '#E8633D' },
+    loreIds: ['brief-outcome', 'context-beats-wording', 'read-back', 'approve-plan', 'sidebar-cockpit'],
+    practiceId: 'briefing-practice',
+    challengeId: 'briefing-boss',
+    bossSpriteA: 'warlock_a',
+    exit: { kind: 'level', level: 'cowork-4', chamber: 'cowork-4-room' },
+  });
+}
+
+function buildCowork4Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-4', number: 13,
+    title: 'The Connector Nexus', subtitle: 'Wire in your real tools',
+    theme: THEME_TEAL,
+    chamberId: 'cowork-4-room', chamberName: 'Teal Network Hub',
+    npc: { id: 'connector-cat', name: 'Connector Cat', color: '#6FD7C2', sprite: 'cat' },
+    loreIds: ['two-surfaces', 'wiring-the-board', 'asymmetry-table', 'per-tool-controls', 'connected-not-unlimited'],
+    practiceId: 'connector-practice',
+    challengeId: 'connector-boss',
+    bossSpriteA: 'slime_a',
+    exit: { kind: 'level', level: 'cowork-5', chamber: 'cowork-5-room' },
+  });
+}
+
+function buildCowork5Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-5', number: 14,
+    title: 'The Deliverable Forge', subtitle: 'Forge real consulting files',
+    theme: THEME_CRIMSON,
+    chamberId: 'cowork-5-room', chamberName: 'Crimson Forge',
+    npc: { id: 'forgemaster-quill', name: 'Forgemaster Quill', color: '#D43A2A' },
+    loreIds: ['three-artifact-pattern', 'four-workflows', 'native-files', 'citations', 'forge-limits'],
+    practiceId: 'forge-practice',
+    challengeId: 'forge-boss',
+    bossSpriteA: 'skeleton_a',
+    exit: { kind: 'level', level: 'cowork-6', chamber: 'cowork-6-room' },
+  });
+}
+
+function buildCowork6Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-6', number: 15,
+    title: 'The Review Citadel', subtitle: 'Stay in the loop',
+    theme: THEME_SLATEGREEN,
+    chamberId: 'cowork-6-room', chamberName: 'Slate-Green Citadel',
+    npc: { id: 'sentinel-ada', name: 'Sentinel Ada', color: '#3FB950', sprite: 'owl' },
+    loreIds: ['output-is-draft', 'approve-plan-review', 'prompt-injection', 'global-instructions', 'iterate-skill'],
+    practiceId: 'review-practice',
+    challengeId: 'review-boss',
+    bossSpriteA: 'ghost_a',
+    exit: { kind: 'level', level: 'cowork-7', chamber: 'cowork-7-room' },
+  });
+}
+
+function buildCowork7Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-7', number: 16,
+    title: 'The Engagement Keep', subtitle: 'Run the whole engagement',
+    theme: THEME_PURPLE,
+    chamberId: 'cowork-7-room', chamberName: 'Royal-Purple Keep',
+    npc: { id: 'partner-vega', name: 'Managing Partner Vega', color: '#A972F0' },
+    loreIds: ['parallel-agents', 'schedule-recurring', 'governance-gap', 'admin-levers', 'de-identify'],
+    practiceId: 'engagement-practice',
+    challengeId: 'engagement-boss',
+    bossSpriteA: 'dragon_a',
+    exit: { kind: 'end' },
+  });
 }
 
 /** Hand-authored levels BEFORE any layout overrides — used by getBaseChamber()
@@ -1642,6 +1787,12 @@ const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   'twic-2': buildTwic2Level(),
   'twic-3': buildTwic3Level(),
   'cowork-1': buildCowork1Level(),
+  'cowork-2': buildCowork2Level(),
+  'cowork-3': buildCowork3Level(),
+  'cowork-4': buildCowork4Level(),
+  'cowork-5': buildCowork5Level(),
+  'cowork-6': buildCowork6Level(),
+  'cowork-7': buildCowork7Level(),
 };
 
 export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
@@ -1656,6 +1807,12 @@ export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   'twic-2': withOverrides(BASE_LEVEL_CONFIGS['twic-2']),
   'twic-3': withOverrides(BASE_LEVEL_CONFIGS['twic-3']),
   'cowork-1': withOverrides(BASE_LEVEL_CONFIGS['cowork-1']),
+  'cowork-2': withOverrides(BASE_LEVEL_CONFIGS['cowork-2']),
+  'cowork-3': withOverrides(BASE_LEVEL_CONFIGS['cowork-3']),
+  'cowork-4': withOverrides(BASE_LEVEL_CONFIGS['cowork-4']),
+  'cowork-5': withOverrides(BASE_LEVEL_CONFIGS['cowork-5']),
+  'cowork-6': withOverrides(BASE_LEVEL_CONFIGS['cowork-6']),
+  'cowork-7': withOverrides(BASE_LEVEL_CONFIGS['cowork-7']),
 };
 
 /** Convenience: lookup a chamber by ID across all levels. */

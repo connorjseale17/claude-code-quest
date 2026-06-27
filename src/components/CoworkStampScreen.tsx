@@ -43,7 +43,7 @@ export function CoworkStampScreen() {
           <span style={{ color: accent }}>{'>'}</span> CLAUDE COWORK QUEST
           <br />
           <span style={{ fontSize: 16, color: '#9A9A9A', letterSpacing: '0.12em' }}>
-            · THE DELEGATION GATE ·
+            · ALL SEVEN MODULES CLEARED ·
           </span>
         </div>
 
@@ -56,9 +56,9 @@ export function CoworkStampScreen() {
             color: '#9A9A9A',
           }}
         >
-          You can tell delegate-to-Claude from think-with-Claude now — a coworker that opens your real files and hands back the finished deliverable, not a chatbox you copy out of.
+          From the Delegation Gate to the Engagement Keep — you can set Cowork up safely, brief it like a sharp analyst, wire the connectors, forge real deliverables, review against prompt injection, and run a whole governed engagement.
           <br />
-          <span style={{ color: '#E8E8E8' }}>Module 1 cleared. More of the Quest is on the way.</span>
+          <span style={{ color: '#E8E8E8' }}>You're a Claude Cowork operator now. Go delegate something real.</span>
         </div>
 
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>

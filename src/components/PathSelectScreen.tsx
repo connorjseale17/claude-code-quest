@@ -101,8 +101,8 @@ export function PathSelectScreen() {
           />
           <PathTile
             label="CLAUDE COWORK QUEST"
-            description="Learn Claude Cowork — the desktop agent that does real knowledge work — built for consultants. Module 1 of a growing track."
-            badge="MODULE 1 · NEW"
+            description="Learn Claude Cowork across seven modules — what it is, safe setup, briefing, connectors, deliverables, review, and a capstone engagement. Built for consultants."
+            badge="7 MODULES · NEW"
             accent={coworkAccent}
             focused={focused === 'cowork'}
             onHover={() => setFocused('cowork')}
