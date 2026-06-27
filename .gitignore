@@ -28,3 +28,4 @@ claude-code-quest-scorm12.zip
 *.sln
 *.sw?
 .vercel
+.env*
