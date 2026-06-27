@@ -6,7 +6,7 @@ import { TWIC_ISSUE_INTRO } from '../content/twic-issue';
 import { recordRunStart } from '../lib/tracking';
 import { colorIdxFromHex } from '../lib/palette';
 
-type Choice = 'quest' | 'twic';
+type Choice = 'quest' | 'twic' | 'cowork';
 
 /**
  * Path-select screen — sits between CustomizeScreen and the first LoadingScreen.
@@ -20,49 +20,41 @@ export function PathSelectScreen() {
   const [focused, setFocused] = useState<Choice>('quest');
 
   const select = (track: Choice) => {
+    const levelId =
+      track === 'quest' ? 'orientation' : track === 'twic' ? 'twic-1' : 'cowork-1';
+    const cfg = LEVEL_CONFIGS[levelId];
+    const chamber = cfg.chambers[cfg.startingChamber];
+    dispatch({
+      type: 'SELECT_TRACK',
+      track,
+      levelId,
+      chamberId: cfg.startingChamber,
+      spawnX: chamber.spawnX,
+      spawnY: chamber.spawnY,
+    });
+    // Quest-only Firestore run tracking. The returned runId arrives async;
+    // SET_RUN_ID stamps it onto state for recordRunFinish on WrapUpSplash.
+    // TWiC and Cowork are intentionally untracked, so their runs never write
+    // into the shared Quest leaderboard.
     if (track === 'quest') {
-      const cfg = LEVEL_CONFIGS['orientation'];
-      const chamber = cfg.chambers[cfg.startingChamber];
-      dispatch({
-        type: 'SELECT_TRACK',
-        track: 'quest',
-        levelId: 'orientation',
-        chamberId: cfg.startingChamber,
-        spawnX: chamber.spawnX,
-        spawnY: chamber.spawnY,
-      });
-      // Fire-and-forget: kick off the Firestore run-start write. The returned
-      // runId arrives async; SET_RUN_ID stamps it onto state for the eventual
-      // recordRunFinish call on WrapUpSplash mount. Quest-only — TWiC is
-      // intentionally untracked.
       const colorIdx = colorIdxFromHex(player.botColor);
       void recordRunStart({ handle: player.name || 'operator', colorIdx })
         .then(runId => { if (runId) dispatch({ type: 'SET_RUN_ID', runId }); });
-    } else {
-      const cfg = LEVEL_CONFIGS['twic-1'];
-      const chamber = cfg.chambers[cfg.startingChamber];
-      dispatch({
-        type: 'SELECT_TRACK',
-        track: 'twic',
-        levelId: 'twic-1',
-        chamberId: cfg.startingChamber,
-        spawnX: chamber.spawnX,
-        spawnY: chamber.spawnY,
-      });
     }
   };
 
   useEffect(() => {
+    const ORDER: Choice[] = ['quest', 'twic', 'cowork'];
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'w' || e.key === 'a') {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'a' || e.key === 'w') {
         e.preventDefault();
-        setFocused('quest');
-      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 's' || e.key === 'd') {
+        setFocused(f => ORDER[Math.max(0, ORDER.indexOf(f) - 1)]);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'd' || e.key === 's') {
         e.preventDefault();
-        setFocused('twic');
+        setFocused(f => ORDER[Math.min(ORDER.length - 1, ORDER.indexOf(f) + 1)]);
       } else if (e.key === 'Tab') {
         e.preventDefault();
-        setFocused(f => (f === 'quest' ? 'twic' : 'quest'));
+        setFocused(f => ORDER[(ORDER.indexOf(f) + 1) % ORDER.length]);
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         select(focused);
@@ -76,6 +68,7 @@ export function PathSelectScreen() {
 
   const questAccent = LEVEL_CONFIGS['orientation'].theme.accentColor;
   const twicAccent = LEVEL_CONFIGS['twic-1'].theme.accentColor;
+  const coworkAccent = LEVEL_CONFIGS['cowork-1'].theme.accentColor;
 
   return (
     <TerminalFrame title="claude-code-quest --select-path" accent>
@@ -87,7 +80,7 @@ export function PathSelectScreen() {
           <span style={{ color: '#E8633D' }}>{'>'}</span> CHOOSE YOUR PATH
         </div>
 
-        <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', gap: 24, alignItems: 'stretch' }}>
           <PathTile
             label="THE QUEST"
             description="A 7-level curriculum on Claude Code, start to finish. The full Quest. Recommended for new learners."
@@ -105,6 +98,15 @@ export function PathSelectScreen() {
             focused={focused === 'twic'}
             onHover={() => setFocused('twic')}
             onClick={() => select('twic')}
+          />
+          <PathTile
+            label="CLAUDE COWORK QUEST"
+            description="Learn Claude Cowork — the desktop agent that does real knowledge work — built for consultants. Module 1 of a growing track."
+            badge="MODULE 1 · NEW"
+            accent={coworkAccent}
+            focused={focused === 'cowork'}
+            onHover={() => setFocused('cowork')}
+            onClick={() => select('cowork')}
           />
         </div>
 
@@ -137,7 +139,7 @@ function PathTile({ label, description, badge, accent, focused, onHover, onClick
       onFocus={onHover}
       onClick={onClick}
       style={{
-        width: 320,
+        width: 280,
         background: focused ? '#141414' : '#0F0F0F',
         border: `1.5px solid ${focused ? accent : '#2A2A2A'}`,
         padding: '22px 24px',

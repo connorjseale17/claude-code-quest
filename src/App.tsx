@@ -27,6 +27,7 @@ import { LayoutEditor } from './components/LayoutEditor';
 import { PathSelectScreen } from './components/PathSelectScreen';
 import { TwicIssueIntroOverlay } from './components/TwicIssueIntroOverlay';
 import { TwicStampScreen } from './components/TwicStampScreen';
+import { CoworkStampScreen } from './components/CoworkStampScreen';
 import { OriginSplash } from './components/OriginSplash';
 import { WrapUpSplash } from './components/WrapUpSplash';
 import { CertificationPage } from './components/CertificationPage';
@@ -142,9 +143,12 @@ function PhaseRouter() {
       screen = <CertificationPage />;
       break;
     case 'gameOver':
-      // Quest end → trophy/lesson tally. TWiC end → stamp screen.
+      // Quest end → trophy/lesson tally. TWiC end → issue stamp. Cowork end →
+      // its own light stamp. Quest is the fallthrough.
       screen = state.currentTrack === 'twic' ? (
         <TwicStampScreen />
+      ) : state.currentTrack === 'cowork' ? (
+        <CoworkStampScreen />
       ) : (
         <TerminalFrame title="claude-code-quest --complete" accent>
           <EndScreen />

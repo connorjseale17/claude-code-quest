@@ -10,6 +10,7 @@ import { finalBossContent } from './final-boss';
 import { twic1Content } from './twic-1';
 import { twic2Content } from './twic-2';
 import { twic3Content } from './twic-3';
+import { cowork1Content } from './cowork-1';
 
 export const CONTENT: Record<LevelId, LessonContent> = {
   orientation: orientationContent,
@@ -22,4 +23,5 @@ export const CONTENT: Record<LevelId, LessonContent> = {
   'twic-1': twic1Content,
   'twic-2': twic2Content,
   'twic-3': twic3Content,
+  'cowork-1': cowork1Content,
 };

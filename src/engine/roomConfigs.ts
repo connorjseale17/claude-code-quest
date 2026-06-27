@@ -19,7 +19,8 @@ export type LevelId =
   | 'final-boss'
   | 'twic-1'
   | 'twic-2'
-  | 'twic-3';
+  | 'twic-3'
+  | 'cowork-1';
 
 export type ChamberId = string;
 
@@ -129,7 +130,7 @@ export type LevelConfig = {
   /** The chamber that contains the boss challenge + key spawn */
   challengeChamber: ChamberId;
   /** Which learning path this level belongs to. Defaults to 'quest'. */
-  track?: 'quest' | 'twic';
+  track?: 'quest' | 'twic' | 'cowork';
 };
 
 /** The editable subset of a ChamberConfig that Layout Mode serializes and that
@@ -1546,6 +1547,87 @@ function buildTwic3Level(): LevelConfig {
   };
 }
 
+// ============================================================================
+// COWORK QUEST — Module 1: The Delegation Gate (track: 'cowork')
+// ============================================================================
+//
+// Third track, taught additively (does not touch quest/twic). Module 1 is the
+// "what Cowork actually is" on-ramp for consultants. Single 16×11 chamber
+// modeled on the Orientation Trail: a greeter NPC (Onboard-bot), five lore
+// primers, one practice token, a boss-gated locked exit. Exits to {kind:'end'}
+// for this scaffold pass → CoworkStampScreen; re-point to cowork-2 when later
+// modules land. Reuses THEME_AMBER and the bestiary 'ghost' boss sprite — no
+// new art. Item/NPC ids below MUST match the ids in src/content/cowork-1.ts.
+
+function buildCowork1Level(): LevelConfig {
+  const tW = 16, tH = 11;
+  const tiles = blankTileMap(tW, tH);
+  // East exit door tile (locked until the boss is beaten and the key collected).
+  tiles[5][tW - 1] = 2;
+
+  const atrium: ChamberConfig = {
+    id: 'cowork-atrium',
+    level: 'cowork-1',
+    name: 'Amber Atrium',
+    width: tW,
+    height: tH,
+    tiles,
+    spawnX: 1,
+    spawnY: 5,
+    items: [
+      // Lore ids must equal the lore[].id values in cowork-1.ts content.
+      { id: 'three-ways', type: 'lore', x: 3, y: 2, sprite: 'paper' },
+      { id: 'around-outcome', type: 'lore', x: 6, y: 2, sprite: 'paper' },
+      { id: 'where-it-lives', type: 'lore', x: 9, y: 2, sprite: 'paper' },
+      { id: 'five-part-test', type: 'lore', x: 12, y: 2, sprite: 'paper' },
+      { id: 'acts-on-behalf', type: 'lore', x: 3, y: 8, sprite: 'paper' },
+      // practice id must equal practice.id in content.
+      { id: 'delegation-practice', type: 'practice', x: 12, y: 8, sprite: 'hint_token' },
+      // boss challenge — in-room sprite is the bestiary 'ghost' idle frame.
+      { id: 'delegation-boss', type: 'challenge', x: 13, y: 5, sprite: 'ghost_a' },
+    ],
+    doors: [
+      {
+        id: 'exit',
+        x: tW - 1,
+        y: 5,
+        target: { kind: 'end' },
+        spawnX: 1,
+        spawnY: 5,
+        locked: true,
+        requiresLevelKey: true,
+      },
+    ],
+    npcs: [
+      {
+        // NPC id must equal the conversations key in cowork-1.ts content.
+        id: 'onboard-bot',
+        x: 4,
+        y: 5,
+        color: '#E8C57A',
+        name: 'Onboard-bot',
+        dialog: [],
+      },
+    ],
+    decorations: [],
+    keySpawn: { x: 13, y: 6 },
+  };
+
+  return {
+    id: 'cowork-1',
+    number: 10,
+    title: 'The Delegation Gate',
+    subtitle: 'What Cowork actually is',
+    theme: THEME_AMBER,
+    chambers: {
+      [atrium.id]: atrium,
+    },
+    startingChamber: atrium.id,
+    challengeChamber: atrium.id,
+    track: 'cowork',
+  };
+}
+
 /** Hand-authored levels BEFORE any layout overrides — used by getBaseChamber()
  *  so Layout Mode's "Reset to source" can restore the builder geometry. */
 const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
@@ -1559,6 +1641,7 @@ const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   'twic-1': buildTwic1Level(),
   'twic-2': buildTwic2Level(),
   'twic-3': buildTwic3Level(),
+  'cowork-1': buildCowork1Level(),
 };
 
 export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
@@ -1572,6 +1655,7 @@ export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   'twic-1': withOverrides(BASE_LEVEL_CONFIGS['twic-1']),
   'twic-2': withOverrides(BASE_LEVEL_CONFIGS['twic-2']),
   'twic-3': withOverrides(BASE_LEVEL_CONFIGS['twic-3']),
+  'cowork-1': withOverrides(BASE_LEVEL_CONFIGS['cowork-1']),
 };
 
 /** Convenience: lookup a chamber by ID across all levels. */
