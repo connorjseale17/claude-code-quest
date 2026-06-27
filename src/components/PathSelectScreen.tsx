@@ -44,7 +44,9 @@ export function PathSelectScreen() {
   };
 
   useEffect(() => {
-    const ORDER: Choice[] = ['quest', 'twic', 'cowork'];
+    // Cowork is greyed out (coming soon) pending its map redesign, so it's
+    // excluded here — keyboard focus only lands on selectable tiles.
+    const ORDER: Choice[] = ['quest', 'twic'];
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'a' || e.key === 'w') {
         e.preventDefault();
@@ -82,13 +84,23 @@ export function PathSelectScreen() {
 
         <div style={{ display: 'flex', gap: 24, alignItems: 'stretch' }}>
           <PathTile
-            label="THE QUEST"
+            label="CODE QUEST"
             description="A 7-level curriculum on Claude Code, start to finish. The full Quest. Recommended for new learners."
             badge="7 LEVELS · CANON"
             accent={questAccent}
             focused={focused === 'quest'}
             onHover={() => setFocused('quest')}
             onClick={() => select('quest')}
+          />
+          <PathTile
+            label="COWORK QUEST"
+            description="Learn Claude Cowork across seven modules — built for consultants. In development; a new map design is on the way."
+            badge="COMING SOON"
+            accent={coworkAccent}
+            disabled
+            focused={false}
+            onHover={() => {}}
+            onClick={() => {}}
           />
           <PathTile
             label="THIS WEEK IN CLAUDE"
@@ -98,15 +110,6 @@ export function PathSelectScreen() {
             focused={focused === 'twic'}
             onHover={() => setFocused('twic')}
             onClick={() => select('twic')}
-          />
-          <PathTile
-            label="CLAUDE COWORK QUEST"
-            description="Learn Claude Cowork across seven modules — what it is, safe setup, briefing, connectors, deliverables, review, and a capstone engagement. Built for consultants."
-            badge="7 MODULES · NEW"
-            accent={coworkAccent}
-            focused={focused === 'cowork'}
-            onHover={() => setFocused('cowork')}
-            onClick={() => select('cowork')}
           />
         </div>
 
@@ -130,32 +133,37 @@ interface PathTileProps {
   focused: boolean;
   onHover: () => void;
   onClick: () => void;
+  /** Greyed-out, non-selectable "coming soon" tile. */
+  disabled?: boolean;
 }
 
-function PathTile({ label, description, badge, accent, focused, onHover, onClick }: PathTileProps) {
+function PathTile({ label, description, badge, accent, focused, onHover, onClick, disabled }: PathTileProps) {
   return (
     <button
-      onMouseEnter={onHover}
-      onFocus={onHover}
-      onClick={onClick}
+      onMouseEnter={disabled ? undefined : onHover}
+      onFocus={disabled ? undefined : onHover}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      aria-disabled={disabled}
       style={{
         width: 280,
-        background: focused ? '#141414' : '#0F0F0F',
-        border: `1.5px solid ${focused ? accent : '#2A2A2A'}`,
+        background: disabled ? '#0B0B0B' : focused ? '#141414' : '#0F0F0F',
+        border: `1.5px solid ${disabled ? '#1C1C1C' : focused ? accent : '#2A2A2A'}`,
         padding: '22px 24px',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         textAlign: 'left',
         fontFamily: "'JetBrains Mono', monospace",
         color: '#E8E8E8',
+        opacity: disabled ? 0.55 : 1,
         transition: 'border-color 120ms ease, background 120ms ease',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
       }}
     >
-      <div style={{ color: accent, fontSize: 11, letterSpacing: '0.12em' }}>{badge}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.06em' }}>{label}</div>
-      <div style={{ fontSize: 13, lineHeight: 1.55, color: '#9A9A9A' }}>{description}</div>
+      <div style={{ color: disabled ? '#6A6A6A' : accent, fontSize: 11, letterSpacing: '0.12em' }}>{badge}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.06em', color: disabled ? '#7A7A7A' : '#E8E8E8' }}>{label}</div>
+      <div style={{ fontSize: 13, lineHeight: 1.55, color: disabled ? '#565656' : '#9A9A9A' }}>{description}</div>
       <div style={{ marginTop: 6, fontSize: 12, color: focused ? accent : '#3A3A3A' }}>
         {focused ? '▶ press Enter' : ' '}
       </div>
