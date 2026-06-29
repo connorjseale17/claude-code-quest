@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-06-22',
+  publishDate: '2026-06-29',
   framing:
-    "This week in Claude, the throughline is control of your own surface — what's loaded, what's shown, and what it costs. The `--safe-mode` flag (and its `CLAUDE_CODE_SAFE_MODE` variable) boots a vanilla session with your skills, hooks, and plugins switched off, so you can tell in seconds whether odd behavior is Claude or your own setup. The new `MessageDisplay` hook event sits on the last step before a reply reaches your screen, letting you transform or hide its text — a standing redaction filter for client demos and recordings. And `/usage` now itemizes your consumption across skills, subagents, plugins, and MCP servers, so when a long engagement bumps your limits you can name the real hog before you cut it.",
+    "This week in Claude, the throughline is keeping a tight grip on what your sessions touch, lose, and leave behind. The new `sandbox.credentials` setting walls the commands Claude runs off from your credential files and secret environment variables, so a sandboxed command can't pocket a client's API keys. `/rewind` now reaches back across a `/clear`, turning what used to be a point of no return into a recoverable mistake. And `attribution.sessionUrl` lets you drop the claude.ai session link from the commits and PRs Claude makes, so a client's git history stays a clean record of the work and not a trail back to your private sessions.",
 };

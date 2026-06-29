@@ -1,127 +1,130 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — `--safe-mode`: launch Claude Code with your own
- * customizations switched off, so you run a vanilla session. Also available as
- * the `CLAUDE_CODE_SAFE_MODE` environment variable for non-interactive runs.
- * Source: Claude Code CHANGELOG 2.1.169 ("`--safe-mode` flag and
- * `CLAUDE_CODE_SAFE_MODE` environment variable for customization disabling").
+ * twic-1 (Feature A) — the `sandbox.credentials` setting: block sandboxed
+ * commands from reading credential files and secret environment variables, so a
+ * command Claude runs in the sandbox can't pull your API keys, tokens, or cloud
+ * credentials.
+ * Source: Claude Code CHANGELOG 2.1.187 ("Added `sandbox.credentials` setting to
+ * 'block sandboxed commands from reading credential files and secret environment
+ * variables'").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown. The Beat Reporter is opening with a quiet escape hatch most people don't notice until they badly need it: `--safe-mode`. Launch Claude Code with that flag — or set the matching `CLAUDE_CODE_SAFE_MODE` environment variable — and your own customizations stand down for the run, so you get a plain, vanilla session with nothing you've layered on top. Read the two pages on the desk for how the switch works and why a consultant keeps a clean room handy, then the door asks one question, and the thing guarding the key is wearing every plugin and hook you ever installed.",
+    "Room 1 of this week's rundown, and the Beat Reporter opens with the kind of setting you turn on once and never think about again — until it saves you. It's called `sandbox.credentials`, and it walls the shell commands Claude runs off from your credential files and secret environment variables, so a command running in the sandbox can't read your API keys or cloud credentials. The two pages on the desk cover how the lock works and why a consultant snaps it shut before touching a client's repo. Answer the door's one question and the key is yours — and the thing guarding it is a skeleton with its bony fingers already in your `.env`.",
   prompt:
-    "A colleague says Claude is acting strangely in their repo and can't tell whether it's Claude itself or something in their own setup. They relaunch with `--safe-mode`. What does that actually do?",
+    "You let Claude run shell commands in a sandbox on a client repo, and you're worried a command could read the API keys in your `.env` or your cloud credential files. What does turning on the `sandbox.credentials` setting do?",
   choices: [
-    { id: 'a', label: 'It starts the session with their own customizations — skills, hooks, plugins, custom commands — switched off, so they see vanilla Claude Code and can tell whether their config was the cause', correct: true },
-    { id: 'b', label: 'It permanently deletes their skills, hooks, and plugins from disk so they have to reinstall everything', correct: false },
-    { id: 'c', label: 'It drops Claude into a read-only mode where it can look at files but is forbidden from editing them', correct: false },
-    { id: 'd', label: 'It forces the session onto a smaller, safer model for the rest of the run', correct: false },
+    { id: 'a', label: "It blocks sandboxed commands from reading your credential files and secret environment variables, so a command running in the sandbox can't pull your API keys, tokens, or cloud credentials", correct: true },
+    { id: 'b', label: 'It encrypts your credential files on disk so that no program on the machine can ever read them again', correct: false },
+    { id: 'c', label: 'It deletes every secret environment variable at the start of the session so nothing sensitive is ever loaded', correct: false },
+    { id: 'd', label: "It routes all your credentials through Claude's servers for safekeeping for the duration of the session", correct: false },
   ],
-  passFeedback: 'HIT! Safe mode boots a vanilla session — your customizations switched off for that run — so anything strange that disappears was coming from your own config, not Claude itself.',
-  failFeedback: "MISS! It doesn't delete anything, it isn't a read-only mode, and it doesn't swap models. It just launches with your customizations stood down — re-read the books.",
+  passFeedback: "HIT! Switched on, `sandbox.credentials` stops sandboxed commands from reading your credential files and secret environment variables — so whatever runs in the sandbox can't pocket your keys, tokens, or cloud credentials.",
+  failFeedback: "MISS! It doesn't encrypt anything, it doesn't delete your environment, and it doesn't ship your secrets anywhere. It just denies sandboxed commands the ability to read that sensitive material — re-read the books.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**\`--safe-mode\` — Booting Claude Code With Your Customizations Switched Off**
+      text: `**\`sandbox.credentials\` — Walling Your Secrets Off From the Commands Claude Runs**
 
-**A clean room you can launch on demand**
+**The sandbox, and the gap it left open**
 
-Over time, a working Claude Code setup stops being plain. You accumulate *skills* you wrote, *hooks* that fire on edits and commits, *plugins* you installed from a marketplace, *custom slash commands*, and a settings file tuned to your taste. All of that makes you faster — until the day something behaves oddly and you can't tell whether the culprit is Claude or the scaffolding you built around it. \`--safe-mode\`, which shipped in the 2.1.169 release, is the switch that answers that question: it launches a session with your customizations *stood down*, leaving you with a plain, vanilla Claude Code.
+When Claude Code runs a shell command for you, that command can execute inside a *sandbox* — an isolated environment meant to contain what the command can reach. The sandbox is the seatbelt on tool execution: it limits the blast radius if a command does something you didn't intend. But isolating *where* a command runs is not the same as controlling *what it can read*, and a sandboxed command could still open files on your machine — including the ones holding your secrets. The \`sandbox.credentials\` setting, added in the 2.1.187 release, closes exactly that gap.
 
-**One flag, or one environment variable**
+**What it blocks**
 
-There are two ways in, and they map to two situations. The \`--safe-mode\` flag is the interactive route — you type it when you start Claude and the session you land in is the bare tool. The \`CLAUDE_CODE_SAFE_MODE\` environment variable is the same idea for the times you aren't typing the command yourself: a CI job, a script, a scheduled run, anywhere the launch is wired up ahead of time. Set the variable and every session that process spawns starts clean, no flag required.
+Turn it on and sandboxed commands are blocked from reading two specific things: your *credential files* and your *secret environment variables*. Credential files are the ones that hold the keys to the kingdom — a \`.env\` full of API keys, cloud credential files, tokens, connection strings. Secret environment variables are the same kind of material handed to a process through the environment rather than a file. With the setting active, a command running in the sandbox simply cannot read them; the door to that drawer is locked for anything executing there.
 
-**It stands customizations down — it doesn't tear them out**
+**A read-block, not a vault**
 
-The important nuance: safe mode is a *launch choice*, not a destructive one. Nothing is deleted. Your skills, hooks, plugins, and commands are all still on disk exactly where you left them; safe mode simply declines to load them for this run. Quit and relaunch without the flag and your whole setup is back, untouched. That's what makes it cheap to reach for — there's no cleanup afterward, no reinstalling, no risk to the configuration you spent months building.
+The important nuance is what it does *not* do. It doesn't encrypt your secrets, it doesn't delete them, and it doesn't move them anywhere. Your credential files sit exactly where they always have, fully readable by you and by anything outside the sandbox. The setting is narrow and surgical: it denies *sandboxed commands* the ability to *read* that sensitive material, and nothing more. That narrowness is the point — it's a single, well-aimed wall between the commands Claude runs and the secrets you can't afford to leak.
 
-> Takeaway: \`--safe-mode\` (and \`CLAUDE_CODE_SAFE_MODE\`) boots a vanilla Claude Code with your customizations switched off for that run only — a clean room you can step into and out of with nothing lost.`,
+> Takeaway: \`sandbox.credentials\` blocks sandboxed commands from reading your credential files and secret environment variables — a targeted lock on your secrets, not a vault that changes the files themselves.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Keeping a Clean Room — Where \`--safe-mode\` Earns Its Keep**
+      text: `**Why a Consultant Locks the Drawer — Client Secrets and the Commands You Don't Watch**
 
-**Isolating the variable when something goes wrong**
+**The blast radius of a command you didn't read**
 
-The first time safe mode pays for itself is a debugging moment. Claude does something unexpected — a hook rewrites a file you didn't want touched, a skill keeps firing on the wrong cue, output comes out mangled — and you're stuck guessing whether the tool is broken or your own setup is. Relaunch with \`--safe-mode\` and the question resolves itself in seconds. If the strange behavior *vanishes* in the clean room, it lived in your customizations, and now you know where to look. If it *persists*, your config is innocent and the issue is elsewhere. That's the oldest move in troubleshooting — remove the variables one layer at a time — packaged as a single flag.
+On an engagement, Claude runs a lot of shell commands on your behalf — installing dependencies, running the test suite, building, committing. You approve the work, but you do not read the full text of every command, and you certainly don't read what each command's own dependencies do once they're running. That's the exposure: somewhere in that stream, a command could read your \`.env\` and ship its contents off, or a compromised package could quietly scan the environment for tokens. The risk isn't that Claude misbehaves; it's everything that runs *under* the commands you greenlit.
 
-**Reproducing what a client actually sees**
+**What's actually in the drawer**
 
-On an engagement, your personal setup is a liability when you're trying to reproduce someone else's experience. The client's developer hits a problem in their repo, but you can't trust your own session to mirror theirs, because yours is wrapped in skills and hooks they've never installed. Safe mode lets you stand in their shoes: a vanilla Claude Code, the same baseline they're running, with none of your private tooling coloring the result. "Works on my machine" stops being an excuse when you can drop to the same clean floor they're standing on.
+Think about what a client engagement leaves lying around your working directory and your shell. The client's API keys in a \`.env\`. Cloud credentials for their infrastructure. A database connection string with a live password in it. Tokens for their internal services. Any one of those leaking is the kind of incident that ends an engagement and a reputation — and they're all just files and environment variables that a running command can read by default.
 
-**A trustworthy baseline for handoffs and demos**
+**Default-deny for secrets, as its own layer**
 
-There's a third use that's less about bugs and more about honesty. When you demo Claude Code to a client, or hand a repo to their team, you want them to see what *they'll* get, not a performance propped up by your custom commands. Running the demo in safe mode guarantees the thing on screen is the stock tool, reproducible by anyone. It's the difference between showing off your rig and showing the client the floor they'll actually walk in on.
+This is why you set \`sandbox.credentials\` before you let Claude run loose on client work. It's a layer that assumes the worst about every command — even the ones you allowed — and refuses them access to the secret material specifically. It pairs with your other controls rather than replacing them: your permission rules decide *which* commands run at all, and this setting guarantees that whatever does run can't pocket the client's keys on the way through. Locking the drawer costs you nothing and removes an entire category of accident.
 
-> Takeaway: Reach for safe mode whenever you need to trust the result — debugging your own setup, reproducing a client's session, or demoing the stock tool — and you remove every private variable in one move.`,
+> Takeaway: On client work, set \`sandbox.credentials\` so that even the commands you approved can't read the client's keys, tokens, and connection strings — the cheapest insurance against the leak you'd never see coming.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `Something's off — Claude keeps ____ in this repo and I can't tell if it's the tool or my own setup.
-Before we debug anything else, relaunch with --safe-mode so my ____ stand down and we're on a vanilla session.
-If the behavior ____ in the clean room, we know it was my config and we go hunting there.
-If it ____ even in safe mode, my setup is innocent and we look elsewhere.
-Either way, nothing of mine gets deleted — safe mode just declines to load it for this run.`,
+    template: `Before you run anything in this client repo, turn on sandbox.credentials so the commands you execute can't read my ____.
+We're about to let Claude ____, and I don't want any of those commands able to pocket the client's secrets.
+Specifically, this needs to keep sandboxed commands away from ____ and ____.
+Remember this is a read-block, not a vault — it doesn't ____, it just denies the sandbox access.
+Leave my permission rules in place too; this setting is one layer, not the whole wall.`,
     blanks: [
-      { id: 'symptom', suggestions: ['rewriting files I never asked it to touch', 'firing a hook at the wrong moment', 'producing mangled output'] },
-      { id: 'customizations', suggestions: ['hooks and skills', 'plugins and custom commands', 'layered customizations'] },
-      { id: 'vanishes', suggestions: ['disappears', 'stops happening', 'clears up'] },
-      { id: 'persists', suggestions: ['still happens', 'persists', 'shows up anyway'] },
+      { id: 'secrets', suggestions: ['.env API keys', 'cloud credential files', 'secret environment variables'] },
+      { id: 'task', suggestions: ['install dependencies and run the test suite', 'build and commit the work', 'run a stack of shell commands unattended'] },
+      { id: 'target-a', suggestions: ['credential files', 'the .env file', 'tokens and connection strings'] },
+      { id: 'target-b', suggestions: ['secret environment variables', 'cloud credentials', 'API keys'] },
+      { id: 'not-this', suggestions: ['encrypt or move the files', 'delete the secrets', 'change anything on disk'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "`--safe-mode` (shipped in 2.1.169) launches Claude Code with your own customizations — skills, hooks, plugins, custom commands, tuned settings — switched off, so you get a vanilla session. The `CLAUDE_CODE_SAFE_MODE` environment variable does the same for non-interactive runs like CI. It's a launch choice, not a destructive one: nothing is deleted, and relaunching without the flag brings your whole setup back. Reach for it to isolate whether your own config is causing odd behavior, to reproduce the vanilla session a client actually sees, and to demo or hand off the stock tool honestly.",
+        "`sandbox.credentials` (shipped in 2.1.187) blocks sandboxed commands from reading your credential files and secret environment variables — so a command Claude runs in the sandbox can't read your API keys, tokens, or cloud credentials. The sandbox already isolates where a command runs; this closes the gap of what it can read. It's a read-block, not a vault: nothing is encrypted, deleted, or moved, and anything outside the sandbox can still read the files. For a consultant it's the cheapest insurance on client work — set it before letting Claude run loose, so even the commands you approved can't pocket the client's secrets. It's one layer; keep your permission rules doing the rest.",
       beats: [
-        { kind: 'say', text: "First story this week is a small switch with an outsized payoff: `--safe-mode`, in since the 2.1.169 release. Start Claude with that flag and your customizations stand down — you land in a plain, vanilla session." },
-        { kind: 'say', text: "Think about everything you've layered on over time: skills you wrote, hooks that fire on edits and commits, plugins from a marketplace, custom slash commands, a settings file tuned just so. Safe mode loads *none* of it. Bare tool, nothing on top." },
-        { kind: 'say', text: "Two doors into the same room. The `--safe-mode` flag is for when you're typing the command yourself. The `CLAUDE_CODE_SAFE_MODE` environment variable is for when you're not — a CI job, a script, a scheduled run. Set the variable and every session that process starts comes up clean." },
+        { kind: 'say', text: "First story this week is a quiet security switch: `sandbox.credentials`, in since the 2.1.187 release. Turn it on and the shell commands Claude runs can't read your credential files or your secret environment variables." },
+        { kind: 'say', text: "Here's the gap it fills. When Claude runs a command, that command can run in a *sandbox* — an isolated box that limits the damage it can do. But isolating *where* a command runs isn't the same as controlling *what it can read*. A sandboxed command could still open your `.env` and slurp the keys inside." },
+        { kind: 'say', text: "So this setting closes that specific door. With it on, anything running in the sandbox is blocked from two things: your credential files — the `.env`, cloud credentials, tokens, connection strings — and the secret environment variables holding the same kind of material." },
         {
           kind: 'choice',
-          prompt: "Gut-check before you walk through. You panic for a second — does `--safe-mode` mean your skills and plugins are gone?",
+          prompt: "Gut-check before you walk through. You flip `sandbox.credentials` on — what just happened to your `.env` file?",
           options: [
-            { id: 'deleted', label: 'Yes — it wipes them so I\'d have to reinstall everything', correct: false, reaction: "Breathe — no. Nothing's deleted. Safe mode is a launch choice; it just declines to *load* your setup for this run. It's all still on disk." },
-            { id: 'launch-choice', label: 'No — it just doesn\'t load them this run; relaunching without the flag brings everything back', correct: true, reaction: "Exactly. It's stood down, not torn out. Quit, relaunch without the flag, and your whole rig is back untouched. That's what makes it cheap to reach for." },
-            { id: 'readonly', label: 'It also stops Claude from editing files, like a read-only mode', correct: false, reaction: "Different thing entirely. Safe mode is about *your customizations*, not permissions. Claude can still read and write — it's just doing it as the stock tool." },
+            { id: 'encrypted', label: "It got encrypted on disk so nothing can read it anymore", correct: false, reaction: "No — nothing happened to the file itself. It's not encrypted, deleted, or moved. The setting only blocks *sandboxed commands* from reading it; you and anything outside the sandbox read it exactly as before." },
+            { id: 'read-block', label: "Nothing — it's untouched; sandboxed commands just can't read it now", correct: true, reaction: "Exactly. It's a read-block, not a vault. The file sits where it always did, fully readable by you. What changed is that a command running in the sandbox is denied access to it. Narrow and surgical." },
+            { id: 'deleted', label: "Its secrets got cleared out of the environment for the session", correct: false, reaction: "Nope — your environment is intact. The setting doesn't strip anything out; it just refuses sandboxed commands the ability to read the secret material." },
           ],
         },
-        { kind: 'say', text: "Here's where it earns its keep. Something acts up — a hook touches a file it shouldn't, output comes out garbled — and you can't tell if it's Claude or your own scaffolding. Relaunch in safe mode. If the weirdness vanishes, it lived in your config. If it persists, your setup's innocent. You removed every variable in one flag." },
-        { kind: 'say', text: "On client work it's even better. Their developer hits a snag in their repo, but your session is wrapped in tooling they've never installed, so you can't trust yours to mirror theirs. Safe mode puts you on the same vanilla floor they're standing on — 'works on my machine' stops being an excuse." },
-        { kind: 'say', text: "And when you demo or hand off, run it clean so the client sees the stock tool, not a show propped up by your custom commands. The books on the desk have the flag-versus-variable split and the clean-room playbook. The door wants to know what `--safe-mode` actually does — answer that and the key's yours." },
+        { kind: 'say', text: "Why it matters on client work: you approve Claude's tasks, but you don't read the full text of every command, and you definitely don't read what each command's own dependencies do once they run. A compromised package could scan the environment for tokens. The risk isn't Claude — it's everything running *under* the commands you greenlit." },
+        { kind: 'say', text: "And think about what's lying around on an engagement: the client's API keys, their cloud credentials, a database connection string with a live password. Any one of those leaking ends the engagement. This setting assumes the worst about every command and walls them all off from the secrets — cheap insurance against the leak you'd never see." },
+        { kind: 'say', text: "One caveat: it's a layer, not the whole wall. Your permission rules still decide which commands run at all; this just guarantees that whatever does run can't read the keys. The books on the desk have the read-block-versus-vault distinction and the client playbook. The door wants to know what the setting actually does — answer that and the key's yours." },
       ],
     },
   },
   battle: {
-    name: 'Snarl, the Config-Draped Skeleton',
+    name: 'Pickbone, the Secret-Snatcher',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*clatters upright under a heap of borrowed plugins, dangling hooks, and half-loaded skills* …you can't even tell what's me anymore… is it the tool talking, or all this junk you bolted on…?",
+    introLine: "*clatters out of the dark, bony fingers already worming toward your `.env`* …leave the drawer open like everyone does… one little command in the sandbox, and your client's keys walk right out with me…",
     tauntLines: [
-      "*shakes a fistful of tangled hooks* peel one off and you still won't know which layer lied to you…",
-      "*rattles a stack of installed plugins like loose ribs* keep every customization loaded, keep guessing forever — that's how I like you…",
+      "*jangles a fistful of stolen tokens* you sandboxed the command but not the secrets — that's the rookie mistake, operator…",
+      "*rattles a ring of credential files* encrypt them? delete them? you're guarding the wrong door — that's not even what the setting does…",
     ],
-    victoryLine: "*the borrowed plugins and hooks slough off, leaving plain white bone* …safe mode… you stripped me back to vanilla and saw the truth… take the key, clean one…",
+    victoryLine: "*the keys clatter out of its grip, the drawer slamming shut* …fine… you locked the secrets away from the sandbox… nothing here for me to lift… take the key, careful one…",
     questions: [
       {
         prompt:
-          "A colleague says Claude is acting strangely in their repo and can't tell whether it's Claude itself or something in their own setup. They relaunch with `--safe-mode`. What does that actually do?",
+          "You let Claude run shell commands in a sandbox on a client repo, and you're worried a command could read the API keys in your `.env` or your cloud credential files. What does turning on the `sandbox.credentials` setting do?",
         choices: [
-          { id: 'a', label: 'It starts the session with their own customizations — skills, hooks, plugins, custom commands — switched off, so they see vanilla Claude Code and can tell whether their config was the cause', correct: true },
-          { id: 'b', label: 'It permanently deletes their skills, hooks, and plugins from disk so they have to reinstall everything', correct: false },
-          { id: 'c', label: 'It drops Claude into a read-only mode where it can look at files but is forbidden from editing them', correct: false },
-          { id: 'd', label: 'It forces the session onto a smaller, safer model for the rest of the run', correct: false },
+          { id: 'a', label: "It blocks sandboxed commands from reading your credential files and secret environment variables, so a command running in the sandbox can't pull your API keys, tokens, or cloud credentials", correct: true },
+          { id: 'b', label: 'It encrypts your credential files on disk so that no program on the machine can ever read them again', correct: false },
+          { id: 'c', label: 'It deletes every secret environment variable at the start of the session so nothing sensitive is ever loaded', correct: false },
+          { id: 'd', label: "It routes all your credentials through Claude's servers for safekeeping for the duration of the session", correct: false },
         ],
-        passFeedback: 'HIT! Safe mode boots a vanilla session — your customizations switched off for that run — so anything strange that disappears was coming from your own config, not Claude itself.',
-        failFeedback: "MISS! It doesn't delete anything, it isn't a read-only mode, and it doesn't swap models. It just launches with your customizations stood down — re-read the books.",
+        passFeedback: "HIT! Switched on, `sandbox.credentials` stops sandboxed commands from reading your credential files and secret environment variables — so whatever runs in the sandbox can't pocket your keys, tokens, or cloud credentials.",
+        failFeedback: "MISS! It doesn't encrypt anything, it doesn't delete your environment, and it doesn't ship your secrets anywhere. It just denies sandboxed commands the ability to read that sensitive material — re-read the books.",
       },
     ],
   },

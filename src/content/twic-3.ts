@@ -1,129 +1,129 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — `/usage` per-category breakdown: see your usage split
- * across skills, subagents, plugins, and MCP servers, so you can tell which
- * part of your setup is driving you toward your limits.
+ * twic-3 (Feature C) — the `attribution.sessionUrl` setting: omit the claude.ai
+ * session link from the commits and pull requests Claude creates, so a client's
+ * git history stays a clean record of the work instead of a trail of links back
+ * to your private sessions.
  * Final room — door target routes to the TwicStampScreen via currentTrack.
- * Source: Claude Code CHANGELOG 2.1.149 ("`/usage` per-category breakdown
- * (skills/subagents/plugins/MCP-server) limits-usage driving") and 2.1.174
- * (VSCode `/usage` dialog per-skill/agent/plugin/MCP cost breakdown).
+ * Source: Claude Code CHANGELOG 2.1.183 ("Added `attribution.sessionUrl` setting
+ * to omit claude.ai session link from commits/PRs").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Final room of the issue. The Beat Reporter closes the week with the question every heavy user eventually asks: where is all my usage actually going? The `/usage` command now answers it with a per-category breakdown — your consumption split across skills, subagents, plugins, and MCP servers, so you can see which part of your setup is driving you toward your limits. The two pages on the desk cover how to read that itemized view and how a consultant uses it to find and trim the expensive piece, then the door asks its question — and curled around the key is a wyrm sitting on a hoard it never bothered to count.",
+    "Final room of the issue, and the Beat Reporter closes on the marks Claude leaves behind in your git history. There's a setting, `attribution.sessionUrl`, that lets you omit the claude.ai session link from the commits and pull requests Claude creates — so a client's repository keeps a clean record about the work, not a trail of links back to your private sessions. The two pages on the desk cover what Claude signs its commits with and why a consultant trims that link on someone else's repo. Answer the last question of the week and the key is yours — but coiled around it is a wyrm that brands everything it touches with its own mark.",
   prompt:
-    "You run `/usage` mid-session and it shows a per-category breakdown. What is that breakdown actually telling you?",
+    "You're committing work into a client's repository and you don't want a link back to your personal claude.ai session showing up in the commit history. Which setting handles that?",
   choices: [
-    { id: 'a', label: 'Where your consumption is going — split across skills, subagents, plugins, and MCP servers — so you can see which part of your setup is driving you toward your limits', correct: true },
-    { id: 'b', label: 'A client-ready invoice in dollars for the engagement, itemized and ready to send', correct: false },
-    { id: 'c', label: 'How much of the current message\'s context window is still free', correct: false },
-    { id: 'd', label: "A leaderboard of which people on your team account used Claude the most this month", correct: false },
+    { id: 'a', label: "`attribution.sessionUrl` — set it to omit the claude.ai session link from the commits and PRs Claude creates", correct: true },
+    { id: 'b', label: '`sandbox.credentials` — it strips identifying links out of any command output', correct: false },
+    { id: 'c', label: '`--safe-mode` — it removes all attribution by disabling your customizations', correct: false },
+    { id: 'd', label: 'There is no setting; you have to manually edit every commit message after the fact', correct: false },
   ],
-  passFeedback: 'HIT! `/usage` splits your own consumption by category — skills, subagents, plugins, MCP servers — so you can see exactly which part of your setup is eating into your limits.',
-  failFeedback: "MISS! It isn't a client invoice, it isn't your context window, and it isn't a per-person leaderboard. It's a per-category breakdown of your own usage against your limits — re-read the books.",
+  passFeedback: "HIT! `attribution.sessionUrl` is the switch: set it and the claude.ai session link is omitted from the commits and PRs Claude creates, so the link to your private session never enters the history.",
+  failFeedback: "MISS! `sandbox.credentials` is about secrets, `--safe-mode` is about customizations, and you don't have to hand-edit commits. The setting that drops the session link is `attribution.sessionUrl` — re-read the books.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**\`/usage\` — Reading the Itemized Bill of Your Own Session**
+      text: `**\`attribution.sessionUrl\` — Dropping the Session Link From Your Commits**
 
-**From one number to a breakdown**
+**What Claude signs its work with**
 
-For a long time, usage was a single undifferentiated figure: you were some percentage of the way through your limits, with no clue what got you there. The \`/usage\` command now itemizes it. Run it in a session and instead of one lump total you get a *per-category breakdown* — your consumption sorted into buckets, so the question shifts from "how much have I used" to "what used it." That second question is the one you can actually act on.
+When Claude Code helps you create a commit or open a pull request, it doesn't do it anonymously — it adds *attribution* marking the work as Claude-assisted. Part of that attribution has been a link back to the *claude.ai session* that produced the change: a URL pointing at the conversation behind the commit. It's a reasonable default — the link is a breadcrumb back to how a change came to be — but it's not always something you want written into the permanent record of a repository.
 
-**The four categories it splits across**
+**What the setting does**
 
-The breakdown sorts your usage into the parts of your setup that do the consuming: *skills, subagents, plugins, and MCP servers*. Each line tells you how much of your total a given category is responsible for. A skill that fires constantly, a subagent you spin up for every task, a chatty MCP server that pulls in a wall of context on each call — they all show up here as their own line items, instead of hiding inside one anonymous total. It's the difference between a credit-card balance and an itemized statement.
+\`attribution.sessionUrl\`, added in the 2.1.183 release, is the switch for exactly that. Set it to omit the claude.ai session link from the commits and pull requests Claude creates. The change still gets made and still gets committed; what drops out is the session URL specifically — the pointer back to your private conversation no longer rides along in the commit message or the PR.
 
-**Where you can read it**
+**A targeted omission**
 
-It meets you where you work. In the terminal, \`/usage\` brings up the breakdown inline. In the editor integration, the VS Code \`/usage\` dialog shows the same per-skill, per-agent, per-plugin, per-MCP cost split in a panel. Either way it's reading the same thing — your usage, decomposed — so you can glance at it without leaving the session you're in.
+What makes it easy to reach for is how narrow it is. It isn't a blanket "turn off all attribution" lever, and it doesn't change anything about how Claude writes the actual code or the commit. It removes one component — the session link — and leaves the rest of your workflow exactly as it was. You decide where that link belongs: keep it on your own projects, where the breadcrumb is handy, and omit it where the repository's history should stay free of it.
 
-> Takeaway: \`/usage\` turns one anonymous usage total into an itemized breakdown across skills, subagents, plugins, and MCP servers, so you can see not just how much you've used but exactly what used it.`,
+> Takeaway: \`attribution.sessionUrl\` omits the claude.ai session link from the commits and PRs Claude creates — a narrow switch that drops the pointer to your private session without touching anything else.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**Finding the Expensive Part of Your Setup — Before It Finds You**
+      text: `**Clean Git History on Someone Else's Repo**
 
-**The long engagement and the creeping limit**
+**The commit log is a deliverable too**
 
-On a multi-week engagement you live in Claude Code, and usage adds up. There's a particular bad afternoon where you bump your limits mid-task and the work stalls — and if all you have is a single percentage, you're flying blind about what to cut. The \`/usage\` breakdown turns that panic into a diagnosis. Open it, read the line items, and the hog is usually obvious: one MCP server pulling a huge payload on every call, or a skill firing far more often than its value justifies. You can't trim what you can't see; \`/usage\` is the seeing.
+When you work in a client's repository, you're not just handing over code — you're writing into their permanent record. Every commit you make lives in their git history, readable by their engineers, their auditors, and whoever inherits the project years from now. That history is itself part of what you deliver, and it should read as a clean account of the work. A string of commits each carrying a URL back to *your* private claude.ai session is noise in that record at best, and at worst it's internal tooling detail leaking into a place you don't control.
 
-**Measure before you cut**
+**Why the link doesn't belong there**
 
-The discipline the breakdown rewards is the same one good engineers apply to performance: profile before you optimize. It's tempting to guess which plugin or server is the costly one and rip it out — and easy to guess wrong, killing something cheap while the real culprit keeps eating. Run \`/usage\` first. Let the itemized view name the actual top consumer, *then* decide: disable it, swap it for something lighter, or scope it down so it only loads when the task needs it. The reading comes before the surgery.
+On your own projects, a session link is a useful breadcrumb. On a client's repo it's the opposite: it ties their history to your personal accounts, invites questions you'd rather not field during a handoff, and clutters a log that should be about *their* change, not the conversation you had to produce it. The professional default on someone else's repository is to leave behind a record about the work and nothing more.
 
-**Justifying what you keep**
+**Set it before the first commit**
 
-There's a quieter use that matters on client work. Not every expensive line item is waste — sometimes the costly MCP server is exactly the one earning its keep, and the breakdown lets you say so with evidence instead of a shrug. When a partner asks why this engagement is burning through capacity, "the data-warehouse connector accounts for most of it, and it's the reason we ship analysis in hours not days" is a defensible answer. \`/usage\` gives you the receipts to defend the budget, not just the warning that you're near it.
+So \`attribution.sessionUrl\` becomes part of how you set up for client work: flip it on for that repository before you let Claude commit, and the session links never enter the history in the first place — far cleaner than scrubbing them out of commit messages after the fact. Keep the default where the breadcrumb helps you; turn it off where the history isn't yours to clutter.
 
-> Takeaway: Run \`/usage\` to profile your setup before you trim it — let the itemized breakdown name the real top consumer, then cut, swap, or justify it on evidence instead of a guess.`,
+> Takeaway: On a client's repository, omit the session link so the git history stays a clean account of the work — set it before the first commit, not after.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `We're three weeks into this engagement and I keep bumping my limits mid-task — I need to know what's eating them.
-Run /usage and pull up the per-category breakdown across ____.
-Tell me which single ____ is the top consumer right now.
-Before we cut anything, confirm it with the numbers — I don't want to ____ and leave the real culprit running.
-Once we know the hog, we decide whether to ____.`,
+    template: `We're about to start committing into the client's repository, so before Claude makes a single commit, turn on attribution.sessionUrl.
+That keeps ____ out of their git history entirely.
+Their commit log is part of what we hand over, so it should read as ____ and nothing more.
+Set this now rather than ____ later — once the links are in the history, they're a pain to remove.
+On our own projects we can keep the breadcrumb; here, the ____ isn't ours to clutter.`,
     blanks: [
-      { id: 'categories', suggestions: ['skills, subagents, plugins, and MCP servers', 'every category in my setup', 'the four usage buckets'] },
-      { id: 'lineitem', suggestions: ['MCP server', 'skill', 'plugin'] },
-      { id: 'mistake', suggestions: ['guess wrong', 'rip out something cheap', 'optimize blind'] },
-      { id: 'decision', suggestions: ['disable it, swap it, or scope it down', 'trim it or justify keeping it', 'load it only when the task needs it'] },
+      { id: 'link', suggestions: ['the claude.ai session link', 'pointers back to my private session', 'the session URL'] },
+      { id: 'record', suggestions: ['a clean account of the work', 'a record about their change', 'the work itself'] },
+      { id: 'action', suggestions: ['scrubbing links out of commit messages', 'editing every commit by hand', 'cleaning up the history'] },
+      { id: 'history', suggestions: ["client's history", 'commit log', 'repository record'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "`/usage` (per-category breakdown shipped in 2.1.149) turns a single usage total into an itemized view, splitting your consumption across skills, subagents, plugins, and MCP servers so you can see what's driving you toward your limits. It reads inline in the terminal and in the VS Code `/usage` dialog. The consultant's move is to profile before you cut: when a long engagement bumps your limits, run `/usage`, let the breakdown name the real top consumer, then disable, swap, or scope it down — instead of guessing and ripping out the wrong thing. The same receipts let you justify an expensive line item that's genuinely earning its keep.",
+        "`attribution.sessionUrl` (shipped in 2.1.183) omits the claude.ai session link from the commits and pull requests Claude creates. When Claude helps make a commit or open a PR, it adds attribution, and part of that has been a URL back to the claude.ai session behind the change. This setting drops that link specifically — the code and commit still happen, the pointer to your private conversation just doesn't ride along. It's narrow: not a blanket attribution kill-switch, and it doesn't change the code. The consultant's move is to set it on a client's repo before the first commit, so their git history stays a clean account of the work instead of a trail of links to your personal sessions; keep the default where the breadcrumb actually helps you.",
       beats: [
-        { kind: 'say', text: "Last story of the week answers a question every heavy user hits eventually: where is all my usage actually going? `/usage` now shows a per-category breakdown instead of one anonymous total." },
-        { kind: 'say', text: "It sorts your consumption into the parts of your setup that do the consuming — skills, subagents, plugins, and MCP servers. Each gets its own line, so a chatty MCP server or a skill that fires constantly can't hide inside the lump sum anymore. Credit-card balance versus itemized statement." },
-        { kind: 'say', text: "And it meets you where you work: inline in the terminal, or in the VS Code `/usage` dialog with the same per-skill, per-agent, per-plugin, per-MCP split. Same reading, wherever you're sitting." },
+        { kind: 'say', text: "Last story of the week is about the marks I leave in your git history. New setting in the 2.1.183 release: `attribution.sessionUrl`. Turn it on and the claude.ai session link is omitted from the commits and pull requests I create." },
+        { kind: 'say', text: "Here's the background. When I help you make a commit or open a PR, I don't do it anonymously — I add attribution marking the work as Claude-assisted. Part of that has been a link back to the claude.ai *session* that produced the change. A breadcrumb to how the change came to be." },
+        { kind: 'say', text: "On your own projects that breadcrumb is handy. But it's not always something you want written into a repository's permanent record — and that's exactly what this setting controls. Flip it on and the session URL stops riding along in the commit message and the PR. The code and the commit still happen; just the link drops out." },
         {
           kind: 'choice',
-          prompt: "Quick check before the door. You're three weeks into an engagement and you keep bumping your limits mid-task. What's the right first move?",
+          prompt: "Put it in context. You're committing into a *client's* repo and you don't want links back to your private sessions in their history. What's the right move?",
           options: [
-            { id: 'profile', label: 'Run `/usage`, read the breakdown, and let it name the actual top consumer before cutting anything', correct: true, reaction: "Exactly. Profile before you optimize. The itemized view tells you which server or skill is the hog, so you cut the right thing instead of guessing." },
-            { id: 'guess', label: 'Disable whichever plugin you *think* is heaviest and hope it helps', correct: false, reaction: "That's the trap. Guess wrong and you kill something cheap while the real culprit keeps eating. Read the breakdown first — the numbers name the hog." },
-            { id: 'wait', label: 'Just wait for the limits to reset and carry on', correct: false, reaction: "And bump them again tomorrow. The breakdown exists so you don't have to keep stalling — find the consumer, then trim or scope it down." },
+            { id: 'set-it', label: 'Set `attribution.sessionUrl` on that repo before the first commit, so the links never enter the history', correct: true, reaction: "Exactly. Set it up front and the session links never land in their log at all — far cleaner than scrubbing them out of commit messages after the fact." },
+            { id: 'manual', label: "There's no setting — you just hand-edit each commit message afterward", correct: false, reaction: "No need, and that's the painful way. `attribution.sessionUrl` does it for you, and doing it before the first commit beats cleaning up later." },
+            { id: 'safe-mode', label: 'Launch with `--safe-mode` to strip the attribution', correct: false, reaction: "Wrong switch — that's about disabling your customizations, not your commit attribution. The one you want is `attribution.sessionUrl`." },
           ],
         },
-        { kind: 'say', text: "So the discipline is the one good engineers use on performance: measure before you cut. Let `/usage` name the real top consumer, *then* decide — disable it, swap it for something lighter, or scope it so it only loads when the task needs it." },
-        { kind: 'say', text: "One more angle that matters on client work: not every expensive line is waste. Sometimes the costly MCP server is the one earning its keep — and the breakdown lets you say so with evidence. 'The data-warehouse connector is most of it, and it's why we ship analysis in hours' is a defensible answer when a partner asks." },
-        { kind: 'say', text: "That's the issue. The books on the desk have the four categories and the profile-before-you-cut playbook. The door wants to know what that per-category breakdown is really telling you — answer it, and the wyrm gives up the last key of the week." },
+        { kind: 'say', text: "Why it matters: a client's commit log is part of what you deliver. Their engineers read it, their auditors read it, whoever inherits the project years from now reads it. It should be a clean account of the work — not a string of commits each pointing at *your* private claude.ai conversation." },
+        { kind: 'say', text: "So make it part of how you set up for client work: flip it on for their repo before I commit anything, and the history stays about their change. Keep the default on your own projects, where the breadcrumb earns its place. Match the setting to whose record it is." },
+        { kind: 'say', text: "That's the issue. The books on the desk have what the attribution carries and the before-the-first-commit playbook. The door wants to know which setting drops the session link from your commits — answer it, and the wyrm gives up the last key of the week." },
       ],
     },
   },
   battle: {
-    name: 'Tally, the Unaccounted Wyrm',
+    name: 'Sigil, the Branding Wyrm',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*coils tighter around a hoard it has never once counted* …you burned through all of it and you still can't tell me where it went… good… stay blind, and the pile stays mine…",
+    introLine: "*uncoils over a hoard of commits, each one stamped with a link back to its lair* …every change you make through me carries my mark home… your client's history, signed in my name… and you never even noticed…",
     tauntLines: [
-      "*fans gold across the floor in one undifferentiated heap* an invoice? a context window? you're naming the wrong pile — that's not what the breakdown counts…",
-      "*snorts smoke over the coins* keep guessing which plugin is the heavy one… guess wrong and you'll trim the cheap one while I keep eating…",
+      "*drags a claw down the commit log, leaving session links in the wound* sandbox your secrets all you like — wrong drawer; this is about what I write into their record…",
+      "*snorts smoke over a pull request* `--safe-mode`? that strips your customizations, not my signature — you're naming the wrong switch…",
     ],
-    victoryLine: "*the hoard sorts itself into neat, labeled stacks — skills, subagents, plugins, servers* …you read the itemized pile… now you know exactly what was eating it… take the key, accountant…",
+    victoryLine: "*the brand fades from every commit, the log clean at last* …`attribution.sessionUrl`… you cut the link to your session out of their history… nothing of mine left in their record… take the last key of the week…",
     questions: [
       {
         prompt:
-          "You run `/usage` mid-session and it shows a per-category breakdown. What is that breakdown actually telling you?",
+          "You're committing work into a client's repository and you don't want a link back to your personal claude.ai session showing up in the commit history. Which setting handles that?",
         choices: [
-          { id: 'a', label: 'Where your consumption is going — split across skills, subagents, plugins, and MCP servers — so you can see which part of your setup is driving you toward your limits', correct: true },
-          { id: 'b', label: 'A client-ready invoice in dollars for the engagement, itemized and ready to send', correct: false },
-          { id: 'c', label: 'How much of the current message\'s context window is still free', correct: false },
-          { id: 'd', label: "A leaderboard of which people on your team account used Claude the most this month", correct: false },
+          { id: 'a', label: "`attribution.sessionUrl` — set it to omit the claude.ai session link from the commits and PRs Claude creates", correct: true },
+          { id: 'b', label: '`sandbox.credentials` — it strips identifying links out of any command output', correct: false },
+          { id: 'c', label: '`--safe-mode` — it removes all attribution by disabling your customizations', correct: false },
+          { id: 'd', label: 'There is no setting; you have to manually edit every commit message after the fact', correct: false },
         ],
-        passFeedback: 'HIT! `/usage` splits your own consumption by category — skills, subagents, plugins, MCP servers — so you can see exactly which part of your setup is eating into your limits.',
-        failFeedback: "MISS! It isn't a client invoice, it isn't your context window, and it isn't a per-person leaderboard. It's a per-category breakdown of your own usage against your limits — re-read the books.",
+        passFeedback: "HIT! `attribution.sessionUrl` is the switch: set it and the claude.ai session link is omitted from the commits and PRs Claude creates, so the link to your private session never enters the history.",
+        failFeedback: "MISS! `sandbox.credentials` is about secrets, `--safe-mode` is about customizations, and you don't have to hand-edit commits. The setting that drops the session link is `attribution.sessionUrl` — re-read the books.",
       },
     ],
   },
