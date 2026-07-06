@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-06-29',
+  publishDate: '2026-07-06',
   framing:
-    "This week in Claude, the throughline is keeping a tight grip on what your sessions touch, lose, and leave behind. The new `sandbox.credentials` setting walls the commands Claude runs off from your credential files and secret environment variables, so a sandboxed command can't pocket a client's API keys. `/rewind` now reaches back across a `/clear`, turning what used to be a point of no return into a recoverable mistake. And `attribution.sessionUrl` lets you drop the claude.ai session link from the commits and PRs Claude makes, so a client's git history stays a clean record of the work and not a trail back to your private sessions.",
+    "This week in Claude, the throughline is scale — how much you can hand Claude at once, and how well it helps you shape what comes back. The new built-in `/dataviz` skill brings genuine chart-and-dashboard design with a color-palette validator, so the visuals in your deliverables hold up instead of embarrassing you. Subagents now run in the background by default, so you fire off the long jobs and keep working while notifications pull you back when each one lands. And Claude Sonnet 5 arrives as the default model with a native 1M-token context window — big enough to point at an entire codebase or a stack of client documents and have it reason across all of it at once.",
 };

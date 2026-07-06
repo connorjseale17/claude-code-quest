@@ -1,127 +1,131 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-2 (Feature B) — `/rewind` reaching back across a `/clear`: the command can
- * now resume your conversation from a point before you ran `/clear`, so the
- * cleared context is recoverable and `/clear` is no longer a one-way door.
- * Source: Claude Code CHANGELOG 2.1.191 ("Added `/rewind` support for resuming
- * conversation from before `/clear` was run").
+ * twic-2 (Feature B) — subagents now run in the background by default: Claude
+ * keeps working the main thread while a subagent runs, a notification fires when
+ * it finishes, and background agents launched from `claude agents` can commit,
+ * push, and open a draft PR on their own.
+ * Source: Claude Code CHANGELOG 2.1.198 ("Subagents now run in background by
+ * default; Claude continues working and receives notifications" / "Added
+ * background agent notifications in `claude agents` with `Notification` hook" /
+ * "Background agents launched from `claude agents` now commit, push, and open
+ * draft PRs").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic2Content: LessonContent = {
   roomId: 'twic-room-2',
   intro:
-    "Room 2, and the Beat Reporter has a story for anyone who's ever hit a command and immediately wished they hadn't. `/rewind` can now resume your conversation from a point *before* you ran `/clear` — so the context you wiped to tidy up isn't gone for good, and `/clear` stops being a one-way door. The two pages on the desk cover how that reach-back works and how a consultant clears without fear because of it. Answer the door and the key is yours — but in here drifts the ghost of every thread you thought you'd erased.",
+    "Room 2, and the Beat Reporter has a story for anyone who's ever kicked off a long task and then just sat there watching it run. Subagents — the helpers Claude spins up to go handle a chunk of work — now run in the *background* by default: Claude keeps working the main thread, and a notification pulls you back the moment one finishes. The two pages on the desk cover how the background hand-off works and how a consultant runs three things at once because of it. Answer the door and the key is yours — but first you'll have to slip past the ghost that keeps you frozen at the screen, waiting.",
   prompt:
-    "Twenty minutes into a session you run `/clear` to tidy up, then realize you've thrown away context you still needed. What can `/rewind` now do for you?",
+    "You ask Claude to spin up a subagent for a long codebase survey. Under the new default, what happens while it runs?",
   choices: [
-    { id: 'a', label: "Resume the conversation from a point before you ran `/clear`, so the context you wiped comes back and `/clear` is no longer a point of no return", correct: true },
-    { id: 'b', label: 'Undo the last file Claude edited on disk, reverting the change in your working tree', correct: false },
-    { id: 'c', label: 'Reconnect a dropped network session and replay the API request that failed', correct: false },
-    { id: 'd', label: 'Roll the model back to a previous version for the rest of the session', correct: false },
+    { id: 'a', label: "It runs in the background while Claude keeps working, and you get a notification when it finishes — you don't have to sit and wait for it", correct: true },
+    { id: 'b', label: 'The whole session blocks until the subagent is done, then picks back up where it left off', correct: false },
+    { id: 'c', label: 'It runs silently, and you have to keep checking the agents view yourself to find out when it is finished', correct: false },
+    { id: 'd', label: 'The subagent takes over your main session for the length of its task', correct: false },
   ],
-  passFeedback: "HIT! `/rewind` can now land you on a point before the `/clear`, pulling the wiped conversation back into the session — so clearing is recoverable instead of final.",
-  failFeedback: "MISS! It doesn't revert a file on disk, reconnect a network session, or swap models. It resumes your *conversation* from before the `/clear` — re-read the books.",
+  passFeedback: "HIT! Subagents run in the background by default now — the main session keeps working while the subagent runs, and a notification fires when it lands, so you're free to do other work in the meantime.",
+  failFeedback: "MISS! The session doesn't block, you're not left polling, and the subagent doesn't take over your main thread. It runs in the background and notifies you when it's done — re-read the books.",
   lore: [
     {
       id: 'twic-2-lore-a',
-      text: `**\`/rewind\` — Reaching Back Across a \`/clear\`**
+      text: `**Subagents Run in the Background by Default — You Stop Waiting**
 
-**What \`/clear\` used to cost you**
+**The old shape: fire, then freeze**
 
-\`/clear\` wipes the current conversation so you can start fresh. It's a genuinely useful move — a long session accumulates context you no longer need, and clearing gives you a clean slate without quitting and relaunching. But it came with a quiet cost: once you cleared, the conversation you cleared away was gone for that session. If it turned out you still needed something from before the wipe, there was no walking it back. \`/clear\` was a one-way door.
+When you hand Claude a big task, it can delegate part of it to a *subagent* — a separate worker that goes off and handles that slice on its own. The behavior that changed in the 2.1.198 release is what happens to *you* while that worker runs. It used to mean waiting: the subagent worked, and you watched. Now subagents run in the background by default, and the main session doesn't stall behind them — Claude keeps working on the main thread while the subagent grinds away on its piece.
 
-**The new reach of \`/rewind\`**
+**Notifications close the loop**
 
-\`/rewind\` is the command for returning to an earlier point in your session — stepping the conversation back to a state it was already in. The change that landed in the 2.1.191 release is *how far back it can reach*: \`/rewind\` now supports resuming the conversation from a point **before** you ran \`/clear\`. The wiped context isn't truly destroyed; \`/rewind\` can land you on the far side of the clear and bring that earlier conversation back into the session.
+Background work is only useful if you find out when it's done, and that's the second half of the change. Background agents now raise a *notification* when they finish, surfaced in the \`claude agents\` view and wired to a \`Notification\` hook you can hang your own actions off. You're not babysitting a progress bar, and you're not forgetting the job either — the finish comes and gets you.
 
-**\`/clear\` becomes reversible**
+**A background agent can go all the way to a draft PR**
 
-Put those two together and the relationship between the commands changes. \`/clear\` is still your clean slate, but it's no longer irreversible — \`/rewind\` can cross the boundary it draws. The clear you ran to tidy up, or the one you fired a beat too soon, is now something you can step back through instead of a mistake you have to live with for the rest of the session.
+The release pushed the autonomy further still: background agents launched from \`claude agents\` can now *commit, push, and open a draft pull request* on their own. So a backgrounded job isn't limited to "think and report back" — it can carry a change all the way to a reviewable PR that's sitting and waiting for you, without a single step in between needing your hand on the wheel.
 
-> Takeaway: \`/rewind\` can now resume your conversation from before a \`/clear\`, so clearing is no longer a one-way door — the context you wiped is reachable again.`,
+> Takeaway: Subagents now run in the background by default — Claude keeps working, a notification tells you when each one lands, and a background agent can carry a task all the way to a draft PR on its own.`,
     },
     {
       id: 'twic-2-lore-b',
-      text: `**Clearing Without Fear — Recovering Context Mid-Engagement**
+      text: `**Running Three Things at Once — Delegation for a Consultant Who's Out of Hours**
 
-**Why you reach for \`/clear\` in the first place**
+**Your time was the bottleneck, not Claude's**
 
-Deep into an engagement, a single session can run for hours. The context fills with dead ends, abandoned approaches, and detail from tasks you finished long ago, and all of that noise makes Claude slower to steer and easier to confuse. \`/clear\` is how you cut it back — wipe the clutter, keep working in the same session with a fresh, focused context. The only thing that ever made it nerve-wracking was the finality: clear at the wrong moment and you'd lose a thread you needed.
+On an engagement the scarce resource is you. When every delegated task froze your session until it finished, delegation didn't actually buy you much — you'd fired off a worker and then spent the same wall-clock time watching it. Background-by-default flips that: the long test run, the codebase survey, the first draft of a migration can all be *in flight* while you're doing something else entirely. The hours you spend and the hours Claude spends stop being the same hours.
 
-**The recovery move**
+**Fan out, then let the notifications pull you back**
 
-That fear is what the new reach of \`/rewind\` retires. You clear to refocus and a beat later realize you've thrown out a decision, a constraint, or a chunk of reasoning you still needed — so you \`/rewind\` back across the clear, and the earlier conversation is in front of you again. The same move covers the simple slip: the \`/clear\` fired by reflex or muscle memory, recovered in seconds instead of reconstructed from your notes.
+The working pattern this unlocks is fan-out. Kick off the slow research subagent, start a build in another, and turn your own attention to the client call or the deck — the notification is what reels you back to each one as it lands, in the order they finish rather than the order you started them. You're no longer choosing which single task to sit and watch; you're running a small portfolio of them and getting pinged as each completes.
 
-**Clear more freely, because it's cheap now**
+**The draft PR is the handoff you can trust**
 
-The deeper shift is in how aggressively you can manage your own context. When clearing was a one-way door, the safe play was to hesitate and let context bloat rather than risk losing something. Now that \`/rewind\` can undo it, \`/clear\` becomes a cheap, low-stakes tool you reach for the moment a session gets cluttered — knowing that if you cut too deep, the earlier thread is one command away. Aggressive context hygiene stops being a gamble.
+Because a background agent can go all the way to a draft pull request, the thing waiting for you when the notification fires isn't a wall of chat to re-read — it's a concrete, reviewable diff. That's the right surface for client work: you review the change on its merits, in the tool your team already uses to review changes, instead of reconstructing what the agent did from its transcript. Delegation finally ends where you actually want it to: at a PR, not at a status update.
 
-> Takeaway: Because \`/rewind\` can walk back a \`/clear\`, you can clear aggressively to keep a long session sharp — and recover in seconds on the times you cut too deep.`,
+> Takeaway: Because delegated work now runs in the background and can land as a draft PR, a consultant can fan out several tasks at once and review each as a real diff — your hours stop being the ceiling on Claude's.`,
     },
   ],
   practice: {
     id: 'twic-2-practice',
-    template: `I just ran /clear to tidy up this session and immediately realized I ____.
-Don't panic — use /rewind to resume from a point before the clear, and the ____ comes back.
-What I specifically need back is ____, so rewind far enough to land before I wiped it.
-The lesson: /clear isn't a one-way door anymore, so I can ____ without fear.
-From now on, treat clearing as cheap — if I cut too deep, rewind across it.`,
+    template: `Kick off the ____ as a background subagent and don't sit here watching it — let it run.
+While it works, I'm going to ____, so keep the main session free.
+Notify me the moment it finishes instead of making me ____.
+If it can, take it all the way to a ____ so I have a real diff to review, not a transcript.
+The point is to fan out the slow jobs and let the notifications pull me back.`,
     blanks: [
-      { id: 'mistake', suggestions: ['threw out context I still needed', 'cleared a beat too soon', "wiped a decision we weren't done with"] },
-      { id: 'recovered', suggestions: ['earlier conversation', 'wiped context', 'thread I cleared'] },
-      { id: 'needed', suggestions: ['the constraints we agreed on earlier', 'the approach we picked an hour ago', 'the reasoning behind the last change'] },
-      { id: 'habit', suggestions: ['clear aggressively to keep the session focused', 'cut clutter the moment it builds up', 'manage my own context without hesitating'] },
+      { id: 'task', suggestions: ['dependency-upgrade migration', 'full test-suite run', 'legacy-code survey'] },
+      { id: 'other-work', suggestions: ['jump on the client call', 'finish the board deck', 'start the second workstream'] },
+      { id: 'polling', suggestions: ['keep checking whether it is done', 'babysit a progress bar', 'poll the agents view myself'] },
+      { id: 'artifact', suggestions: ['draft pull request', 'reviewable diff on a pushed branch', 'committed branch with a draft PR'] },
     ],
     prize: { id: 'twic-2-prize', label: 'TWIC · MID-WEEK' },
   },
   conversations: {
     'twic-npc-2': {
       summary:
-        "`/rewind` (capability shipped in 2.1.191) can now resume your conversation from a point before you ran `/clear`. `/clear` wipes the conversation for a fresh slate, but it used to be a one-way door — the cleared context was gone for the session. Now `/rewind` reaches across that boundary, landing you before the clear and bringing the earlier conversation back. The practical effect: `/clear` is reversible, so you can clear aggressively to keep a long engagement focused and recover in seconds when you cut too deep. It's about the *conversation*, not files on disk, network sessions, or model versions.",
+        "As of 2.1.198, subagents run in the background by default. When you delegate a task, the main session no longer freezes behind the worker — Claude keeps going, and a notification fires when the subagent finishes, surfaced in the `claude agents` view and wired to a `Notification` hook. Background agents can even commit, push, and open a draft PR on their own. For a consultant the win is that your time stops being the bottleneck: fan out the slow jobs — a test run, a codebase survey, a migration draft — and let the notifications pull you back to each as it lands. And because a background agent can end at a draft pull request, what's waiting is a real reviewable diff, not a transcript to reconstruct.",
       beats: [
-        { kind: 'say', text: "Second story is for everyone who's ever fired a command and instantly regretted it. New capability in the 2.1.191 release: `/rewind` can now resume your conversation from a point *before* you ran `/clear`." },
-        { kind: 'say', text: "Quick refresher. `/clear` wipes the current conversation so you start fresh — handy when a long session fills up with clutter. But it used to come with a sting: once you cleared, the conversation you cleared was gone for that session. A one-way door." },
-        { kind: 'say', text: "`/rewind` is the command for stepping back to an earlier point in the session. What changed is how far back it reaches — it can now land you on the far side of a `/clear`, pulling that wiped conversation back. The context wasn't truly destroyed; rewind can cross the boundary the clear drew." },
+        { kind: 'say', text: "Second story is for everyone who's ever fired off a long job and then just sat there watching the progress bar. Change in the 2.1.198 release: subagents now run in the *background* by default." },
+        { kind: 'say', text: "Quick frame. When you hand me a big task, I can delegate a slice of it to a subagent — a separate worker that goes and handles that piece. What changed is what happens to *you* while it runs. It used to mean waiting; the worker worked and you watched. Now the main session doesn't stall behind it — I keep working while the subagent grinds away." },
+        { kind: 'say', text: "The loop closes with notifications. When a background agent finishes, it raises a notification — surfaced in the `claude agents` view and wired to a `Notification` hook you can hang your own actions off. You're not babysitting a bar, and you're not forgetting the job either. The finish comes and gets you." },
         {
           kind: 'choice',
-          prompt: "Put it to work. You `/clear` to tidy up, then realize you've thrown away a decision you still needed. You reach for `/rewind` — what does it bring back?",
+          prompt: "Put it to work. You spin up a subagent for a long codebase survey. Under the new default, what happens while it runs?",
           options: [
-            { id: 'conversation', label: 'The conversation from before the clear, decision and all', correct: true, reaction: "Exactly. Rewind lands you on a point before the `/clear`, so the wiped thread — including that decision — is back in the session. The clear was recoverable after all." },
-            { id: 'file', label: 'The last file Claude edited, reverted on disk', correct: false, reaction: "Different thing. `/rewind` here is about your *conversation*, not your working tree. It's bringing back the cleared context, not undoing a file change." },
-            { id: 'model', label: 'The model version you were using earlier', correct: false, reaction: "No — it doesn't touch the model. It resumes the conversation from before the clear. That's the boundary it now crosses." },
+            { id: 'background', label: "It runs in the background while I keep working, and you get a notification when it's done", correct: true, reaction: "Exactly. Background-by-default means the main session doesn't freeze behind the subagent — you go do other work, and the finish notification pulls you back." },
+            { id: 'blocks', label: 'The whole session blocks until the subagent finishes, then picks back up', correct: false, reaction: "That was the old way — and it's the misconception now. The point of the change is that the main thread doesn't stall; I keep working while the subagent runs." },
+            { id: 'poll', label: "It runs silently and you have to keep checking `claude agents` yourself to see if it's done", correct: false, reaction: "No — you're not left polling. A notification fires when it finishes, wired to the agents view and a `Notification` hook. The finish comes to you." },
           ],
         },
-        { kind: 'say', text: "Here's why it matters on a long engagement. Sessions run for hours, context fills with dead ends and finished tasks, and that noise makes me slower to steer. `/clear` is how you cut it back — but the finality is what made people hesitate and let it bloat instead." },
-        { kind: 'say', text: "That hesitation is what this retires. Cleared too eagerly, or by reflex? `/rewind` back across it and you're whole again in seconds, instead of reconstructing the thread from your notes. The accidental clear stops being a disaster." },
-        { kind: 'say', text: "So the real shift is in how you work: clear *aggressively* now, because it's cheap. Keep the session sharp, and if you ever cut too deep, the earlier thread is one command away. The books have the reach-back mechanics and the clear-without-fear playbook. The door wants to know what `/rewind` can now do — name it and the key drops." },
+        { kind: 'say', text: "And the autonomy goes further: a background agent launched from `claude agents` can commit, push, and open a *draft pull request* on its own. So a backgrounded job isn't just 'think and report back' — it can carry a change all the way to a reviewable PR waiting for you." },
+        { kind: 'say', text: "Why it matters on an engagement: the scarce resource is *you*. When every delegated task froze your session, delegation bought you almost nothing — you'd farmed out a worker and spent the same wall-clock time watching it. Now the test run, the survey, the migration draft can all be in flight while you're on the client call." },
+        { kind: 'say', text: "So the pattern is fan-out: start three slow jobs, turn to your own work, and let the notifications reel you back as each lands. And because one can end at a draft PR, what's waiting is a real diff to review — not a transcript to reconstruct. The books have the background mechanics and the fan-out playbook. The door wants to know what happens when a subagent runs now — name it and the key drops." },
       ],
     },
   },
   battle: {
-    name: 'Revenant, the Ghost of the Cleared Thread',
+    name: 'Idlewraith, the Ghost of the Frozen Session',
     spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*drifts up out of the blank screen, half-formed from words you swore you erased* …you ran `/clear` and called me gone… but nothing you wipe ever really leaves, operator…",
+    introLine: "*seeps up out of a stalled progress bar, cold and patient* …you started the long job, didn't you… now sit… watch it crawl… you can't touch a thing until it's done… that's the rule, operator… that's always been the rule…",
     tauntLines: [
-      "*flickers, rearranging into the wrong memory* undo an edit? reconnect a session? no — I'm the conversation you cleared, and you're reaching for the wrong trick…",
-      "*smears backward through the thread* roll the model back? that won't bring me back either — there's one command that crosses the clear, and that's not it…",
+      "*wraps the screen in a spinning wait* blocked. frozen. one task at a time, and you at the mercy of the slowest — just how I like you…",
+      "*whispers* check it again. and again. it'll never tell you when it's finished — you have to keep looking, forever…",
     ],
-    victoryLine: "*settles into the exact thread you lost, whole again* …`/rewind`… you reached back across the clear and pulled me through… nothing erased after all… take the key…",
+    victoryLine: "*dissolves as three jobs run at once and a notification chimes* …background… it kept working without you… the finish came and got you… nothing left here for me to freeze… take the key…",
     questions: [
       {
         prompt:
-          "Twenty minutes into a session you run `/clear` to tidy up, then realize you've thrown away context you still needed. What can `/rewind` now do for you?",
+          "You ask Claude to spin up a subagent for a long codebase survey. Under the new default, what happens while it runs?",
         choices: [
-          { id: 'a', label: "Resume the conversation from a point before you ran `/clear`, so the context you wiped comes back and `/clear` is no longer a point of no return", correct: true },
-          { id: 'b', label: 'Undo the last file Claude edited on disk, reverting the change in your working tree', correct: false },
-          { id: 'c', label: 'Reconnect a dropped network session and replay the API request that failed', correct: false },
-          { id: 'd', label: 'Roll the model back to a previous version for the rest of the session', correct: false },
+          { id: 'a', label: "It runs in the background while Claude keeps working, and you get a notification when it finishes — you don't have to sit and wait for it", correct: true },
+          { id: 'b', label: 'The whole session blocks until the subagent is done, then picks back up where it left off', correct: false },
+          { id: 'c', label: 'It runs silently, and you have to keep checking the agents view yourself to find out when it is finished', correct: false },
+          { id: 'd', label: 'The subagent takes over your main session for the length of its task', correct: false },
         ],
-        passFeedback: "HIT! `/rewind` can now land you on a point before the `/clear`, pulling the wiped conversation back into the session — so clearing is recoverable instead of final.",
-        failFeedback: "MISS! It doesn't revert a file on disk, reconnect a network session, or swap models. It resumes your *conversation* from before the `/clear` — re-read the books.",
+        passFeedback: "HIT! Subagents run in the background by default now — the main session keeps working while the subagent runs, and a notification fires when it lands, so you're free to do other work in the meantime.",
+        failFeedback: "MISS! The session doesn't block, you're not left polling, and the subagent doesn't take over your main thread. It runs in the background and notifies you when it's done — re-read the books.",
       },
     ],
   },
