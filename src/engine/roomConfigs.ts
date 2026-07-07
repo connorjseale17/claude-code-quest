@@ -1585,6 +1585,32 @@ function buildTwic3Level(): LevelConfig {
 // src/content/cowork-N.ts — this redesign only moves the same ids into nicer
 // rooms, so the content files are unchanged.
 
+type XY = { x: number; y: number };
+
+/** Furnished per-module layout: obstacles are SOLID props (crate/bookshelf/…),
+ *  not wall voids; plus non-solid floor decals + wall decor. Only rare real
+ *  walls. The helper attaches the content ids to these positions. Row 6 stays a
+ *  traversable entry/exit corridor (spawn (1,6); doors sit on row 6). */
+type CoworkDesign = {
+  hall: {
+    width: number;
+    height: number;
+    walls?: Array<[number, number, number, number]>;
+    props: DecorationConfig[];
+    lore: [XY, XY, XY, XY, XY];
+    practice: XY;
+    npc: XY;
+  };
+  boss: {
+    width: number;
+    height: number;
+    walls?: Array<[number, number, number, number]>;
+    props: DecorationConfig[];
+    boss: XY;
+    keySpawn: XY;
+  };
+};
+
 type CoworkModuleOpts = {
   id: LevelId;
   number: number;
@@ -1606,142 +1632,121 @@ type CoworkModuleOpts = {
   bossSpriteA: string;
   /** Exit door target: the next module ({kind:'level'}) or {kind:'end'}. */
   exit: DoorTarget;
-  /** Themed props for the entry/lore hall and the boss hall. */
-  entryDecor: DecorationConfig[];
-  bossDecor: DecorationConfig[];
-  /** Capstone: use a wider colonnade boss hall instead of the standard one. */
+  /** NEW furnished prop-obstacle layout (Module 1 pilot). When present it fully
+   *  defines both chambers; the legacy fields below are ignored. */
+  design?: CoworkDesign;
+  /** Legacy decorations for the fillRect path (Modules 2–7 until migrated). */
+  entryDecor?: DecorationConfig[];
+  bossDecor?: DecorationConfig[];
+  /** Legacy capstone colonnade flag (fillRect path). */
   colonnade?: boolean;
 };
 
-/** Builds one Cowork module as two chambers (Entry/Lore Hall → Boss Hall) in
- *  the Code Quest style. Geometry is fixed + collision-safe; only ids / theme /
- *  boss / exit / decorations vary per module. */
+/** Builds one Cowork module as two chambers (Entry/Lore Hall → Boss Hall). With
+ *  o.design the chambers are built from that furnished prop-obstacle layout;
+ *  otherwise the legacy fillRect geometry + entryDecor/bossDecor runs. Doors are
+ *  convention-based: spawn (1,6); hall east intra-door; boss west back-door +
+ *  locked east exit — so only the interior layout varies per module. */
 function buildCoworkModule(o: CoworkModuleOpts): LevelConfig {
-  // ---- Chamber A: Entry / Lore Hall (18×12) ----
-  const hW = 18, hH = 12;
-  const hTiles = blankTileMap(hW, hH);
-  hTiles[6][hW - 1] = 2; // east intra-door → boss hall
-  fillRect(hTiles, 2, 2, 3, 3, 1);   // corner crate clusters
-  fillRect(hTiles, 2, 8, 3, 9, 1);
-  fillRect(hTiles, 14, 2, 15, 3, 1);
-  fillRect(hTiles, 14, 8, 15, 9, 1);
-  fillRect(hTiles, 6, 5, 6, 7, 1);   // flanking pillars force the weave
-  fillRect(hTiles, 11, 5, 11, 7, 1);
+  let hall: ChamberConfig;
+  let bossHall: ChamberConfig;
 
-  const hall: ChamberConfig = {
-    id: o.hallId,
-    level: o.id,
-    name: o.hallName,
-    width: hW,
-    height: hH,
-    tiles: hTiles,
-    spawnX: 1,
-    spawnY: 6,
-    items: [
-      // 5 lore plaques tucked into the north/south bays framed by the crates.
-      { id: o.loreIds[0], type: 'lore', x: 5, y: 2, sprite: 'paper' },
-      { id: o.loreIds[1], type: 'lore', x: 9, y: 2, sprite: 'paper' },
-      { id: o.loreIds[2], type: 'lore', x: 13, y: 2, sprite: 'paper' },
-      { id: o.loreIds[3], type: 'lore', x: 5, y: 9, sprite: 'paper' },
-      { id: o.loreIds[4], type: 'lore', x: 13, y: 9, sprite: 'paper' },
-      { id: o.practiceId, type: 'practice', x: 9, y: 9, sprite: 'hint_token' },
-    ],
-    doors: [
-      {
-        id: 'to-boss',
-        x: hW - 1,
-        y: 6,
-        target: { kind: 'chamber', chamber: o.bossId },
-        spawnX: 1,
-        spawnY: 6,
-        locked: false,
-      },
-    ],
-    npcs: [
-      {
-        id: o.npc.id,
-        x: 4,
-        y: 6,
-        color: o.npc.color,
-        name: o.npc.name,
-        dialog: [],
-        ...(o.npc.sprite ? { sprite: o.npc.sprite } : {}),
-      },
-    ],
-    decorations: o.entryDecor,
-  };
-
-  // ---- Chamber B: Boss Hall (17×12, or 20×12 colonnade for the capstone) ----
-  const bW = o.colonnade ? 20 : 17, bH = 12;
-  const bTiles = blankTileMap(bW, bH);
-  bTiles[6][0] = 2;        // west back-door → hall
-  bTiles[6][bW - 1] = 2;   // east exit (locked)
-  fillRect(bTiles, 2, 2, 3, 3, 1);   // west corner crates (both layouts)
-  fillRect(bTiles, 2, 8, 3, 9, 1);
-  if (o.colonnade) {
-    // Ceremonial colonnade: pillar pairs flank a clear central aisle (row 6).
-    for (const c of [5, 9, 13]) {
-      fillRect(bTiles, c, 3, c, 4, 1);
-      fillRect(bTiles, c, 8, c, 9, 1);
-    }
+  if (o.design) {
+    const d = o.design;
+    // ---- Hall from furnished layout ----
+    const hW = d.hall.width, hH = d.hall.height;
+    const hTiles = blankTileMap(hW, hH);
+    hTiles[6][hW - 1] = 2;
+    (d.hall.walls ?? []).forEach(w => fillRect(hTiles, w[0], w[1], w[2], w[3], 1));
+    hall = {
+      id: o.hallId, level: o.id, name: o.hallName,
+      width: hW, height: hH, tiles: hTiles, spawnX: 1, spawnY: 6,
+      items: [
+        { id: o.loreIds[0], type: 'lore', x: d.hall.lore[0].x, y: d.hall.lore[0].y, sprite: 'paper' },
+        { id: o.loreIds[1], type: 'lore', x: d.hall.lore[1].x, y: d.hall.lore[1].y, sprite: 'paper' },
+        { id: o.loreIds[2], type: 'lore', x: d.hall.lore[2].x, y: d.hall.lore[2].y, sprite: 'paper' },
+        { id: o.loreIds[3], type: 'lore', x: d.hall.lore[3].x, y: d.hall.lore[3].y, sprite: 'paper' },
+        { id: o.loreIds[4], type: 'lore', x: d.hall.lore[4].x, y: d.hall.lore[4].y, sprite: 'paper' },
+        { id: o.practiceId, type: 'practice', x: d.hall.practice.x, y: d.hall.practice.y, sprite: 'hint_token' },
+      ],
+      doors: [{ id: 'to-boss', x: hW - 1, y: 6, target: { kind: 'chamber', chamber: o.bossId }, spawnX: 1, spawnY: 6, locked: false }],
+      npcs: [{ id: o.npc.id, x: d.hall.npc.x, y: d.hall.npc.y, color: o.npc.color, name: o.npc.name, dialog: [], ...(o.npc.sprite ? { sprite: o.npc.sprite } : {}) }],
+      decorations: d.hall.props,
+    };
+    // ---- Boss hall from furnished layout ----
+    const bW = d.boss.width, bH = d.boss.height;
+    const bTiles = blankTileMap(bW, bH);
+    bTiles[6][0] = 2;
+    bTiles[6][bW - 1] = 2;
+    (d.boss.walls ?? []).forEach(w => fillRect(bTiles, w[0], w[1], w[2], w[3], 1));
+    bossHall = {
+      id: o.bossId, level: o.id, name: o.bossName,
+      width: bW, height: bH, tiles: bTiles, spawnX: 1, spawnY: 6,
+      items: [{ id: o.challengeId, type: 'challenge', x: d.boss.boss.x, y: d.boss.boss.y, sprite: o.bossSpriteA }],
+      doors: [
+        { id: 'back', x: 0, y: 6, target: { kind: 'chamber', chamber: o.hallId }, spawnX: hW - 2, spawnY: 6, locked: false },
+        { id: 'exit', x: bW - 1, y: 6, target: o.exit, spawnX: 1, spawnY: 6, locked: true, requiresLevelKey: true },
+      ],
+      npcs: [],
+      decorations: d.boss.props,
+      keySpawn: { x: d.boss.keySpawn.x, y: d.boss.keySpawn.y },
+    };
   } else {
-    fillRect(bTiles, bW - 4, 2, bW - 3, 3, 1);   // east corner crates
-    fillRect(bTiles, bW - 4, 8, bW - 3, 9, 1);
-    fillRect(bTiles, 5, 5, 5, 7, 1);             // approach-blocker pillar
+    // ---- Legacy fillRect path (Modules 2–7 until migrated to design) ----
+    const hW = 18, hH = 12;
+    const hTiles = blankTileMap(hW, hH);
+    hTiles[6][hW - 1] = 2;
+    fillRect(hTiles, 2, 2, 3, 3, 1);
+    fillRect(hTiles, 2, 8, 3, 9, 1);
+    fillRect(hTiles, 14, 2, 15, 3, 1);
+    fillRect(hTiles, 14, 8, 15, 9, 1);
+    fillRect(hTiles, 6, 5, 6, 7, 1);
+    fillRect(hTiles, 11, 5, 11, 7, 1);
+    hall = {
+      id: o.hallId, level: o.id, name: o.hallName, width: hW, height: hH, tiles: hTiles, spawnX: 1, spawnY: 6,
+      items: [
+        { id: o.loreIds[0], type: 'lore', x: 5, y: 2, sprite: 'paper' },
+        { id: o.loreIds[1], type: 'lore', x: 9, y: 2, sprite: 'paper' },
+        { id: o.loreIds[2], type: 'lore', x: 13, y: 2, sprite: 'paper' },
+        { id: o.loreIds[3], type: 'lore', x: 5, y: 9, sprite: 'paper' },
+        { id: o.loreIds[4], type: 'lore', x: 13, y: 9, sprite: 'paper' },
+        { id: o.practiceId, type: 'practice', x: 9, y: 9, sprite: 'hint_token' },
+      ],
+      doors: [{ id: 'to-boss', x: hW - 1, y: 6, target: { kind: 'chamber', chamber: o.bossId }, spawnX: 1, spawnY: 6, locked: false }],
+      npcs: [{ id: o.npc.id, x: 4, y: 6, color: o.npc.color, name: o.npc.name, dialog: [], ...(o.npc.sprite ? { sprite: o.npc.sprite } : {}) }],
+      decorations: o.entryDecor ?? [],
+    };
+    const bW = o.colonnade ? 20 : 17, bH = 12;
+    const bTiles = blankTileMap(bW, bH);
+    bTiles[6][0] = 2;
+    bTiles[6][bW - 1] = 2;
+    fillRect(bTiles, 2, 2, 3, 3, 1);
+    fillRect(bTiles, 2, 8, 3, 9, 1);
+    if (o.colonnade) {
+      for (const c of [5, 9, 13]) { fillRect(bTiles, c, 3, c, 4, 1); fillRect(bTiles, c, 8, c, 9, 1); }
+    } else {
+      fillRect(bTiles, bW - 4, 2, bW - 3, 3, 1);
+      fillRect(bTiles, bW - 4, 8, bW - 3, 9, 1);
+      fillRect(bTiles, 5, 5, 5, 7, 1);
+    }
+    const bossX = o.colonnade ? 16 : 10;
+    bossHall = {
+      id: o.bossId, level: o.id, name: o.bossName, width: bW, height: bH, tiles: bTiles, spawnX: 1, spawnY: 6,
+      items: [{ id: o.challengeId, type: 'challenge', x: bossX, y: 5, sprite: o.bossSpriteA }],
+      doors: [
+        { id: 'back', x: 0, y: 6, target: { kind: 'chamber', chamber: o.hallId }, spawnX: hW - 2, spawnY: 6, locked: false },
+        { id: 'exit', x: bW - 1, y: 6, target: o.exit, spawnX: 1, spawnY: 6, locked: true, requiresLevelKey: true },
+      ],
+      npcs: [],
+      decorations: o.bossDecor ?? [],
+      keySpawn: { x: bossX, y: 8 },
+    };
   }
-  const bossX = o.colonnade ? 16 : 10;
-
-  const bossHall: ChamberConfig = {
-    id: o.bossId,
-    level: o.id,
-    name: o.bossName,
-    width: bW,
-    height: bH,
-    tiles: bTiles,
-    spawnX: 1,
-    spawnY: 6,
-    items: [
-      { id: o.challengeId, type: 'challenge', x: bossX, y: 5, sprite: o.bossSpriteA },
-    ],
-    doors: [
-      {
-        id: 'back',
-        x: 0,
-        y: 6,
-        target: { kind: 'chamber', chamber: o.hallId },
-        spawnX: hW - 2,
-        spawnY: 6,
-        locked: false,
-      },
-      {
-        id: 'exit',
-        x: bW - 1,
-        y: 6,
-        target: o.exit,
-        spawnX: 1,
-        spawnY: 6,
-        locked: true,
-        requiresLevelKey: true,
-      },
-    ],
-    npcs: [],
-    decorations: o.bossDecor,
-    keySpawn: { x: bossX, y: 8 },
-  };
 
   return {
-    id: o.id,
-    number: o.number,
-    title: o.title,
-    subtitle: o.subtitle,
-    theme: o.theme,
-    chambers: {
-      [hall.id]: hall,
-      [bossHall.id]: bossHall,
-    },
-    startingChamber: hall.id,
-    challengeChamber: bossHall.id,
-    track: 'cowork',
+    id: o.id, number: o.number, title: o.title, subtitle: o.subtitle, theme: o.theme,
+    chambers: { [hall.id]: hall, [bossHall.id]: bossHall },
+    startingChamber: hall.id, challengeChamber: bossHall.id, track: 'cowork',
   };
 }
 
@@ -1758,16 +1763,56 @@ function buildCowork1Level(): LevelConfig {
     challengeId: 'delegation-boss',
     bossSpriteA: 'ghost_a',
     exit: { kind: 'level', level: 'cowork-2', chamber: 'cowork-2-hall' },
-    entryDecor: [
-      { x: 1, y: 1, sprite: 'brazier' }, { x: 16, y: 1, sprite: 'brazier' },
-      { x: 8, y: 1, sprite: 'banner', tint: '#E8C57A' },
-      { x: 6, y: 10, sprite: 'table' }, { x: 11, y: 10, sprite: 'table' },
-      { x: 9, y: 6, sprite: 'wall_runes', solid: false },
-    ],
-    bossDecor: [
-      { x: 8, y: 3, sprite: 'brazier' }, { x: 12, y: 3, sprite: 'brazier' },
-      { x: 2, y: 1, sprite: 'banner', tint: '#E8C57A' }, { x: 14, y: 1, sprite: 'banner', tint: '#E8C57A' },
-    ],
+    // PILOT: furnished prop-obstacle layout (an onboarding lobby). Obstacles are
+    // real crate/table sprites (not wall voids); a central reception island the
+    // player walks around; braziers, banners, sconces + floor runes for density.
+    design: {
+      hall: {
+        width: 18, height: 12,
+        props: [
+          // crate-stack corners (furnished, not voids)
+          { x: 2, y: 2, sprite: 'crate' }, { x: 2, y: 3, sprite: 'crate' },
+          { x: 15, y: 2, sprite: 'crate' }, { x: 15, y: 3, sprite: 'crate' },
+          { x: 2, y: 8, sprite: 'crate' }, { x: 2, y: 9, sprite: 'crate' },
+          { x: 15, y: 8, sprite: 'crate' }, { x: 15, y: 9, sprite: 'crate' },
+          // central reception island (2x2 tables) — player routes around it
+          { x: 8, y: 5, sprite: 'table' }, { x: 9, y: 5, sprite: 'table' },
+          { x: 8, y: 6, sprite: 'table' }, { x: 9, y: 6, sprite: 'table' },
+          // lights + banners along the walls
+          { x: 8, y: 1, sprite: 'banner', tint: '#E8C57A' },
+          { x: 5, y: 1, sprite: 'brazier' }, { x: 12, y: 1, sprite: 'brazier' },
+          { x: 5, y: 10, sprite: 'brazier' }, { x: 12, y: 10, sprite: 'brazier' },
+          { x: 1, y: 3, sprite: 'sconce' }, { x: 16, y: 3, sprite: 'sconce' },
+          // floor runes (non-solid texture)
+          { x: 6, y: 3, sprite: 'wall_runes', solid: false },
+          { x: 11, y: 8, sprite: 'wall_runes', solid: false },
+        ],
+        lore: [{ x: 4, y: 2 }, { x: 13, y: 2 }, { x: 4, y: 9 }, { x: 13, y: 9 }, { x: 14, y: 6 }],
+        practice: { x: 9, y: 9 },
+        npc: { x: 4, y: 6 },
+      },
+      boss: {
+        width: 17, height: 12,
+        props: [
+          // west crate-stack corners
+          { x: 2, y: 2, sprite: 'crate' }, { x: 2, y: 3, sprite: 'crate' },
+          { x: 2, y: 8, sprite: 'crate' }, { x: 2, y: 9, sprite: 'crate' },
+          // crate "gate" with a 1-tile gap at row 6 — the approach
+          { x: 6, y: 4, sprite: 'crate' }, { x: 6, y: 5, sprite: 'crate' },
+          { x: 6, y: 7, sprite: 'crate' }, { x: 6, y: 8, sprite: 'crate' },
+          // braziers flanking the wraith
+          { x: 8, y: 4, sprite: 'brazier' }, { x: 12, y: 4, sprite: 'brazier' },
+          // banners
+          { x: 2, y: 1, sprite: 'banner', tint: '#E8C57A' },
+          { x: 8, y: 1, sprite: 'banner', tint: '#E8C57A' },
+          { x: 14, y: 1, sprite: 'banner', tint: '#E8C57A' },
+          // floor rune under the boss
+          { x: 10, y: 7, sprite: 'wall_runes', solid: false },
+        ],
+        boss: { x: 10, y: 5 },
+        keySpawn: { x: 10, y: 8 },
+      },
+    },
   });
 }
 
