@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-07-06',
+  publishDate: '2026-07-13',
   framing:
-    "This week in Claude, the throughline is scale — how much you can hand Claude at once, and how well it helps you shape what comes back. The new built-in `/dataviz` skill brings genuine chart-and-dashboard design with a color-palette validator, so the visuals in your deliverables hold up instead of embarrassing you. Subagents now run in the background by default, so you fire off the long jobs and keep working while notifications pull you back when each one lands. And Claude Sonnet 5 arrives as the default model with a native 1M-token context window — big enough to point at an entire codebase or a stack of client documents and have it reason across all of it at once.",
+    "This week in Claude, the throughline is control with the safety on — deciding how hard Claude works, trusting it to run alone, and catching what's broken before it bites. The new `Dynamic workflow size` setting in `/config` lets you dial how wide Claude fans a job out — small, medium, or large — an advisory posture, not a hard cap, so you steer the cost of a swarm without boxing in the task that truly needs to scale. Auto mode grows two hard refusals: it won't tamper with your session transcript, and it stops to ask before an `rm -rf` on a variable it can't resolve — the guardrails that make an unattended run on a client repo trustworthy. And `/doctor` becomes a full setup checkup (now aliased `/checkup`), surfacing the misconfigurations — right down to a bloated checked-in `CLAUDE.md` — that would otherwise ambush you three hours into the engagement.",
 };

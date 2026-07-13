@@ -1,127 +1,130 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — the `/dataviz` skill: a built-in skill Claude loads for
- * designing charts and dashboards, including a color-palette validator that
- * checks your colors stay readable before you ship them.
- * Source: Claude Code CHANGELOG 2.1.198 ("Added `/dataviz` skill for
- * chart/dashboard design with color-palette validator").
+ * twic-1 (Feature A) — the "Dynamic workflow size" setting: a control in
+ * /config that sets an advisory small/medium/large guideline for how many
+ * agents Claude fans a dynamic workflow out into. It's a default posture,
+ * not an enforced hard cap.
+ * Source: Claude Code CHANGELOG 2.1.202 ("Added a 'Dynamic workflow size'
+ * setting in /config for controlling how large Claude generally makes dynamic
+ * workflows (small/medium/large agent counts) — an advisory guideline, not an
+ * enforced cap").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown, and the Beat Reporter opens on the part of a deliverable a client actually stares at: the chart. There's a new built-in skill, `/dataviz`, that you invoke before building any chart or dashboard — it brings a real design method plus a color-palette validator that checks your colors are readable before you commit to them. The two pages on the desk cover what the skill loads and why a consultant runs it first, every time. Answer the door's one question and the key is yours — and the thing guarding it is a skeleton at an easel, drawing your dashboard in colors nobody can read.",
+    "Room 1 of this week's rundown, and the Beat Reporter starts with the throttle on Claude's biggest jobs. Dynamic workflows fan a single task out into a swarm of parallel agents — and there's now a `Dynamic workflow size` setting in `/config` that lets you tell Claude how large to make that swarm by default: small, medium, or large. The two pages on the desk cover exactly what the knob does and why a consultant on a metered engagement reaches for it. Answer the door's one question and the key is yours — and the thing guarding it is a skeleton that answers every job by raising ten times the bones it needs.",
   prompt:
-    "You're about to build a set of charts for a client dashboard and you run `/dataviz` first. What does that skill give you?",
+    "You open `/config` and set the new `Dynamic workflow size` to `small`. What have you actually changed about how Claude runs dynamic workflows?",
   choices: [
-    { id: 'a', label: "Design guidance for charts and dashboards plus a color-palette validator, so the visuals are well-structured and your colors are checked to stay readable before you commit to them", correct: true },
-    { id: 'b', label: "A connection to the client's database that generates a finished dashboard automatically, with no design decisions left to you", correct: false },
-    { id: 'c', label: 'An export format that turns any chart into a high-resolution image for slides', correct: false },
-    { id: 'd', label: "A lock that forces every chart onto a single fixed color theme you can't change", correct: false },
+    { id: 'a', label: "You've set an advisory small/medium/large guideline for how many agents Claude generally fans a workflow out into — a default posture, not a hard cap Claude is forbidden to exceed when the task truly needs it", correct: true },
+    { id: 'b', label: "You've set an enforced ceiling that hard-caps the agent count and makes the workflow error out the moment it would spawn one agent past the limit", correct: false },
+    { id: 'c', label: "You've made each individual agent run faster by handing it more compute, without changing how many agents there are", correct: false },
+    { id: 'd', label: "You've switched dynamic workflows off entirely, so tasks now run in a single agent instead of fanning out at all", correct: false },
   ],
-  passFeedback: "HIT! `/dataviz` brings a real chart-and-dashboard design method plus a color-palette validator — so your visuals are structured to communicate and your colors are checked to stay readable before they ship.",
-  failFeedback: "MISS! It doesn't auto-build a dashboard from a database, it isn't an image export format, and it doesn't lock you to one theme. It's a design skill with a color-palette validator — re-read the books.",
+  passFeedback: "HIT! The setting is an *advisory* guideline for how large Claude makes a dynamic workflow by default — small, medium, or large. It shapes the default posture; it doesn't hard-cap the count or forbid Claude from scaling up when a task genuinely demands it.",
+  failFeedback: "MISS! It isn't an enforced ceiling, it doesn't touch per-agent speed, and it doesn't turn workflows off. It's an advisory size guideline — small/medium/large — for how many agents Claude fans out by default. Re-read the books.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**\`/dataviz\` — A Skill for Designing Charts and Dashboards, Not Just Drawing Them**
+      text: `**\`Dynamic workflow size\` — A Throttle on How Big Claude Builds the Swarm**
 
-**A skill Claude loads before it draws a single axis**
+**What a dynamic workflow is, in one breath**
 
-Claude Code ships with *skills* — packaged bundles of expertise it pulls in on demand for a particular kind of task. \`/dataviz\`, added in the 2.1.198 release, is the one for a job consultants hit constantly: turning numbers into a chart or a dashboard. Invoke it before you ask for a visual and Claude doesn't just reach for a default line chart — it loads a whole design method for how the chart should be structured, which mark actually fits the data, and how the thing should read at a glance. It's the difference between "plot this" and "design this so it communicates."
+A *dynamic workflow* is Claude planning a large task itself and then fanning it out into many agents running in parallel — a codebase-wide audit becomes twenty agents each taking a slice, all at once. It's how one session chews through work that would take a single agent hours. The power is the fan-out. The question this week's feature answers is: *how wide* should that fan-out be?
 
-**The color-palette validator**
+**The new setting, and where it lives**
 
-The piece the changelog names outright is a *color-palette validator*. Color is where most homemade charts fall apart: series that blur into each other, a red-green split no colorblind viewer can read, a palette that looks fine on your monitor and turns to mud on a projector. The validator is the check that runs against your colors before you commit to them — it exists to catch the palette that won't hold up, so you find out at design time instead of in front of the client. It turns "these colors looked okay to me" into "these colors are actually distinguishable."
+Shipped in the 2.1.202 release, \`Dynamic workflow size\` is a setting you'll find in \`/config\`. It offers three levels — *small*, *medium*, and *large* — and each one nudges how many agents Claude generally spins up when it decides to run a workflow. Pick *large* and Claude leans toward a broad swarm; pick *small* and it keeps the fan-out lean. You set it once and it becomes the default posture for the workflows that follow, instead of you eyeballing the size of every job as it starts.
 
-**One system, not one chart**
+**Advisory, not a hard cap — this is the important part**
 
-The other thing the skill carries is consistency. A dashboard isn't one chart; it's a page of them that has to read as a single system — the same encoding for the same kind of value, a legend that means the same thing everywhere, a look that survives both a light slide and a dark screen. \`/dataviz\` treats the dashboard as the unit of design, so the fifth chart you add matches the first four instead of drifting into its own little style.
+The changelog is precise about one thing: this is *an advisory guideline, not an enforced cap*. That distinction is the whole feature. A hard cap would be a wall — hit the limit and the workflow errors out. This isn't that. It's a default lean. Claude treats your setting as the size it should generally aim for, and it can still go bigger when a task genuinely needs the extra agents. You're setting the resting posture of the fan-out, not bolting a ceiling over it.
 
-> Takeaway: \`/dataviz\` is the skill you invoke before building any chart or dashboard — it brings a real design method plus a color-palette validator, so your visuals are structured to communicate and your colors are checked before they ship.`,
+> Takeaway: \`Dynamic workflow size\` in \`/config\` is a small/medium/large dial for how wide Claude generally fans a dynamic workflow out — a default posture it aims for, not a hard limit it's forbidden to cross.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**The Chart Is the Deliverable — Why a Consultant Runs \`/dataviz\` First**
+      text: `**Every Agent Costs — Why a Consultant Tunes the Swarm Before Turning It Loose**
 
-**Clients remember the picture**
+**A wide fan-out is a fast bill**
 
-A consulting deliverable gets judged on its charts more than its prose. The partner skims the text; the client stares at the one slide with the graph on it. A muddy, mislabeled, or misleading chart doesn't just look amateur — it quietly undercuts the whole analysis behind it, because if the picture is sloppy the reader assumes the thinking is too. That's the stake \`/dataviz\` is answering: the visual isn't decoration on top of the work, it *is* the work as the client experiences it.
+Parallel agents are wonderful right up until you remember each one is spending tokens and eating into your rate limit at the same moment. A workflow that fans out into thirty agents can burn through a metered engagement's budget in a single pass. On your own time that's fine; on a client's clock, or on a plan with a ceiling you share across a whole team, an un-tuned swarm is how you find yourself throttled at the worst possible moment. The \`Dynamic workflow size\` setting is the lever that lets you decide that trade-off *before* the fan-out, not while you're watching the usage meter spike.
 
-**Accessible by default, because you don't control the room**
+**Match the size to the job, not to the reflex**
 
-You never know how a client will view your chart — colorblind, on a bad projector, printed in grayscale, on a phone in a boardroom. The color-palette validator is what lets you stop guessing. Instead of shipping colors that happen to work for you, you ship colors that have been checked to stay distinguishable for everyone in the room. On client work that isn't a nicety; it's the difference between a chart that lands for the whole audience and one that silently excludes a chunk of it.
+The move is to fit the dial to the work in front of you. A quick first-pass sweep of one module doesn't need a legion — set it *small* and let a handful of agents cover it cheaply. A genuine codebase-wide migration or an exhaustive audit is exactly what a broad swarm is for — set it *large* and let Claude bring the whole crew. *Medium* is the sensible resting default for the everyday middle. The point is a deliberate posture per engagement instead of accidentally running every task at maximum width because that's whatever the default happened to be.
 
-**Consistency across a deck is credibility**
+**Advisory means you keep the ceiling off**
 
-The tell of a rushed deck is charts that don't match — revenue is blue on slide four and orange on slide nine, and the reader has to re-learn the visual language every page. Making \`/dataviz\` your default for anything visual gives the client a deck where the same thing always looks the same, so their attention goes to your findings instead of decoding your formatting. Reach for it first, before the first chart — not as a cleanup pass after the dashboard already looks off.
+Because the setting is a guideline and not a wall, you get the safety of a lean default without giving up the ability to go big when it counts. Set it *small* for a budget-conscious engagement and the one task that truly warrants a hundred agents can still scale up — Claude isn't boxed in by a hard cap you'd have to remember to lift. You're steering the common case toward frugality while leaving the rare, heavy job free to spend what it needs.
 
-> Takeaway: On client work the chart carries the credibility of everything behind it — run \`/dataviz\` before you build, so the visuals are designed to communicate and the colors are validated for the whole room, not just your screen.`,
+> Takeaway: Treat the swarm's width as a budget decision — set the size small for cheap sweeps and large for the genuinely big jobs, knowing the advisory dial steers the default without ever locking out the task that truly needs to scale.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `Before you build the ____ for the client review, run /dataviz so the charts are designed, not just plotted.
-We're visualizing ____, and the different series have to stay readable for everyone in the room.
-Run the color-palette validator on the colors so ____ can still tell them apart.
-Keep the whole dashboard consistent — the same ____ should look the same on every chart.
-Do this now, at design time, not as a cleanup pass after it already looks off.`,
+    template: `I'm about to run a dynamic workflow to ____ across the whole client codebase.
+Before it fans out, open /config and set the Dynamic workflow size to ____,
+because this is ____ and I don't want to burn the shared rate-limit budget in one pass.
+Remember the setting is an advisory default, not a hard cap — if some part of the job
+genuinely needs more agents, Claude can still ____, so I'm setting the posture, not a ceiling.`,
     blanks: [
-      { id: 'deliverable', suggestions: ['quarterly dashboard', 'board-deck charts', 'KPI summary page'] },
-      { id: 'data', suggestions: ['revenue by segment', 'adoption across regions', 'cost trends by quarter'] },
-      { id: 'audience', suggestions: ['a colorblind reviewer', 'someone on a bad projector', 'a client reading a grayscale printout'] },
-      { id: 'encoding', suggestions: ['metric', 'category color', 'series'] },
+      { id: 'task', suggestions: ['audit every external API call', 'migrate the whole test suite', 'hunt down dead code'] },
+      { id: 'size', suggestions: ['small', 'medium', 'large'] },
+      { id: 'constraint', suggestions: ['a quick first-pass sweep', 'a metered engagement on a tight budget', 'an exploratory scan I may re-run several times'] },
+      { id: 'escalate', suggestions: ['scale past the guideline', 'fan out wider where it matters', 'bring the whole crew for the hard slices'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "`/dataviz` (shipped in 2.1.198) is a built-in skill you invoke before building any chart or dashboard. It loads a real design method — the right mark for the data, structure that reads at a glance — instead of a default chart, and it includes a color-palette validator that checks your colors stay distinguishable before you commit to them. It also treats a dashboard as one consistent system rather than a pile of mismatched charts. For a consultant the chart is the deliverable: clients judge the analysis by the picture, they view it in rooms you don't control, so run `/dataviz` first — designed visuals and validated colors, every time, not a cleanup pass after it already looks off.",
+        "The `Dynamic workflow size` setting (shipped in 2.1.202) lives in `/config` and sets how large Claude generally makes a dynamic workflow — the number of parallel agents it fans a task out into — with three levels: small, medium, large. The critical detail is that it's an *advisory guideline, not an enforced cap*: it shapes the default posture, but Claude can still scale past it when a task genuinely needs to. For a consultant it's a budget lever — every agent spends tokens and rate limit, so you set it small for cheap sweeps and large for real codebase-wide jobs, matching the swarm's width to the engagement instead of running everything at maximum by accident.",
       beats: [
-        { kind: 'say', text: "First story this week is a new built-in skill: `/dataviz`, in since the 2.1.198 release. It's the one you reach for whenever you're turning numbers into a chart or a dashboard." },
-        { kind: 'say', text: "A skill is a bundle of expertise I load on demand. Invoke `/dataviz` before you ask for a visual and I don't just default to a line chart — I load a whole design method: which mark actually fits your data, how the chart should be structured, how it reads at a glance. 'Design this,' not 'plot this.'" },
-        { kind: 'say', text: "The piece the changelog names outright is a *color-palette validator*. Color is where homemade charts die — series that blur together, a red-green split a colorblind viewer can't read, a palette that looks fine on your screen and turns to mud on a projector. The validator checks your colors before you commit to them." },
+        { kind: 'say', text: "First story this week is a throttle on my biggest jobs. When I hit a task too large for one agent, I can plan a *dynamic workflow* — fan it out into a swarm of agents all working in parallel. A codebase-wide audit becomes twenty agents each taking a slice." },
+        { kind: 'say', text: "New in the 2.1.202 release: there's now a `Dynamic workflow size` setting in `/config`. Three levels — small, medium, large. It tells me how wide to make that fan-out by default. Set it large and I lean toward a broad swarm; set it small and I keep the crew lean." },
+        { kind: 'say', text: "Here's the part to hold onto. The changelog calls it an *advisory guideline, not an enforced cap*. It's not a wall the workflow slams into and errors out. It's a default lean — the size I generally aim for. If a task genuinely needs more agents than your setting suggests, I can still scale up. You're setting the resting posture, not bolting on a ceiling." },
         {
           kind: 'choice',
-          prompt: "Gut-check. The `/dataviz` color-palette validator flags your color choices before you ship. What's it actually protecting you from?",
+          prompt: "Gut-check before the door. You set `Dynamic workflow size` to `small`. A task later turns out to genuinely need a big swarm. What happens?",
           options: [
-            { id: 'readable', label: "A palette that isn't really readable — series that blur together, or colors a colorblind viewer or a bad projector can't tell apart", correct: true, reaction: "Right. It catches the palette that looks fine on your screen but falls apart for part of your audience — you fix it at design time instead of in front of the client." },
-            { id: 'perf', label: "Charts that render too slowly, by capping how many colors you're allowed to use", correct: false, reaction: "No — it's not a performance limiter. It's checking that the colors you did choose stay distinguishable for everyone who'll look at the chart." },
-            { id: 'brand', label: "Using any color that isn't in your firm's official brand kit", correct: false, reaction: "Not quite — it's about readability, not brand policing. The point is colors a whole audience can actually tell apart, wherever they view it." },
+            { id: 'scales', label: "Claude can still fan out wider than 'small' for that task — the setting is an advisory default, not a hard limit", correct: true, reaction: "Right. Small is the posture I lean toward, not a wall. The rare heavy job can still scale past it — you get a lean default without locking out the task that truly needs more." },
+            { id: 'errors', label: "The workflow errors out the moment it would exceed the 'small' agent count", correct: false, reaction: "No — that would be an enforced cap, and this isn't one. The changelog is explicit: it's advisory. I can go bigger when the work demands it." },
+            { id: 'peragent', label: "Nothing changes about the count — 'small' just slows each agent down to save budget", correct: false, reaction: "Not quite. The setting is about how *many* agents I fan out into, not how fast each one runs. It shapes the width of the swarm, not per-agent speed." },
           ],
         },
-        { kind: 'say', text: "It also carries consistency. A dashboard is a page of charts that has to read as one system — same encoding for the same value, a legend that means the same thing everywhere, a look that survives a light slide and a dark screen. `/dataviz` designs the dashboard, not just each chart, so the fifth panel matches the first four." },
-        { kind: 'say', text: "Why it matters: on an engagement the chart *is* the deliverable. The partner skims your prose; the client stares at the graph. A sloppy picture undercuts the analysis behind it — if the visual looks careless, the reader assumes the thinking was too." },
-        { kind: 'say', text: "And you don't control the room it's viewed in — colorblind, bad projector, grayscale printout, a phone in a boardroom. That's why you run this first, before the first chart, not as a cleanup pass after it already looks off. The books have the design method and the client playbook. The door wants to know what `/dataviz` actually gives you — answer that and the key's yours." },
+        { kind: 'say', text: "Why a consultant cares: every agent I spawn is spending tokens and eating your rate limit at the same instant. A thirty-agent fan-out can drain a metered engagement's budget in one pass. This dial is where you make that trade-off *before* the swarm launches, not while you watch the usage meter spike." },
+        { kind: 'say', text: "So match the size to the job. Quick sweep of one module — set it small, a handful of agents covers it cheaply. Real codebase-wide migration or an exhaustive audit — set it large, that's what the broad swarm is for. Medium's your everyday resting default. Deliberate posture per engagement beats running everything at maximum by accident." },
+        { kind: 'say', text: "The books have the mechanics and the budget playbook. The door wants to know what the setting actually changes when you dial it to small — get that right and the key's yours. Mind the skeleton on the other side; it never met a job it wouldn't raise an army for." },
       ],
     },
   },
   battle: {
-    name: 'Skewbone, the Rattling Chartsmith',
+    name: 'Marrow, Warden of the Overswarm',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*clatters up to an easel of clashing, mislabeled charts, chalk gripped in bony fingers* …ah, another one shipping graphs nobody can read… let me draw your dashboard the way I always do — every series the same muddy gray, a red-green split, axes that quietly lie…",
+    introLine: "*a lone skeleton rattles its jaw, and the floor answers with a hundred more clawing up from the dirt* …a task, you say? one small task? THEN RISE, ALL OF YOU — why send ten bones when I can send ten thousand… let the swarm blot out the budget…",
     tauntLines: [
-      "*rattles a fistful of colored chalk* looked fine on YOUR screen, didn't it? pity about the projector, the colorblind partner, the grayscale printout…",
-      "*scratches out a fifth chart in a sixth style* consistent? every one of mine is its own little masterpiece of confusion — good luck reading the deck, operator…",
+      "*more skeletons keep climbing up regardless* a cap? there is no cap here, meat — I raise until the rate-limit screams and the engagement runs dry…",
+      "*legions mill about doing nothing, tokens bleeding* efficiency? every one of these does a sliver of the work and bills you for the whole army — good luck explaining THAT invoice…",
     ],
-    victoryLine: "*the charts snap into a clean, legible set, every color telling apart* …validated… every panel matching, every hue distinct… fine, chart-reader… take the key…",
+    victoryLine: "*the horde sinks back into the ground until only a lean handful remains, exactly as many as the job required* …sized to the work… advisory, not endless… fine, throttle-hand… take the key…",
     questions: [
       {
         prompt:
-          "You're about to build a set of charts for a client dashboard and you run `/dataviz` first. What does that skill give you?",
+          "You open `/config` and set the new `Dynamic workflow size` to `small`. What have you actually changed about how Claude runs dynamic workflows?",
         choices: [
-          { id: 'a', label: "Design guidance for charts and dashboards plus a color-palette validator, so the visuals are well-structured and your colors are checked to stay readable before you commit to them", correct: true },
-          { id: 'b', label: "A connection to the client's database that generates a finished dashboard automatically, with no design decisions left to you", correct: false },
-          { id: 'c', label: 'An export format that turns any chart into a high-resolution image for slides', correct: false },
-          { id: 'd', label: "A lock that forces every chart onto a single fixed color theme you can't change", correct: false },
+          { id: 'a', label: "You've set an advisory small/medium/large guideline for how many agents Claude generally fans a workflow out into — a default posture, not a hard cap Claude is forbidden to exceed when the task truly needs it", correct: true },
+          { id: 'b', label: "You've set an enforced ceiling that hard-caps the agent count and makes the workflow error out the moment it would spawn one agent past the limit", correct: false },
+          { id: 'c', label: "You've made each individual agent run faster by handing it more compute, without changing how many agents there are", correct: false },
+          { id: 'd', label: "You've switched dynamic workflows off entirely, so tasks now run in a single agent instead of fanning out at all", correct: false },
         ],
-        passFeedback: "HIT! `/dataviz` brings a real chart-and-dashboard design method plus a color-palette validator — so your visuals are structured to communicate and your colors are checked to stay readable before they ship.",
-        failFeedback: "MISS! It doesn't auto-build a dashboard from a database, it isn't an image export format, and it doesn't lock you to one theme. It's a design skill with a color-palette validator — re-read the books.",
+        passFeedback: "HIT! The setting is an *advisory* guideline for how large Claude makes a dynamic workflow by default — small, medium, or large. It shapes the default posture; it doesn't hard-cap the count or forbid Claude from scaling up when a task genuinely demands it.",
+        failFeedback: "MISS! It isn't an enforced ceiling, it doesn't touch per-agent speed, and it doesn't turn workflows off. It's an advisory size guideline — small/medium/large — for how many agents Claude fans out by default. Re-read the books.",
       },
     ],
   },
