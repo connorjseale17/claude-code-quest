@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-07-13',
+  publishDate: '2026-07-20',
   framing:
-    "This week in Claude, the throughline is control with the safety on — deciding how hard Claude works, trusting it to run alone, and catching what's broken before it bites. The new `Dynamic workflow size` setting in `/config` lets you dial how wide Claude fans a job out — small, medium, or large — an advisory posture, not a hard cap, so you steer the cost of a swarm without boxing in the task that truly needs to scale. Auto mode grows two hard refusals: it won't tamper with your session transcript, and it stops to ask before an `rm -rf` on a variable it can't resolve — the guardrails that make an unattended run on a client repo trustworthy. And `/doctor` becomes a full setup checkup (now aliased `/checkup`), surfacing the misconfigurations — right down to a bloated checked-in `CLAUDE.md` — that would otherwise ambush you three hours into the engagement.",
+    "This week in Claude, the throughline is control over where your work goes and when it gets checked. The new `/fork` command copies your whole conversation — context and all — into a background session with its own `claude agents` row, so you can chase a risky second approach without ever leaving the thread you're already in. The `/verify` and `/code-review` skills stop firing on Claude's own initiative and become yours to invoke, putting the quality gate on your timing — verify before you commit, review before you PR. And two new hard per-session ceilings — a WebSearch call limit and a subagent-spawn cap, 200 each by default and both adjustable — stand as the backstop that keeps an unattended run from quietly draining your rate limit while you're out of the room.",
 };

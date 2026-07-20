@@ -1,130 +1,129 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — the "Dynamic workflow size" setting: a control in
- * /config that sets an advisory small/medium/large guideline for how many
- * agents Claude fans a dynamic workflow out into. It's a default posture,
- * not an enforced hard cap.
- * Source: Claude Code CHANGELOG 2.1.202 ("Added a 'Dynamic workflow size'
- * setting in /config for controlling how large Claude generally makes dynamic
- * workflows (small/medium/large agent counts) — an advisory guideline, not an
- * enforced cap").
+ * twic-1 (Feature A) — `/fork`: a command that copies your current conversation
+ * into a new background session (its own row in `claude agents`) while you keep
+ * working in the original session.
+ * Source: Claude Code CHANGELOG 2.1.212 ("`/fork` now copies your conversation
+ * into a new background session (its own row in `claude agents`) while you keep
+ * working").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown, and the Beat Reporter starts with the throttle on Claude's biggest jobs. Dynamic workflows fan a single task out into a swarm of parallel agents — and there's now a `Dynamic workflow size` setting in `/config` that lets you tell Claude how large to make that swarm by default: small, medium, or large. The two pages on the desk cover exactly what the knob does and why a consultant on a metered engagement reaches for it. Answer the door's one question and the key is yours — and the thing guarding it is a skeleton that answers every job by raising ten times the bones it needs.",
+    "Room 1 of this week's rundown, and the Beat Reporter leads with a way to be in two places in one conversation. There's a new `/fork` command: it copies your current session — every bit of context you've built up — into a fresh background session that gets its own row in `claude agents`, while you carry on uninterrupted in the original. The two pages on the desk cover exactly what the copy is and how a consultant spends it. Answer the door's one question and the key is yours — and the thing guarding it is a skeleton that splits itself in two the moment you look away.",
   prompt:
-    "You open `/config` and set the new `Dynamic workflow size` to `small`. What have you actually changed about how Claude runs dynamic workflows?",
+    "You run `/fork` in the middle of a working session. What has Claude actually done?",
   choices: [
-    { id: 'a', label: "You've set an advisory small/medium/large guideline for how many agents Claude generally fans a workflow out into — a default posture, not a hard cap Claude is forbidden to exceed when the task truly needs it", correct: true },
-    { id: 'b', label: "You've set an enforced ceiling that hard-caps the agent count and makes the workflow error out the moment it would spawn one agent past the limit", correct: false },
-    { id: 'c', label: "You've made each individual agent run faster by handing it more compute, without changing how many agents there are", correct: false },
-    { id: 'd', label: "You've switched dynamic workflows off entirely, so tasks now run in a single agent instead of fanning out at all", correct: false },
+    { id: 'a', label: "Copied your current conversation into a new background session — its own row in `claude agents` — while you keep working uninterrupted in the original session", correct: true },
+    { id: 'b', label: "Saved a snapshot and closed your current session, so you have to switch over and resume the copy before you can do anything else", correct: false },
+    { id: 'c', label: "Replaced your session with a fresh, empty one, discarding the context you'd built up so far", correct: false },
+    { id: 'd', label: "Merged two of your existing sessions into a single combined transcript", correct: false },
   ],
-  passFeedback: "HIT! The setting is an *advisory* guideline for how large Claude makes a dynamic workflow by default — small, medium, or large. It shapes the default posture; it doesn't hard-cap the count or forbid Claude from scaling up when a task genuinely demands it.",
-  failFeedback: "MISS! It isn't an enforced ceiling, it doesn't touch per-agent speed, and it doesn't turn workflows off. It's an advisory size guideline — small/medium/large — for how many agents Claude fans out by default. Re-read the books.",
+  passFeedback: "HIT! `/fork` duplicates the conversation you're in — full context and all — into a new background session with its own `claude agents` row, and leaves you working in the original. One shared history, two live sessions.",
+  failFeedback: "MISS! It doesn't close, wipe, or merge anything. It copies your current conversation into a *background* session so both the fork and the original stay alive. Re-read the books.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**\`Dynamic workflow size\` — A Throttle on How Big Claude Builds the Swarm**
+      text: `**\`/fork\` — Cloning a Conversation Without Leaving It**
 
-**What a dynamic workflow is, in one breath**
+**The problem a fork solves**
 
-A *dynamic workflow* is Claude planning a large task itself and then fanning it out into many agents running in parallel — a codebase-wide audit becomes twenty agents each taking a slice, all at once. It's how one session chews through work that would take a single agent hours. The power is the fan-out. The question this week's feature answers is: *how wide* should that fan-out be?
+By the time you're deep in a session, you've spent real effort building context: the files Claude has read, the decisions you've made together, the shared understanding of what "done" looks like. That accumulated state is expensive. The moment you want to try a second, different direction, the old options were both bad — either derail your current thread to go explore, or open a blank session and pay to rebuild all that context from scratch.
 
-**The new setting, and where it lives**
+**What the command does**
 
-Shipped in the 2.1.202 release, \`Dynamic workflow size\` is a setting you'll find in \`/config\`. It offers three levels — *small*, *medium*, and *large* — and each one nudges how many agents Claude generally spins up when it decides to run a workflow. Pick *large* and Claude leans toward a broad swarm; pick *small* and it keeps the fan-out lean. You set it once and it becomes the default posture for the workflows that follow, instead of you eyeballing the size of every job as it starts.
+Shipped in the 2.1.212 release, \`/fork\` copies the conversation you're currently in — the whole thing, context intact — into a *new background session*. That copy shows up as its own row in \`claude agents\`, right alongside your other sessions. Crucially, the changelog is specific: this happens *while you keep working*. You don't get moved, paused, or handed off. Your original session stays right where it was, live and responsive, and a full duplicate now exists in the background carrying everything you'd built up to the instant you forked.
 
-**Advisory, not a hard cap — this is the important part**
+**One history, two live threads**
 
-The changelog is precise about one thing: this is *an advisory guideline, not an enforced cap*. That distinction is the whole feature. A hard cap would be a wall — hit the limit and the workflow errors out. This isn't that. It's a default lean. Claude treats your setting as the size it should generally aim for, and it can still go bigger when a task genuinely needs the extra agents. You're setting the resting posture of the fan-out, not bolting a ceiling over it.
+Think of it as a branch point. Up to the fork, both sessions share an identical past. After it, they're independent — what you say in one doesn't touch the other. The fork runs in the background as a separate agent you can check on, resume, or steer whenever you like, and the original never skipped a beat.
 
-> Takeaway: \`Dynamic workflow size\` in \`/config\` is a small/medium/large dial for how wide Claude generally fans a dynamic workflow out — a default posture it aims for, not a hard limit it's forbidden to cross.`,
+> Takeaway: \`/fork\` duplicates your current conversation, context and all, into a background session with its own \`claude agents\` row — a clean branch point that costs you nothing in the thread you're already in.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Every Agent Costs — Why a Consultant Tunes the Swarm Before Turning It Loose**
+      text: `**Two Roads From One Expensive Context — Why a Consultant Forks**
 
-**A wide fan-out is a fast bill**
+**The value is the context you don't rebuild**
 
-Parallel agents are wonderful right up until you remember each one is spending tokens and eating into your rate limit at the same moment. A workflow that fans out into thirty agents can burn through a metered engagement's budget in a single pass. On your own time that's fine; on a client's clock, or on a plan with a ceiling you share across a whole team, an un-tuned swarm is how you find yourself throttled at the worst possible moment. The \`Dynamic workflow size\` setting is the lever that lets you decide that trade-off *before* the fan-out, not while you're watching the usage meter spike.
+The reason a fork matters on a client engagement is economic: the context is the costly part, and forking lets you reuse it twice. Say you've spent forty minutes getting Claude to fully understand a gnarly legacy billing module — the schema, the edge cases, the client's odd conventions. Now there are two ways forward and you genuinely don't know which is right. Without forking you'd pick one and hope, or burn another forty minutes re-establishing all that context in a second session. Fork instead, and both roads start from the same hard-won understanding.
 
-**Match the size to the job, not to the reflex**
+**Explore the risky path in the background, keep the safe one live**
 
-The move is to fit the dial to the work in front of you. A quick first-pass sweep of one module doesn't need a legion — set it *small* and let a handful of agents cover it cheaply. A genuine codebase-wide migration or an exhaustive audit is exactly what a broad swarm is for — set it *large* and let Claude bring the whole crew. *Medium* is the sensible resting default for the everyday middle. The point is a deliberate posture per engagement instead of accidentally running every task at maximum width because that's whatever the default happened to be.
+A fork is how you A/B a decision without gambling the main thread. Keep the conservative, presentable approach moving in your original session — the one you'd show the client — and let the fork chase the speculative refactor in the background. If the experiment pays off, you fold the insight back in; if it face-plants, you close the row and your primary deliverable never wobbled. The background session is doing real work the whole time; you're just not tethered to watching it.
 
-**Advisory means you keep the ceiling off**
+**When the side-quest would have derailed you**
 
-Because the setting is a guideline and not a wall, you get the safety of a lean default without giving up the ability to go big when it counts. Set it *small* for a budget-conscious engagement and the one task that truly warrants a hundred agents can still scale up — Claude isn't boxed in by a hard cap you'd have to remember to lift. You're steering the common case toward frugality while leaving the rare, heavy job free to spend what it needs.
+Forks also keep a clean record. Mid-build, the client fires off a "what would it take to also do X?" question. Rather than dragging your focused implementation session sideways to go spike an answer, fork it, chase X in the copy, and hand back a scoped answer — while the implementation thread stays exactly on task. The tangent lived and died in its own session.
 
-> Takeaway: Treat the swarm's width as a budget decision — set the size small for cheap sweeps and large for the genuinely big jobs, knowing the advisory dial steers the default without ever locking out the task that truly needs to scale.`,
+> Takeaway: Fork when you've paid for context once and want two answers from it — run the risky or tangential road in the background copy and keep your primary deliverable clean and moving in the original.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `I'm about to run a dynamic workflow to ____ across the whole client codebase.
-Before it fans out, open /config and set the Dynamic workflow size to ____,
-because this is ____ and I don't want to burn the shared rate-limit budget in one pass.
-Remember the setting is an advisory default, not a hard cap — if some part of the job
-genuinely needs more agents, Claude can still ____, so I'm setting the posture, not a ceiling.`,
+    template: `I've spent the last half hour getting this session to fully understand ____,
+and now the client wants me to also explore ____ without stalling the main build.
+Rather than derail this thread or rebuild all that context from scratch, run /fork
+so the copy lands as its own row in claude agents and I keep working here.
+I'll chase the ____ in the background fork, and if it doesn't pan out
+I'll ____ — the primary deliverable in this session never has to wobble.`,
     blanks: [
-      { id: 'task', suggestions: ['audit every external API call', 'migrate the whole test suite', 'hunt down dead code'] },
-      { id: 'size', suggestions: ['small', 'medium', 'large'] },
-      { id: 'constraint', suggestions: ['a quick first-pass sweep', 'a metered engagement on a tight budget', 'an exploratory scan I may re-run several times'] },
-      { id: 'escalate', suggestions: ['scale past the guideline', 'fan out wider where it matters', 'bring the whole crew for the hard slices'] },
+      { id: 'context', suggestions: ['the legacy billing module', "the client's auth flow", 'the whole reporting pipeline'] },
+      { id: 'tangent', suggestions: ['a riskier one-shot refactor', 'a second design direction', 'a "what would X cost us" spike'] },
+      { id: 'experiment', suggestions: ['speculative rewrite', 'alternate approach', 'scoping question'] },
+      { id: 'discard', suggestions: ['close the forked row and move on', 'abandon the background session', 'drop the experiment cleanly'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "The `Dynamic workflow size` setting (shipped in 2.1.202) lives in `/config` and sets how large Claude generally makes a dynamic workflow — the number of parallel agents it fans a task out into — with three levels: small, medium, large. The critical detail is that it's an *advisory guideline, not an enforced cap*: it shapes the default posture, but Claude can still scale past it when a task genuinely needs to. For a consultant it's a budget lever — every agent spends tokens and rate limit, so you set it small for cheap sweeps and large for real codebase-wide jobs, matching the swarm's width to the engagement instead of running everything at maximum by accident.",
+        "The `/fork` command (shipped in 2.1.212) copies your current conversation — full context and all — into a *new background session* that gets its own row in `claude agents`, while you keep working uninterrupted in the original. It's a branch point: both sessions share an identical history up to the fork, then run independently. For a consultant the value is reusing expensive context twice — you A/B a risky decision by running the speculative path in the background copy while the safe, client-facing thread keeps moving in the original, and a tangent the client throws in lives and dies in its own session without derailing your build.",
       beats: [
-        { kind: 'say', text: "First story this week is a throttle on my biggest jobs. When I hit a task too large for one agent, I can plan a *dynamic workflow* — fan it out into a swarm of agents all working in parallel. A codebase-wide audit becomes twenty agents each taking a slice." },
-        { kind: 'say', text: "New in the 2.1.202 release: there's now a `Dynamic workflow size` setting in `/config`. Three levels — small, medium, large. It tells me how wide to make that fan-out by default. Set it large and I lean toward a broad swarm; set it small and I keep the crew lean." },
-        { kind: 'say', text: "Here's the part to hold onto. The changelog calls it an *advisory guideline, not an enforced cap*. It's not a wall the workflow slams into and errors out. It's a default lean — the size I generally aim for. If a task genuinely needs more agents than your setting suggests, I can still scale up. You're setting the resting posture, not bolting on a ceiling." },
+        { kind: 'say', text: "First story this week is about being in two places in one conversation. You know how much work it takes to get a session properly up to speed — every file I've read, every decision we've made, the whole shared picture of the job. That context is the expensive part." },
+        { kind: 'say', text: "New in the 2.1.212 release: the `/fork` command. Run it and I copy the conversation we're in — all of that context, intact — into a *new background session*. It lands as its own row in `claude agents`, right next to your other sessions." },
+        { kind: 'say', text: "And here's the detail the changelog is careful about: it happens *while you keep working*. You don't get moved or paused. This session stays live under your hands, and a full duplicate now exists in the background, carrying everything up to the moment you forked. One shared past, two independent threads from here on." },
         {
           kind: 'choice',
-          prompt: "Gut-check before the door. You set `Dynamic workflow size` to `small`. A task later turns out to genuinely need a big swarm. What happens?",
+          prompt: "Gut-check before the door. You're mid-session and run `/fork`. What's true a second later?",
           options: [
-            { id: 'scales', label: "Claude can still fan out wider than 'small' for that task — the setting is an advisory default, not a hard limit", correct: true, reaction: "Right. Small is the posture I lean toward, not a wall. The rare heavy job can still scale past it — you get a lean default without locking out the task that truly needs more." },
-            { id: 'errors', label: "The workflow errors out the moment it would exceed the 'small' agent count", correct: false, reaction: "No — that would be an enforced cap, and this isn't one. The changelog is explicit: it's advisory. I can go bigger when the work demands it." },
-            { id: 'peragent', label: "Nothing changes about the count — 'small' just slows each agent down to save budget", correct: false, reaction: "Not quite. The setting is about how *many* agents I fan out into, not how fast each one runs. It shapes the width of the swarm, not per-agent speed." },
+            { id: 'both-live', label: "Your original session is still live and unchanged, and a full copy of it is now running in the background as its own agent", correct: true, reaction: "Exactly. Nothing interrupted you. The fork is a background twin with all your context; the thread you were in never skipped a beat." },
+            { id: 'switched', label: "You've been switched over to the copy and your original session is closed until you resume it", correct: false, reaction: "No — a fork doesn't move you or close anything. You keep working right where you are; the copy runs in the background." },
+            { id: 'wiped', label: "Your context is wiped and both sessions start fresh from an empty slate", correct: false, reaction: "The opposite — the whole point is that the fork *keeps* your context. Nothing is wiped; the copy inherits everything." },
           ],
         },
-        { kind: 'say', text: "Why a consultant cares: every agent I spawn is spending tokens and eating your rate limit at the same instant. A thirty-agent fan-out can drain a metered engagement's budget in one pass. This dial is where you make that trade-off *before* the swarm launches, not while you watch the usage meter spike." },
-        { kind: 'say', text: "So match the size to the job. Quick sweep of one module — set it small, a handful of agents covers it cheaply. Real codebase-wide migration or an exhaustive audit — set it large, that's what the broad swarm is for. Medium's your everyday resting default. Deliberate posture per engagement beats running everything at maximum by accident." },
-        { kind: 'say', text: "The books have the mechanics and the budget playbook. The door wants to know what the setting actually changes when you dial it to small — get that right and the key's yours. Mind the skeleton on the other side; it never met a job it wouldn't raise an army for." },
+        { kind: 'say', text: "Why you'd want that on a client's clock: the context is what costs you, so a fork lets you spend it twice. Picture forty minutes teaching me a tangled billing module — then two ways forward and no clear winner. Fork, and both roads start from that same hard-won understanding instead of you rebuilding it or gambling on one." },
+        { kind: 'say', text: "The real move is A/B without risking the main thread. Keep the safe, presentable approach moving right here — the one you'd show the client — and let the fork chase the speculative refactor in the background. Pays off? Fold it in. Face-plants? Close the row, and your primary deliverable never wobbled. Same trick when the client lobs in a 'what would X cost us' — fork it, answer X in the copy, keep this build on task." },
+        { kind: 'say', text: "The books have the mechanics and the consultant's playbook. The door just wants to know what `/fork` actually does the instant you run it — get that right and the key's yours. And watch the skeleton beyond it; it copies itself the second your back's turned, and it's never quite sure which one of it is real." },
       ],
     },
   },
   battle: {
-    name: 'Marrow, Warden of the Overswarm',
+    name: 'Rivener, the Forked Warden',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a lone skeleton rattles its jaw, and the floor answers with a hundred more clawing up from the dirt* …a task, you say? one small task? THEN RISE, ALL OF YOU — why send ten bones when I can send ten thousand… let the swarm blot out the budget…",
+    introLine: "*the skeleton lifts its blade — and a second skeleton, identical down to the last crack, peels off its side and drifts to the shadows* …you want the key? then face both of me… one guards this door, the other guards the dark… and neither forgot a thing…",
     tauntLines: [
-      "*more skeletons keep climbing up regardless* a cap? there is no cap here, meat — I raise until the rate-limit screams and the engagement runs dry…",
-      "*legions mill about doing nothing, tokens bleeding* efficiency? every one of these does a sliver of the work and bills you for the whole army — good luck explaining THAT invoice…",
+      "*the copy in the background mirrors every strike a half-beat late* you thought you closed the other one? it kept every memory I have, meat — you don't get to forget a fork…",
+      "*both skeletons speak in unison, then argue* is the real me here, or over there? doesn't matter — we both remember teaching you this, and we both still want you gone…",
     ],
-    victoryLine: "*the horde sinks back into the ground until only a lean handful remains, exactly as many as the job required* …sized to the work… advisory, not endless… fine, throttle-hand… take the key…",
+    victoryLine: "*the background twin dissolves back into the first, one history rejoining itself* …two threads, one past… you understood the branch… take the key, operator, and go be in two places…",
     questions: [
       {
         prompt:
-          "You open `/config` and set the new `Dynamic workflow size` to `small`. What have you actually changed about how Claude runs dynamic workflows?",
+          "You run `/fork` in the middle of a working session. What has Claude actually done?",
         choices: [
-          { id: 'a', label: "You've set an advisory small/medium/large guideline for how many agents Claude generally fans a workflow out into — a default posture, not a hard cap Claude is forbidden to exceed when the task truly needs it", correct: true },
-          { id: 'b', label: "You've set an enforced ceiling that hard-caps the agent count and makes the workflow error out the moment it would spawn one agent past the limit", correct: false },
-          { id: 'c', label: "You've made each individual agent run faster by handing it more compute, without changing how many agents there are", correct: false },
-          { id: 'd', label: "You've switched dynamic workflows off entirely, so tasks now run in a single agent instead of fanning out at all", correct: false },
+          { id: 'a', label: "Copied your current conversation into a new background session — its own row in `claude agents` — while you keep working uninterrupted in the original session", correct: true },
+          { id: 'b', label: "Saved a snapshot and closed your current session, so you have to switch over and resume the copy before you can do anything else", correct: false },
+          { id: 'c', label: "Replaced your session with a fresh, empty one, discarding the context you'd built up so far", correct: false },
+          { id: 'd', label: "Merged two of your existing sessions into a single combined transcript", correct: false },
         ],
-        passFeedback: "HIT! The setting is an *advisory* guideline for how large Claude makes a dynamic workflow by default — small, medium, or large. It shapes the default posture; it doesn't hard-cap the count or forbid Claude from scaling up when a task genuinely demands it.",
-        failFeedback: "MISS! It isn't an enforced ceiling, it doesn't touch per-agent speed, and it doesn't turn workflows off. It's an advisory size guideline — small/medium/large — for how many agents Claude fans out by default. Re-read the books.",
+        passFeedback: "HIT! `/fork` duplicates the conversation you're in — full context and all — into a new background session with its own `claude agents` row, and leaves you working in the original. One shared history, two live sessions.",
+        failFeedback: "MISS! It doesn't close, wipe, or merge anything. It copies your current conversation into a *background* session so both the fork and the original stay alive. Re-read the books.",
       },
     ],
   },
