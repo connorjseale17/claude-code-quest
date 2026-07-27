@@ -1,132 +1,130 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — per-session consumption caps: a session-wide limit on
- * WebSearch tool calls (default 200, tunable) and a per-session cap on subagent
- * spawns (default 200, override with env var). Hard backstops against runaway
- * consumption within a single session — distinct from the *advisory* Dynamic
- * workflow size setting.
+ * twic-3 (Feature C) — the `DirectoryAdded` hook: a hook event that fires
+ * *after* a new working directory is registered mid-session, whether by the
+ * `/add-dir` command or the SDK `register_repo_root` control request.
  * Final room — door target routes to the TwicStampScreen via currentTrack.
- * Sources: Claude Code CHANGELOG 2.1.212 ("Added session-wide limit on WebSearch
- * tool calls (default 200, tunable)"; "Added per-session cap on subagent spawns
- * (default 200, override with env var)").
+ * Source: Claude Code CHANGELOG 2.1.219 ("Added `DirectoryAdded` hook that
+ * fires after `/add-dir` or the SDK `register_repo_root` control request
+ * registers a new working directory mid-session").
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Final room of the issue, and the Beat Reporter closes on the circuit breaker. Claude now enforces two hard per-session ceilings: a session-wide limit on WebSearch calls (default 200, tunable) and a cap on how many subagents a single session can spawn (default 200, overridable). These are real walls, not gentle nudges — they exist so a session that goes sideways can't quietly torch your rate limit. The two pages on the desk cover the mechanism and why an unattended run on a client's clock needs it. Answer the door's one question for the last key — and beyond it waits a dragon that just keeps spawning more of itself until something finally makes it stop.",
+    "Final room of the issue, and the Beat Reporter saves a builder's tool for last: a new hook that fires the moment your session grows. `DirectoryAdded` triggers *after* a new working directory joins the session mid-flight — pulled in by the `/add-dir` command or, from the SDK, a `register_repo_root` control request — giving your automation a place to react the instant a fresh repo comes into scope. The two pages cover exactly when the hook fires and what a consultant hangs off it when a session sprawls across a client's many repos. Beat the door's question for the key that completes the issue — and mind the wyrm beyond it, which grows a whole new door every time you widen its lair.",
   prompt:
-    "What do the new session-wide WebSearch limit and per-session subagent-spawn cap actually do?",
+    "The new `DirectoryAdded` hook fires at exactly which moment?",
   choices: [
-    { id: 'a', label: "Set hard per-session ceilings — a default of 200 WebSearch calls and 200 subagent spawns per session — that halt runaway consumption, with both adjustable (the search limit tunable, the spawn cap overridable via env var)", correct: true },
-    { id: 'b', label: "Set advisory targets Claude leans toward but is free to exceed whenever a task genuinely needs more searches or subagents", correct: false },
-    { id: 'c', label: "Cap how many Claude Code sessions you're allowed to have open at once across your whole account", correct: false },
-    { id: 'd', label: "Speed up web searches and subagents by running them in parallel batches of 200 at a time", correct: false },
+    { id: 'a', label: "After `/add-dir` (or the SDK `register_repo_root` control request) registers a new working directory mid-session", correct: true },
+    { id: 'b', label: "Every time Claude edits or writes a file inside any of the session's directories", correct: false },
+    { id: 'c', label: "Once at session startup, for the initial working directory only", correct: false },
+    { id: 'd', label: "*Before* a directory is added, so your hook can veto the addition", correct: false },
   ],
-  passFeedback: "HIT! Both are *hard* per-session ceilings — 200 WebSearch calls and 200 subagent spawns by default — that stop a single session from consuming without bound. They're adjustable: the search limit is tunable and the spawn cap is overridable with an env var.",
-  failFeedback: "MISS! These aren't advisory (that's the Dynamic workflow size setting), they don't limit your open-session count, and they don't batch for speed. They're hard per-session consumption caps — 200 each by default, adjustable. Re-read the books.",
+  passFeedback: "HIT! `DirectoryAdded` fires *after* a new working directory is registered mid-session — via `/add-dir` or the SDK's `register_repo_root`. It's an event that says 'a new directory just joined,' not a file-edit trigger and not a startup one-shot.",
+  failFeedback: "MISS! It's not a per-edit hook, not a startup-only hook, and not a pre-add veto. It fires *after* a new working directory is registered mid-session. Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**Two Hard Ceilings Per Session — The Backstop, Not the Suggestion**
+      text: `**The \`DirectoryAdded\` Hook — A Trigger for "The Session Just Grew"**
 
-**What shipped**
+**What the changelog added**
 
-The 2.1.212 release added two consumption caps that live at the level of a single session. The first is a *session-wide limit on WebSearch tool calls*, defaulting to 200 and described in the changelog as *tunable*. The second is a *per-session cap on subagent spawns*, also defaulting to 200, which you can *override with an env var*. Both count within one session and both stop it cold when it hits the number.
+Verbatim from 2.1.219: *"Added \`DirectoryAdded\` hook that fires after \`/add-dir\` or the SDK \`register_repo_root\` control request registers a new working directory mid-session."* Hooks, as a whole, are how you attach your own command to a moment in Claude's lifecycle — a specific event happens, your script runs. This release adds a new event to hang things off of, and its moment is precise: *a new working directory just became part of this session.*
 
-**Hard cap, not advisory posture — hold this distinction**
+**The two triggers, one event**
 
-A few weeks back the newsletter covered \`Dynamic workflow size\`, an *advisory* dial for how wide Claude fans a workflow out — a default lean it could still exceed. These new limits are the opposite kind of thing. They are *hard* ceilings. When a session has made 200 WebSearch calls or spawned 200 subagents, it does not politely lean toward stopping; it is stopped. That's the entire point of a backstop: it holds precisely in the case where every softer guideline has already failed and something is genuinely running away.
+There are exactly two ways to reach this event, and the changelog names both. Interactively, you run \`/add-dir\` to pull another folder into the session's working set. Programmatically, an SDK integration issues a \`register_repo_root\` control request to do the same thing from code. Either path ends the same way: a directory that wasn't in scope a second ago now is — and \`DirectoryAdded\` fires so your automation knows.
 
-**Adjustable, but that's the floor and ceiling — not a bypass**
+**"After," not "before"**
 
-Both numbers move. Raise the subagent cap through its env var when you're knowingly running a massive, legitimate migration; tune the WebSearch limit down when a research task on a metered client plan should never make hundreds of calls. What you're adjusting is *where* the wall stands, not *whether* there's a wall. Even lifted, the ceiling is still a ceiling — a session can't spawn without bound the way it could before these landed.
+The timing word matters. This hook fires *after* the registration, not before it. That means it is not a gate you use to approve or veto which folders get added — by the time your handler runs, the directory is already in scope. Its job is to *react* to a completed addition: the new territory is real, and now you get to do something about it. Think of it as a welcome mat that unrolls the instant a new directory steps through the door, not a bouncer deciding who gets in.
 
-> Takeaway: The WebSearch limit and subagent-spawn cap are hard, per-session ceilings (200 each by default, both adjustable) — a backstop that halts a runaway session, categorically different from an advisory guideline it could talk its way past.`,
+> Takeaway: \`DirectoryAdded\` is a hook event that fires *after* \`/add-dir\` or an SDK \`register_repo_root\` registers a new working directory mid-session — a reliable "a folder just joined" signal, not a pre-add gate.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**The Unattended Run — Why a Consultant Wants a Wall They Never Hit**
+      text: `**One Session, Many Repos — Automating the Welcome**
 
-**A loop you're not watching is the expensive kind**
+**Why a consultant's sessions grow mid-flight**
 
-The whole promise of autonomous work is that you walk away — kick off a job on a client repo and go do something else. That's also exactly when a runaway is most dangerous, because there's no human in the loop to notice the session has started spawning subagents in a cycle or firing off web search after web search chasing its own tail. Left unbounded, that's the horror story: you come back to a drained rate limit, a blown budget on a shared team plan, and an awkward conversation about the invoice. A hard per-session cap is the smoke detector that goes off while you're out of the room.
+Book 1 told you *when* the hook fires; here's what to do with it. Real engagements rarely stay inside one folder. You start in the client's main app, then halfway through you realize the fix also touches their shared component library, their infra repo, or a sibling service — so you \`/add-dir\` it and keep going. Every one of those additions is a small moment of risk: the new directory arrives with its *own* conventions, its own setup steps, its own gotchas, and none of them are loaded into your head or the session yet.
 
-**You'll almost never touch the ceiling — that's the design**
+**Hang the prep on the hook**
 
-Here's the reassuring part: 200 subagent spawns or 200 web searches in a *single session* is an enormous amount of legitimate work. A normal engagement, even an ambitious one, rarely comes anywhere near it. So the cap isn't a leash you'll feel day to day. It's insurance against the pathological case — the infinite loop, the misfiring agent, the prompt that accidentally told Claude to search forever. You get the safety without the friction, because the wall sits far past where honest work ends.
+\`DirectoryAdded\` is where you make that moment automatic instead of manual. Because it fires the instant a folder joins, it's the natural place to run whatever "onboard a new repo" routine you'd otherwise do by hand: surface that repo's contributing rules, print the one-line reminder about its quirks, kick off its dependency install, or note in the session which coding standard now applies here. The directory came into scope and, in the same breath, your handler prepped it — so the second repo gets the same disciplined start the first one did.
 
-**Tune it to the engagement's risk profile**
+**Consistency across a sprawling session**
 
-Because both limits adjust, you can right-size the backstop to the client. On a tight, metered plan where a surprise spend would be a genuine problem, tune the WebSearch limit *down* so the session trips the breaker early rather than late. On a sanctioned, large-scale codebase migration you're actively supervising, raise the subagent cap so a legitimate heavy job isn't stopped short. The default protects you out of the box; the adjustability lets you match the wall to what's actually at stake.
+The deeper win is uniformity. When a session ends up spanning four of a client's repos, the failure mode is that the first repo got your careful setup and the later three got a shrug. A \`DirectoryAdded\` handler closes that gap: every directory, whether it joined at minute one or minute forty, is greeted by the same routine. And because the SDK's \`register_repo_root\` triggers the identical event, a headless or automated integration that widens its own scope gets the same treatment as a human typing \`/add-dir\` — one hook, both paths, no directory left un-welcomed.
 
-> Takeaway: These caps are the guardrail for work you walk away from — set generously enough that real engagements never feel them, adjustable enough to tighten on a metered client or loosen for a sanctioned big job, and always there to stop a loop you aren't watching.`,
+> Takeaway: Use a \`DirectoryAdded\` handler to auto-onboard every repo that joins a session mid-flight — install, surface conventions, set standards — so a session sprawling across a client's many repos treats the fortieth-minute directory as carefully as the first.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `I'm about to kick off ____ on the client's repo and then step away for a couple of hours.
-Because no one will be watching it, I want the hard per-session backstop in place:
-the WebSearch limit and the subagent-spawn cap, 200 each by default.
-Since this is ____, I'll tune the WebSearch limit ____ so a runaway trips the breaker early,
-and leave the subagent cap where it is — a normal job never comes near 200 spawns anyway.
-The point is a wall I'll almost certainly never hit, that still stops ____ if the session loops.`,
+    template: `My session started in the client's main app, but the fix also reaches ____,
+so I'll /add-dir it mid-session instead of opening a whole new session.
+I've got a DirectoryAdded hook wired up, and because it fires ____
+a new directory is registered, my handler will automatically ____
+for the repo that just joined.
+That way the ____ repo gets the same disciplined start as the first one.`,
     blanks: [
-      { id: 'job', suggestions: ['an overnight test-suite migration', 'a long research sweep of vendor docs', 'an unattended dependency upgrade'] },
-      { id: 'plan-type', suggestions: ['a tightly metered client plan', 'a shared team rate limit', 'a fixed-budget engagement'] },
-      { id: 'direction', suggestions: ['down below the default', 'to a conservative number', 'well under 200'] },
-      { id: 'runaway', suggestions: ['a spawn loop', 'an endless search cycle', 'a misfiring agent'] },
+      { id: 'other-repo', suggestions: ['their shared component library', 'a sibling backend service', 'the infrastructure repo'] },
+      { id: 'timing', suggestions: ['right after', 'the instant', 'as soon as'] },
+      { id: 'prep', suggestions: ['install its dependencies and surface its conventions', 'print its quirks and set the right coding standard', 'run its setup routine and load its contributing rules'] },
+      { id: 'which', suggestions: ['fortieth-minute', 'later-added', 'second and third'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "The 2.1.212 release added two hard per-session consumption caps: a session-wide WebSearch call limit (default 200, tunable) and a per-session subagent-spawn cap (default 200, overridable via env var). Unlike the *advisory* Dynamic workflow size dial, these are real ceilings — a session that hits the number is stopped, not nudged. For a consultant they're the backstop for unattended work: kick off a long job on a client repo, walk away, and a spawn loop or endless-search cycle can't silently drain a shared rate limit or blow the budget. The defaults sit far past where honest work ends, so you rarely feel them; adjust them to fit the client — tune the search limit down on a metered plan, raise the spawn cap for a sanctioned big migration.",
+        "The new `DirectoryAdded` hook (2.1.219) fires *after* a new working directory is registered mid-session — reachable two ways: the interactive `/add-dir` command, or the SDK's `register_repo_root` control request. Hooks attach your own command to a moment in Claude's lifecycle, and this event's moment is 'a folder just joined the session.' It fires *after* the addition, so it's a reactor, not a pre-add veto. For a consultant whose sessions grow across a client's many repos, it's the place to auto-onboard each new directory — install deps, surface that repo's conventions, set the right standard — so a session sprawling across four repos treats the fortieth-minute directory as carefully as the first, whether a human typed `/add-dir` or an SDK integration widened its own scope.",
       beats: [
-        { kind: 'say', text: "Last story of the issue, and it's the circuit breaker. The 2.1.212 release gave a single session two hard ceilings. One's a session-wide limit on WebSearch calls — default 200, and it's tunable. The other's a cap on how many subagents one session can spawn — also default 200, and you can override it with an env var." },
-        { kind: 'say', text: "Now, don't file these next to the `Dynamic workflow size` dial from a few weeks back. That one was *advisory* — a lean I could still exceed. These are the opposite. They're *hard*. Hit 200 web searches or 200 spawns in a session and I don't gently wind down — I stop. That's what a backstop is for: the moment every softer guideline has already failed and something's genuinely run away." },
-        { kind: 'say', text: "Both numbers move, but read what you're moving. Raise the spawn cap for a massive migration you meant to run; tune the search limit down for a metered client where hundreds of calls would be absurd. You're setting *where the wall stands*, not whether there is one. Even lifted, a ceiling is still a ceiling." },
+        { kind: 'say', text: "Last story of the issue, and it's one for the builders. New hook event in 2.1.219: `DirectoryAdded`. Hooks, in general, let you bolt your own command onto a moment in my lifecycle — an event happens, your script runs. This release adds a new moment to bolt onto, and it's a specific one: a new working directory just joined the session." },
+        { kind: 'say', text: "Two ways to reach that event, and the changelog names both. You type `/add-dir` to pull another folder into scope. Or, from the SDK, an integration sends a `register_repo_root` control request to do it from code. Different doors, same room — either way a directory that wasn't in scope a moment ago now is, and the hook fires." },
+        { kind: 'say', text: "Mind the timing word: it fires *after* the directory is registered, not before. So this isn't a bouncer you use to veto which folders get in — by the time your handler runs, the folder's already inside. It's a welcome mat. The new territory is real, and now you get to do something about it." },
         {
           kind: 'choice',
-          prompt: "Gut-check before the last door. Your session hits 200 subagent spawns and the task 'still wants more.' What happens?",
+          prompt: "Before the door — which of these is a job `DirectoryAdded` is actually built for?",
           options: [
-            { id: 'stops', label: "It's stopped at the cap — this is a hard per-session ceiling, not an advisory lean it can exceed", correct: true, reaction: "Right. That's the whole value of a backstop: it holds exactly when a run has gone sideways. If you truly need more for a sanctioned job, you raise the cap deliberately — the session doesn't get to blow past it on its own." },
-            { id: 'exceeds', label: "It quietly goes past 200 because the cap is just a guideline Claude leans toward", correct: false, reaction: "No — you're thinking of the advisory `Dynamic workflow size` setting. These caps are hard. A session at the limit is stopped, not nudged." },
-            { id: 'account', label: "Your other open sessions get shut down to make room under an account-wide total", correct: false, reaction: "Not that either. The cap is *per session*, not a budget shared across your account. One session hitting 200 doesn't touch the others." },
+            { id: 'onboard', label: "Auto-running a repo's setup — install deps, surface its conventions — the instant that repo is added to the session", correct: true, reaction: "That's the one. It fires right as the folder joins, so it's the natural home for 'onboard this new repo' work you'd otherwise do by hand every time." },
+            { id: 'veto', label: "Blocking a folder from being added unless it passes a check first", correct: false, reaction: "No — it fires *after* the registration, so the folder's already in scope when your handler runs. It reacts to the addition; it can't gate it." },
+            { id: 'per-edit', label: "Running a linter every single time I edit a file in that directory", correct: false, reaction: "That's a per-edit trigger, a different event. `DirectoryAdded` fires once, when the directory *joins* — not on every file change inside it." },
           ],
         },
-        { kind: 'say', text: "Why this matters most when you're *not* watching: the whole point of autonomous work is you walk away. That's also when a loop is deadliest — nobody's there to notice me spawning subagents in a cycle or searching my own tail. Come back to a drained rate limit and a blown budget on a shared plan, and that's an invoice conversation you don't want. The cap is the smoke detector going off while you're out of the room." },
-        { kind: 'say', text: "And the reassuring part: 200 spawns or 200 searches in *one* session is a mountain of legitimate work. A real engagement almost never gets near it, so day to day you won't feel the leash at all. It's insurance against the pathological case — the infinite loop, the prompt that accidentally said 'search forever.' Tune it down for a metered client, up for a supervised migration, and otherwise forget it's there." },
-        { kind: 'say', text: "That's the issue. The books have the mechanism and the walk-away playbook; the door wants to know what these caps actually do. Get it right and the last key's yours. Then mind the wyrm past it — it spawns another of itself every few seconds and won't stop on its own. Only a hard wall ever does." },
+        { kind: 'say', text: "Here's why it earns a spot in a consultant's kit. Real engagements don't stay in one folder. You start in the client's main app, then the fix turns out to touch their component library or a sibling service — so you `/add-dir` it and keep moving. But each new folder arrives with its own conventions, its own setup, its own gotchas, and none of that is loaded yet. That's a small moment of risk, repeated." },
+        { kind: 'say', text: "So hang the prep on the hook. Fire the 'new repo' routine automatically the instant a folder joins — install its dependencies, print its quirks, set the coding standard that applies there, surface its contributing rules. The real prize is consistency: when a session ends up spanning four of a client's repos, you don't want the first one carefully set up and the last three shrugged at. One handler greets every directory the same — and since the SDK's `register_repo_root` fires the same event, an automated integration gets the identical welcome a human typing `/add-dir` does." },
+        { kind: 'say', text: "The books have the precise firing moment and the multi-repo playbook. The door only wants the timing: *when* does `DirectoryAdded` fire? Answer that for the key that finishes the whole issue. Then square up to the wyrm — it grows a fresh door onto its hoard every time you widen its lair, and it's counting on you never having a routine ready for the new one." },
       ],
     },
   },
   battle: {
-    name: 'Glut, the Uncapped Wyrm',
+    name: 'Wend, the Manydoored Wyrm',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*the dragon rears, and from its shadow a smaller copy claws free — then another, then another, each already spawning its own* …more… always more… why send one wyrm when the session allows infinite… search everything, spawn everything, STOP for nothing…",
+    introLine: "*the wyrm uncoils across a hoard that sprawls through door after door, and as it sees you a NEW archway groans open in the far wall, a fresh chamber it has never once prepared* …widen my lair, will you?… every directory you add, another door onto my gold… and not one of them made ready, not one of them greeted… come, let the sprawl swallow you…",
     tauntLines: [
-      "*whelps multiply faster than they can act, rate limit bleeding* a cap? I acknowledge no cap — I'll spawn the two-hundred-and-first just to watch the meter scream…",
-      "*fires off search after pointless search* every query chases the last, every spawn births a spawn — and you walked away and left me to it, didn't you? how's that invoice looking…",
+      "*a new wing yawns open, unfamiliar and unswept* another repo, another set of rules you haven't loaded — I add doors faster than you can ever walk them, and you meet each one cold and empty-handed…",
+      "*coils tighten around a fortieth chamber* the first room you prepared so carefully… and all the ones after? a shrug, a guess, a gotcha you never saw coming — THAT is how a sprawling session dies…",
     ],
-    victoryLine: "*at the two-hundredth spawn the horde freezes mid-air and crumbles, the wyrm stopped cold against a wall it cannot cross* …a hard ceiling… it actually… held… fine, gatekeeper… the issue is yours…",
+    victoryLine: "*a mat unrolls at every threshold at once, each new door greeted the instant it opens, and the wyrm sags* …a hook at every doorway… the fortieth chamber welcomed like the first… you widened the lair and it was *ready*… take the key, operator… the issue is yours…",
     questions: [
       {
         prompt:
-          "What do the new session-wide WebSearch limit and per-session subagent-spawn cap actually do?",
+          "The new `DirectoryAdded` hook fires at exactly which moment?",
         choices: [
-          { id: 'a', label: "Set hard per-session ceilings — a default of 200 WebSearch calls and 200 subagent spawns per session — that halt runaway consumption, with both adjustable (the search limit tunable, the spawn cap overridable via env var)", correct: true },
-          { id: 'b', label: "Set advisory targets Claude leans toward but is free to exceed whenever a task genuinely needs more searches or subagents", correct: false },
-          { id: 'c', label: "Cap how many Claude Code sessions you're allowed to have open at once across your whole account", correct: false },
-          { id: 'd', label: "Speed up web searches and subagents by running them in parallel batches of 200 at a time", correct: false },
+          { id: 'a', label: "After `/add-dir` (or the SDK `register_repo_root` control request) registers a new working directory mid-session", correct: true },
+          { id: 'b', label: "Every time Claude edits or writes a file inside any of the session's directories", correct: false },
+          { id: 'c', label: "Once at session startup, for the initial working directory only", correct: false },
+          { id: 'd', label: "*Before* a directory is added, so your hook can veto the addition", correct: false },
         ],
-        passFeedback: "HIT! Both are *hard* per-session ceilings — 200 WebSearch calls and 200 subagent spawns by default — that stop a single session from consuming without bound. They're adjustable: the search limit is tunable and the spawn cap is overridable with an env var.",
-        failFeedback: "MISS! These aren't advisory (that's the Dynamic workflow size setting), they don't limit your open-session count, and they don't batch for speed. They're hard per-session consumption caps — 200 each by default, adjustable. Re-read the books.",
+        passFeedback: "HIT! `DirectoryAdded` fires *after* a new working directory is registered mid-session — via `/add-dir` or the SDK's `register_repo_root`. It's an event that says 'a new directory just joined,' not a file-edit trigger and not a startup one-shot.",
+        failFeedback: "MISS! It's not a per-edit hook, not a startup-only hook, and not a pre-add veto. It fires *after* a new working directory is registered mid-session. Re-read Book 1.",
       },
     ],
   },

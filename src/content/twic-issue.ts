@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-07-20',
+  publishDate: '2026-07-27',
   framing:
-    "This week in Claude, the throughline is control over where your work goes and when it gets checked. The new `/fork` command copies your whole conversation — context and all — into a background session with its own `claude agents` row, so you can chase a risky second approach without ever leaving the thread you're already in. The `/verify` and `/code-review` skills stop firing on Claude's own initiative and become yours to invoke, putting the quality gate on your timing — verify before you commit, review before you PR. And two new hard per-session ceilings — a WebSearch call limit and a subagent-spawn cap, 200 each by default and both adjustable — stand as the backstop that keeps an unattended run from quietly draining your rate limit while you're out of the room.",
+    "This week in Claude, the throughline is a stronger engine and tighter control over how far your session reaches. Claude Opus 5 lands as the new default Opus model — a million-token context window at $10/$50 fast-mode pricing, tuned for long-running agents and, by Anthropic's numbers, more than doubling the previous Opus on hard reasoning at a lower cost per task. The new `sandbox.network.strictAllowlist` setting turns your network allowlist into a hard wall, denying any unlisted host to sandboxed commands *without prompting*, so an unattended run can't quietly phone a client's code home. And the new `DirectoryAdded` hook fires the instant a fresh working directory joins a session — via `/add-dir` or the SDK's `register_repo_root` — giving you one place to auto-onboard every repo a sprawling engagement pulls into scope.",
 };
