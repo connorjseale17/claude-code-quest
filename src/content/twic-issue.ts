@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-07-27',
+  publishDate: '2026-08-03',
   framing:
-    "This week in Claude, the throughline is a stronger engine and tighter control over how far your session reaches. Claude Opus 5 lands as the new default Opus model — a million-token context window at $10/$50 fast-mode pricing, tuned for long-running agents and, by Anthropic's numbers, more than doubling the previous Opus on hard reasoning at a lower cost per task. The new `sandbox.network.strictAllowlist` setting turns your network allowlist into a hard wall, denying any unlisted host to sandboxed commands *without prompting*, so an unattended run can't quietly phone a client's code home. And the new `DirectoryAdded` hook fires the instant a fresh working directory joins a session — via `/add-dir` or the SDK's `register_repo_root` — giving you one place to auto-onboard every repo a sprawling engagement pulls into scope.",
+    "This week in Claude, the throughline is delegating deeper and losing less to friction and silence. Subagents can now spawn their own nested subagents up to three levels deep — where the chain used to stop at one — so a branching engagement can fan out as workstream, service, then endpoint, with stream-json forwarding keeping even a headless three-level run observable. Plan mode stops nagging: read-only Bash commands like `ls`, `grep`, and `git log` now run without a permission prompt, turning plan mode into a genuine reconnaissance gear you can walk a client's repo in without click-fatigue. And MCP failures finally speak — `/mcp` and `claude mcp list` now surface the real HTTP status and error text on a broken server (with a matching `mcp_server_errors` field for headless runs), so a 401 or a 500 tells you which side of the wire to fix instead of leaving you to guess.",
 };

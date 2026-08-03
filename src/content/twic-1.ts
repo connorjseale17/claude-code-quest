@@ -1,134 +1,130 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — Claude Opus 5: the new default Opus model, shipped as
- * `claude-opus-5` with a 1M-token context window and fast-mode pricing of
- * $10/$50 per Mtok.
- * Sources:
- *   - Claude Code CHANGELOG 2.1.219 ("Added Claude Opus 5 (`claude-opus-5`),
- *     now the default Opus model — 1M context, fast mode at $10/$50 per Mtok").
- *   - anthropic.com/news/claude-opus-5 (2026-07-24): "step change improvement
- *     for the Opus tier powering long-running agents"; Frontier-Bench v0.1
- *     "more than doubles Opus 4.8's performance at a lower cost per task";
- *     ARC-AGI 3 score "three times as high as the next-best model"; Zapier
- *     AutomationBench "around 1.5x the next-best model for the same cost per
- *     task"; "checks its own work the way a real frontend developer would."
+ * twic-1 (Feature A) — Nested subagents to depth 3: subagents can now spawn
+ * their own nested subagents up to three levels deep (previously capped at 1),
+ * and stream-json forwards the deeper levels' events so a headless run can
+ * still observe the whole delegation tree.
+ * Sources (Claude Code CHANGELOG 2.1.219):
+ *   - "Subagents can spawn nested subagents up to depth 3 (was 1)"
+ *   - "Added nested subagent forwarding in stream-json for depth-2+ spawned agents"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown, and the Beat Reporter opens with the headline everyone's talking about: there's a new engine under the hood. Claude Opus 5 shipped as `claude-opus-5` and is now the default Opus model — a million-token context window, fast-mode pricing at $10/$50 per Mtok, and a jump in reasoning that Anthropic pitches squarely at long-running agents. The two pages on the desk cover what the model actually is and when a consultant should reach for the Opus tier over a cheaper one. Answer the door's one question and the key is yours — the thing rattling in the dark beyond it is a skeleton that claims it has never once forgotten a task.",
+    "Room 1 of this week's rundown, and the Beat Reporter opens with a change to how work gets handed off. Subagents — the scoped workers your session delegates a job to — can now spawn subagents of their own, nested up to three levels deep, where the chain used to stop dead at one. The two books on the desk cover how far the tree descends and how a consultant maps a branching engagement onto it. Answer the door's one question for the key, and mind the thing rattling in the dark beyond it: a bonecaller that raises minions who raise minions who raise minions, three ranks down.",
   prompt:
-    "The 2.1.219 changelog announces Claude Opus 5. According to that line, what is it?",
+    "The 2.1.219 changelog changed how deep subagents can nest. What is the change?",
   choices: [
-    { id: 'a', label: "The new default Opus model (`claude-opus-5`) with a 1M-token context window and fast-mode pricing of $10/$50 per Mtok", correct: true },
-    { id: 'b', label: "A lightweight, budget-tier model meant to replace Haiku for cheap high-volume tasks", correct: false },
-    { id: 'c', label: "An optional preview model you have to opt into with a flag; the old Opus stays the default", correct: false },
-    { id: 'd', label: "A renamed build of Opus 4.8 with no change to context size or capability, just a version bump", correct: false },
+    { id: 'a', label: "Subagents can now spawn their own nested subagents, up to depth 3 — where the nesting was previously capped at depth 1", correct: true },
+    { id: 'b', label: "The number of subagents you can run at the same time rose from 1 to 3", correct: false },
+    { id: 'c', label: "Subagents can now nest with no depth limit at all, recursing as far as the task needs", correct: false },
+    { id: 'd', label: "Nesting was removed — only the main session may spawn subagents now, for safety", correct: false },
   ],
-  passFeedback: "HIT! The changelog is explicit: Opus 5 (`claude-opus-5`) is the *new default* Opus model, with a 1M-token context window and fast mode at $10/$50 per Mtok. You don't opt in — it's the Opus you get by default.",
-  failFeedback: "MISS! It's not a budget tier, not opt-in, and not a cosmetic rename. Opus 5 is the new default Opus model with 1M context and $10/$50 fast-mode pricing. Re-read Book 1.",
+  passFeedback: "HIT! The line is precise: subagents can spawn nested subagents up to depth 3, where before the depth was 1. It's a change to nesting *depth* — a delegation tree three levels tall — not the count of parallel workers, and not an unbounded recursion.",
+  failFeedback: "MISS! It's not about how many subagents run at once, it isn't unlimited, and nesting wasn't removed. The nesting *depth* rose from 1 to 3. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**Claude Opus 5 — The New Engine Becomes the Default**
+      text: `**Nested Subagents — Delegation Grows a Chain of Command**
 
-**What actually shipped**
+**What the 2.1.219 line actually changed**
 
-The 2.1.219 changelog line is short and precise: *"Added Claude Opus 5 (\`claude-opus-5\`), now the default Opus model — 1M context, fast mode at $10/$50 per Mtok."* Unpack that and there are four separate facts. The model exists and its id is \`claude-opus-5\`. It is now the *default* Opus model, which means you are not opting into a preview — when you reach for the Opus tier, this is what you get. Its context window is a full million tokens. And in fast mode it is priced at $10 per million input tokens and $50 per million output tokens.
+The changelog entry is a single clause: *"Subagents can spawn nested subagents up to depth 3 (was 1)."* Read it slowly, because the number that matters is the one in the parentheses. A subagent is a separate worker the main session hands a scoped job to. Until this release the nesting depth was capped at 1 — a subagent you spawned could do its work, but it could not itself hand off to a worker of its own. This release lifts that ceiling to 3: a subagent can now spawn a subagent, which can spawn one more.
 
-**"Default" is the word that matters**
+**Counting the levels**
 
-Plenty of releases add a model you have to go find and switch on. This one changes what "Opus" *means* going forward. Existing sessions and settings that point at the Opus tier inherit the new engine without you touching a thing. That's convenient, but it's also a reason to read the rest of this room: your baseline capability and your baseline cost per token both just moved, and you should know in which direction before your next invoice lands.
+Picture the session as the top of a tree. The main conversation spawns a subagent — that is level one, the old limit. Now that level-one worker can spawn its own subagent (level two), and *that* one can spawn another (level three). Three ranks of delegation hang below the session you're actually sitting in. Past that the chain stops: depth 3 is the floor of the descent, not an open invitation to recurse forever.
 
-**The pricing shape, read plainly**
+**Seeing down the tree**
 
-The $10/$50 split follows the usual pattern — output tokens cost roughly five times what input tokens do, because generating is the expensive half. Anthropic's own framing on the launch is that Opus 5 is a "step change improvement for the Opus tier powering long-running agents," delivered at a lower cost per task than the model it replaces. So the headline isn't just "bigger" — it's more capability per dollar than the Opus you were using last week.
+A deep tree is only useful if you can watch it work, and the release adds exactly that. The companion line — *"Added nested subagent forwarding in stream-json for depth-2+ spawned agents"* — means that in headless, stream-json runs the events from agents spawned at level two and below are forwarded up to you, instead of vanishing inside their parent. So an automated pipeline that fans work out three levels deep still reports what every worker is doing, rather than going quiet the moment the nesting passes the first rank.
 
-> Takeaway: Opus 5 (\`claude-opus-5\`) is now the *default* Opus model — a 1M-token window at $10/$50 fast-mode pricing — so the Opus tier you already use quietly got stronger and cheaper per task.`,
+> Takeaway: Subagents can now spawn their own subagents up to three levels deep — a delegation tree, not a flat list — and stream-json forwards the deeper levels' events so you can still watch the whole chain work.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**When to Spend on Opus — Picking the Tier for the Engagement**
+      text: `**Decomposing an Engagement — When One Delegate Needs Delegates**
 
-**The gains are concentrated in hard, long-running work**
+**Real work branches more than once**
 
-Book 1 told you *what* Opus 5 is; this is *when* to reach for it. Anthropic's launch numbers are specific about where the jump shows up. On Frontier-Bench v0.1 the model "more than doubles Opus 4.8's performance at a lower cost per task." On ARC-AGI 3, a novel problem-solving evaluation, its score is "three times as high as the next-best model." On Zapier's AutomationBench its pass rate is "around 1.5x the next-best model for the same cost per task." Notice the shape: the wins pile up on *difficult reasoning and multi-step automation*, not on trivial one-liners.
+Book 1 covered how deep the tree can go; this is *when* you want the depth. A large engagement rarely splits cleanly into one flat list of tasks. You hand the main session a goal — *audit this client's platform before the migration* — and the natural first cut is a few broad workstreams: the API, the data layer, the front end. But each of those is itself too big for one worker. The API stream wants to fan out again, one worker per service, and a single service audit might fan out once more, one worker per endpoint. That is three levels of branching, and until now you had to flatten it into one list by hand.
 
-**Reach for Opus when the task can fail quietly**
+**Let the branches do their own branching**
 
-That tells you when the Opus tier earns its price on a client's clock. A throwaway rename or a quick file read doesn't need frontier reasoning — a cheaper tier clears it fine. But a gnarly refactor across a legacy module, an agent you're going to leave running unattended, or an automation that has to get every step right before it hands off — that is exactly the work where doubled capability keeps a silent mistake out of your deliverable. The launch notes call out that Opus 5 "checks its own work the way a real frontend developer would," catching issues before delivery rather than after.
+With nesting to depth 3 you can mirror the real shape of the problem instead of pre-chewing it. The main session spawns a worker per workstream; each workstream lead spawns a worker per service; each service worker spawns one per endpoint. Every level keeps its own scoped context — the endpoint worker isn't carrying the whole platform in its head, just its endpoint — which is exactly why the deep split earns its keep: focus stays tight at the leaves while the structure stays coherent at the trunk.
 
-**The consultant's rule of thumb**
+**Why the forwarding matters on a client's clock**
 
-Match the model to the stakes the way you match the permission mode to the risk. High-stakes, long-horizon, or unattended work goes to Opus, where the reasoning headroom and the self-verification pay for themselves. Routine, well-scoped, high-volume work can drop to a lighter tier and save the budget for where it counts. The skill isn't "always use the biggest model" — it's knowing which tasks deserve one.
+The observability half is what makes a deep tree safe to run unattended. When you kick a three-level audit off headless and step away, stream-json forwarding of the deeper agents means the run isn't a black box: you get back a full account of what every leaf worker found, not just a tidy summary from the three top-level leads. When a partner asks how thorough the audit really was, *every endpoint got its own dedicated pass, and here is the trace* is the answer the depth buys you.
 
-> Takeaway: Spend Opus 5 on the hard, long-running, unattended work where its doubled reasoning and self-checking keep quiet mistakes out of the deliverable — and drop to a lighter tier for routine tasks.`,
+> Takeaway: Use the three-level tree to mirror an engagement that branches more than once — workstream, service, endpoint — so each worker keeps a tight scope while the deeper levels still report back for an auditable, unattended run.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `I'm about to kick off ____ for a client, and it's going to run for a while
-with real stakes if it gets a step wrong.
-Because the task is ____, I want the tier with the reasoning headroom,
-so I'll point this session at ____ (the new default Opus model).
-For the ____ I'll do afterward, I'll drop back to a lighter tier to save budget.`,
+    template: `I'm scoping ____ for a client, and the job is too big for a single worker to hold.
+So I'll let the main session spawn a subagent per ____,
+and because subagents can now nest up to depth 3, each of those can spawn
+its own worker per ____ instead of me flattening the whole tree by hand.
+I'll run it headless and lean on stream-json forwarding, so the ____
+still report back — not just the top-level leads.`,
     blanks: [
-      { id: 'engagement', suggestions: ['a multi-step migration agent', 'an unattended overnight refactor', 'a complex automation build'] },
-      { id: 'difficulty', suggestions: ['long-running and easy to get subtly wrong', 'high-stakes reasoning across a legacy module', 'a multi-step chain that must not fail mid-way'] },
-      { id: 'model', suggestions: ['claude-opus-5', 'the Opus tier', 'Opus 5'] },
-      { id: 'cheap-work', suggestions: ['quick file reads and renames', 'routine boilerplate cleanup', 'high-volume low-stakes edits'] },
+      { id: 'engagement', suggestions: ['a platform-migration audit', 'a full security review', 'a legacy-code assessment'] },
+      { id: 'top-split', suggestions: ['workstream', 'major subsystem', 'client repo'] },
+      { id: 'deep-split', suggestions: ['service', 'module', 'endpoint'] },
+      { id: 'leaves', suggestions: ['deepest leaf workers', 'level-three agents', 'per-endpoint passes'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "Claude Opus 5 (`claude-opus-5`) shipped in 2.1.219 as the *new default* Opus model — a 1M-token context window with fast-mode pricing of $10/$50 per Mtok. \"Default\" is the key word: you don't opt in, the Opus tier you already use just became this engine. Anthropic frames it as a step change for long-running agents, delivered at a lower cost per task; its benchmark wins concentrate on hard reasoning and multi-step automation (more than doubling Opus 4.8 on Frontier-Bench, 3x the next-best on ARC-AGI 3, ~1.5x on Zapier AutomationBench). The consultant's move is to match the tier to the stakes: spend Opus on high-stakes, long-horizon, unattended work where its self-checking keeps quiet mistakes out of the deliverable, and drop to a lighter tier for routine, high-volume tasks.",
+        "Nested subagents changed in 2.1.219: subagents can now spawn their own nested subagents up to depth 3, where the nesting was previously capped at 1. Count it as a tree — the main session spawns a subagent (level 1), that worker can spawn one (level 2), and that one can spawn another (level 3), then the chain stops. The companion change forwards depth-2+ agents' events in stream-json, so a headless run can still observe the deeper levels instead of them vanishing inside a parent. For a consultant, the depth lets you mirror an engagement that branches more than once — workstream, then service, then endpoint — with each worker holding a tight, scoped context; and the forwarding keeps an unattended, three-level run auditable rather than a black box.",
       beats: [
-        { kind: 'say', text: "Top story this week is a new engine, not a new command. Claude Opus 5 shipped — the id is `claude-opus-5` — and the changelog says it plainly: it's now the *default* Opus model. That word 'default' is the whole story. You didn't have to go turn anything on." },
-        { kind: 'say', text: "Two specs to carry: a million-token context window, and fast-mode pricing at $10 per million input tokens, $50 per million output. The five-to-one split is normal — generating text is the expensive half. What's new is that the Opus tier you were already reaching for is quietly this engine now." },
-        { kind: 'say', text: "Anthropic's own framing on launch day was a 'step change improvement for the Opus tier powering long-running agents' — and, crucially, at a *lower cost per task* than the Opus it replaces. So it's not just bigger. It's more capability per dollar than last week's Opus." },
+        { kind: 'say', text: "Top story this week isn't a new command — it's a change to how I hand work off. Subagents are the scoped workers I spin up for a job. The 2.1.219 line says they can now spawn *nested* subagents up to depth 3. The tell is the parenthetical: *was 1*. Until now a worker I spawned couldn't hand off to a worker of its own." },
+        { kind: 'say', text: "Count it as a tree. This session is the trunk. I spawn a subagent — that's level one, the old ceiling. Now that worker can spawn its own subagent, level two, and that one can spawn another, level three. Three ranks of delegation hang below the conversation you're in. Then it stops — three is the floor, not a licence to recurse forever." },
+        { kind: 'say', text: "A deep tree's no good if you can't see it work, so there's a companion change: nested subagent *forwarding* in stream-json for depth-2 and below. In a headless run, the events from those deeper workers get forwarded up to you instead of disappearing inside their parent. The whole chain stays visible." },
         {
           kind: 'choice',
-          prompt: "Quick check before we get to the 'when.' What's the single most important word in that changelog line?",
+          prompt: "Quick check before the 'why.' What exactly went from 1 to 3?",
           options: [
-            { id: 'default', label: "'default' — the Opus tier you already use is now this model, no opt-in", correct: true, reaction: "Right. A lot of releases add a model you have to hunt for and switch on. This one changed what 'Opus' means going forward — your existing Opus sessions inherit it automatically." },
-            { id: 'million', label: "'1M' — the context window is all that changed", correct: false, reaction: "The million-token window is real and useful, but it's not the headline. 'Default' is — because it means the change reaches you whether or not you go looking for it." },
-            { id: 'price', label: "'$10/$50' — it's mainly a pricing announcement", correct: false, reaction: "The pricing matters for your invoice, but it's not the point. The point is 'default': this is the Opus you now get by default, stronger and cheaper per task than before." },
+            { id: 'depth', label: "The nesting *depth* — how many levels of subagents can stack below the session", correct: true, reaction: "Right. It's the height of the delegation tree. A worker can now spawn a worker that spawns a worker — three levels deep — where the nesting used to stop at one." },
+            { id: 'count', label: "The *number* of subagents you can run at the same time", correct: false, reaction: "That's a different dial. This line is about nesting *depth*, not how many run in parallel. A subagent can now spawn its own subagents, three levels down." },
+            { id: 'unlimited', label: "Nothing capped it before, and now it's unlimited", correct: false, reaction: "The opposite — it was capped at 1, and now it's capped at 3. Deeper, but still bounded. Three levels is the floor of the descent." },
           ],
         },
-        { kind: 'say', text: "Now the part that actually earns its keep: *when* to spend it. The benchmark wins aren't spread evenly. On Frontier-Bench it more than doubles Opus 4.8. On ARC-AGI 3 — a novel problem-solving test — it scores three times the next-best model. On Zapier's AutomationBench, about 1.5x the next-best for the same cost per task. See the pattern? Hard reasoning and multi-step automation." },
-        { kind: 'say', text: "So match the model to the stakes, the way you already match permission mode to risk. A quick rename or a file read? A lighter tier clears it and saves budget. A gnarly refactor across a legacy module, or an agent you'll leave running unattended? That's Opus country — the launch notes say it 'checks its own work the way a real frontend developer would,' catching problems before delivery instead of after." },
-        { kind: 'say', text: "The books lay out the four facts in that changelog line and the consultant's rule of thumb for tier selection. The door just wants to know what Opus 5 actually *is* per that announcement — nail it and the key drops. And mind the skeleton past it; it swears on its bones it's never once forgotten a task, and with a million tokens of memory it might even be telling the truth." },
+        { kind: 'say', text: "Now the payoff. Real engagements branch more than once. Say the goal is *audit this client's platform before the migration*. The first cut is a few workstreams — API, data, front end. But the API stream is too big for one worker, so it fans out per service; and a service audit fans out again, per endpoint. That's three levels — and now you can build it that way instead of flattening it in your head." },
+        { kind: 'say', text: "Each level keeps its own scoped context — the endpoint worker only carries its endpoint, not the whole platform — so focus stays tight at the leaves while the shape stays coherent at the trunk. And because stream-json forwards the deep levels, a headless three-level run isn't a black box: you get an account from every leaf, not just a summary from the three leads. That's the difference between *the audit was thorough* and *here's the trace proving it*." },
+        { kind: 'say', text: "The books have the level-counting and the decomposition playbook in full. The door just wants the one fact: what went from 1 to 3? Answer that for the key — then square up to the bonecaller past it. It raises minions who raise minions who raise minions, three ranks deep, and it's betting you can't tell nesting depth from a head count." },
       ],
     },
   },
   battle: {
-    name: 'Ossian, the Millionfold Warden',
+    name: 'Marrowcall, the Thrice-Nested',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*bones knit together with a dry rattle, and behind the sockets a cold light flickers like a context window filling to the brim* …a million tokens I hold, operator… every file, every turn, nothing lost… I am the default now, the one you get whether you asked or not… name me true, or be forgotten yourself…",
+    introLine: "*a skeleton unfolds from the dark and lifts one hand — a smaller skeleton claws up from the floor, and it raises a smaller one still, three ranks deep before the echo fades* …I do not fight alone, operator… I raise a servant, who raises a servant, who raises one more… three deep, and no deeper… name what changed, or be added to the ranks…",
     tauntLines: [
-      "*the warden's skull tilts* you think I'm a preview you can dodge? a flag you can leave off? I am what 'Opus' *means* now — there is no old model waiting behind me…",
-      "*a laugh like dice in a cup* budget tier? cheap and small? look at the light in my skull — a MILLION tokens, and I doubled the one who came before me at a lower cost per task… you insult the dead…",
+      "*the three ranks rattle in unison* you think this is a *head count*? count the depth, fool — one calls two calls three, a chain, not a crowd…",
+      "*a dry laugh travels down the line of bones* 'unlimited,' you say? no — I stop at three, always three… the ceiling rose from one, it did not vanish…",
     ],
-    victoryLine: "*the cold light steadies into something almost like respect* …you read the line as written… the new default, a million-token mind, ten and fifty a measure… take the key, operator, and spend me where the stakes are worth it…",
+    victoryLine: "*the deepest skeleton crumbles first, then the next, then the caller himself* …a tree three levels tall… you read the depth for what it was… take the key, operator, and delegate as deep as the work demands…",
     questions: [
       {
         prompt:
-          "The 2.1.219 changelog announces Claude Opus 5. According to that line, what is it?",
+          "The 2.1.219 changelog changed how deep subagents can nest. What is the change?",
         choices: [
-          { id: 'a', label: "The new default Opus model (`claude-opus-5`) with a 1M-token context window and fast-mode pricing of $10/$50 per Mtok", correct: true },
-          { id: 'b', label: "A lightweight, budget-tier model meant to replace Haiku for cheap high-volume tasks", correct: false },
-          { id: 'c', label: "An optional preview model you have to opt into with a flag; the old Opus stays the default", correct: false },
-          { id: 'd', label: "A renamed build of Opus 4.8 with no change to context size or capability, just a version bump", correct: false },
+          { id: 'a', label: "Subagents can now spawn their own nested subagents, up to depth 3 — where the nesting was previously capped at depth 1", correct: true },
+          { id: 'b', label: "The number of subagents you can run at the same time rose from 1 to 3", correct: false },
+          { id: 'c', label: "Subagents can now nest with no depth limit at all, recursing as far as the task needs", correct: false },
+          { id: 'd', label: "Nesting was removed — only the main session may spawn subagents now, for safety", correct: false },
         ],
-        passFeedback: "HIT! The changelog is explicit: Opus 5 (`claude-opus-5`) is the *new default* Opus model, with a 1M-token context window and fast mode at $10/$50 per Mtok. You don't opt in — it's the Opus you get by default.",
-        failFeedback: "MISS! It's not a budget tier, not opt-in, and not a cosmetic rename. Opus 5 is the new default Opus model with 1M context and $10/$50 fast-mode pricing. Re-read Book 1.",
+        passFeedback: "HIT! The line is precise: subagents can spawn nested subagents up to depth 3, where before the depth was 1. It's a change to nesting *depth* — a delegation tree three levels tall — not the count of parallel workers, and not an unbounded recursion.",
+        failFeedback: "MISS! It's not about how many subagents run at once, it isn't unlimited, and nesting wasn't removed. The nesting *depth* rose from 1 to 3. Re-read Book 1.",
       },
     ],
   },

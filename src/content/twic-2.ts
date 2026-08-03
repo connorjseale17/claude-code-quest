@@ -1,128 +1,130 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-2 (Feature B) — `sandbox.network.strictAllowlist`: a sandbox setting
- * that denies any non-allowlisted host to sandboxed commands *without
- * prompting*, turning the network allowlist into a hard wall instead of an ask.
- * Source: Claude Code CHANGELOG 2.1.219 ("Added `sandbox.network.strictAllowlist`
- * setting to deny non-allowlisted hosts for sandboxed commands without
- * prompting").
+ * twic-2 (Feature B) — Plan mode no longer prompts for read-only Bash commands:
+ * in plan mode, commands that only read and change nothing (an `ls`, a `grep`,
+ * a `git log`) now run without a permission prompt, so exploration is
+ * frictionless while the mode's write-blocking posture is untouched.
+ * Source (Claude Code CHANGELOG 2.1.218):
+ *   - "Changed plan mode to no longer prompt for read-only Bash commands"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic2Content: LessonContent = {
   roomId: 'twic-room-2',
   intro:
-    "Room 2, and the Beat Reporter drops her voice for this one — it's about what your commands can reach out and touch. The new `sandbox.network.strictAllowlist` setting turns your sandbox's network allowlist into a hard wall: any host you haven't listed is denied outright to sandboxed commands, and — the key word — *without prompting*. No pop-up to click through, no chance to wave it past in a hurry. The two pages cover how the switch behaves and why a consultant on a client's repo wants egress locked down before an unattended run. Answer the door and the key is yours — but the thing in the dark is a wraith that lives to slip out to an address you never approved.",
+    "Room 2, and the Beat Reporter has a small change with an outsized feel: plan mode just got quieter. As of 2.1.218, plan mode no longer stops to prompt you for *read-only* Bash commands — the ones that only look and change nothing, like an `ls`, a `grep`, or a `git log`. The friction on the safe half of exploration is gone, while the change is scoped strictly to read-only work, so nothing that could modify sneaks past. The two books cover exactly what stopped prompting and how a consultant uses plan mode to walk a client's repo without click-fatigue. Beat the door for the key — but watch the wraith beyond it, which drifts through every drawer reading and reading and never once asks leave to look.",
   prompt:
-    "You set `sandbox.network.strictAllowlist` on. A sandboxed command tries to reach a host that isn't on your allowlist. What happens?",
+    "In plan mode, 2.1.218 changed the behavior for read-only Bash commands. What is the change?",
   choices: [
-    { id: 'a', label: "The connection is denied outright — no prompt, no ask — because the host isn't on the allowlist", correct: true },
-    { id: 'b', label: "Claude pauses and prompts you to approve the new host before the command can continue", correct: false },
-    { id: 'c', label: "All network access is cut for the command, even to hosts that *are* on your allowlist", correct: false },
-    { id: 'd', label: "The setting applies to every command Claude runs, sandboxed or not, blocking all unlisted hosts everywhere", correct: false },
+    { id: 'a', label: "Read-only Bash commands (ones that only look and change nothing) now run without a permission prompt in plan mode", correct: true },
+    { id: 'b', label: "Plan mode now runs *write* commands without prompting too, not just read-only ones", correct: false },
+    { id: 'c', label: "Plan mode now blocks all Bash commands, read-only included, and refuses to run them", correct: false },
+    { id: 'd', label: "Read-only Bash commands now need an extra confirmation step in plan mode", correct: false },
   ],
-  passFeedback: "HIT! `strictAllowlist` makes the allowlist a hard wall: an unlisted host is denied for sandboxed commands *without prompting*. Allowlisted hosts still work fine — it's the un-approved ones that hit the wall silently.",
-  failFeedback: "MISS! It doesn't prompt (that's the whole point of *strict*), it doesn't cut allowlisted hosts, and it's scoped to *sandboxed* commands. Re-read Book 1.",
+  passFeedback: "HIT! The change is scoped to *read-only* Bash — commands that only look, not modify — which now run without a prompt in plan mode. The friction dropped on the safe half; the change touches nothing that could modify.",
+  failFeedback: "MISS! It didn't open the door to write commands, it didn't block reading, and it didn't add a step. Read-only Bash simply stopped prompting. Re-read Book 1.",
   lore: [
     {
       id: 'twic-2-lore-a',
-      text: `**\`sandbox.network.strictAllowlist\` — The Allowlist Becomes a Wall**
+      text: `**Plan Mode Stops Nagging — Read-Only Bash Runs Quiet**
 
-**The setting in one line**
+**The line, and the word that scopes it**
 
-Straight from the 2.1.219 changelog: *"Added \`sandbox.network.strictAllowlist\` setting to deny non-allowlisted hosts for sandboxed commands without prompting."* Three clauses do all the work. It governs *sandboxed commands* — the ones Claude runs inside the sandbox, not your whole machine. It acts on *non-allowlisted hosts* — anything you haven't explicitly put on the allowlist. And it *denies without prompting* — no interruption, no dialog, no "allow this once?"
+Straight from the 2.1.218 changelog: *"Changed plan mode to no longer prompt for read-only Bash commands."* The load-bearing phrase is *read-only*. Plan mode's whole reason to exist is to let Claude read a codebase and propose a course of action without changing anything. But reading a repo well means running commands — an \`ls\` to see what's there, a \`grep\` to find a symbol, a \`cat\` to open a file, a \`git log\` to see the history. Until this release, plan mode would surface a permission prompt for each of those, even though not one of them alters a byte.
 
-**Why "without prompting" is the important part**
+**What actually changed, and what didn't**
 
-An allowlist that asks you to confirm each new host is only as strong as your attention in the moment you click. Under time pressure, the muscle-memory answer to a pop-up is "yes, continue." \`strictAllowlist\` removes that failure point on purpose: when it's on, an unlisted host isn't a question, it's a closed door. The decision about what's reachable was made once, up front, when you wrote the allowlist — not re-litigated under pressure every time a command reaches for a new address.
+Now those read-only commands run without the prompt. That's the entire change — and its scope is the point. Because the line is limited to *read-only* Bash, anything that would modify is untouched by it: the change lifts the friction on the commands that only look, and leaves everything else exactly where it was. You are not trading safety for speed here; you're dropping an interruption that was only ever guarding commands that couldn't do harm in the first place.
 
-**What still works, and what doesn't**
+**Why the prompt was friction, not protection**
 
-Turning this on does *not* sever the network. Hosts on your allowlist are reached exactly as before — your package registry, your API, whatever you deliberately permitted. What changes is the fate of everything *else*: instead of surfacing a prompt, the sandbox quietly refuses the connection. So a command doing legitimate, expected network work sails through; a command reaching somewhere you never sanctioned simply fails to connect, and the run keeps moving without waiting on you.
+A permission prompt earns its interruption when the action on the other side of it could bite — a file overwrite, a destructive command, a reach onto the network. A prompt in front of \`ls\` earns nothing. It trains the reflex every safety designer dreads: the muscle-memory *yes* that fires before you've read the dialog. Stripping the prompt from commands that only read removes a wall that was teaching you to click through walls — so the prompts that remain, the ones on commands that actually change things, keep the weight they're supposed to carry.
 
-> Takeaway: With \`sandbox.network.strictAllowlist\` on, sandboxed commands can reach only the hosts you listed; every other host is denied silently, so the allowlist is a wall you set once rather than a prompt you approve under pressure.`,
+> Takeaway: In plan mode, read-only Bash commands now run without a permission prompt — the friction is gone from commands that only look, and the change is scoped so tightly to *read-only* that nothing capable of modifying is affected.`,
     },
     {
       id: 'twic-2-lore-b',
-      text: `**Locking Egress Before You Walk Away — The Consultant's Case**
+      text: `**Walking a Client's Repo — Plan Mode Becomes a Real Reading Gear**
 
-**The threat is what leaves, not what enters**
+**The move plan mode was built for**
 
-Book 1 covered the mechanic; this is the reason to care. On a client engagement the scary direction for network traffic is *outbound*. A build script pulls in a dependency that phones home. A test suite POSTs telemetry somewhere. A well-meaning tool tries to fetch a remote config from a host nobody vetted. None of that is "hacking" — it's ordinary software being chatty — but on a repo full of a client's proprietary code, "chatty" is exactly what you can't afford. Controlling *egress* is controlling where your client's context is allowed to go.
+Book 1 covered what stopped prompting; this is why it changes how you work. The disciplined way into any unfamiliar client codebase is to read before you touch — understand the structure, the conventions, the risks, and *then* propose. Plan mode is the gear for that: read and propose, change nothing. But a reading gear you have to babysit isn't much of a reading gear. When every \`grep\` and \`git log\` on a first pass through a strange repo threw a prompt, the honest outcome was click-fatigue — and a tempting shortcut to a looser mode just to make the nagging stop.
 
-**It's built for the unattended run**
+**Frictionless exploration, discipline intact**
 
-The "without prompting" behavior is what makes this a walk-away setting. If you're kicking off a long agent run and stepping out, a prompt-based allowlist is worse than useless — it either stalls the whole run waiting for a click that never comes, or it trains you to pre-approve everything. \`strictAllowlist\` flips that: you decide the permitted hosts while you're paying attention, then the run enforces that decision faithfully in your absence. No stall, no rubber-stamp, no surprise connection at 2 a.m.
+With read-only Bash running quiet, plan mode finally feels like what it was meant to be. You point Claude at the client's repo and let it \`ls\` the tree, \`grep\` for the auth flow, \`cat\` the config, \`git log\` the churn — building a real picture of the codebase — and you're not hammering *approve* the whole way through. The safety story is completely intact: nothing was modified, because read-only commands can't modify, and the mode still gates anything that would. You keep the *read before you touch* discipline and lose only the friction tax that used to make people abandon it.
 
-**Where it sits in your kit**
+**Why it matters on the clock**
 
-Treat it as the egress half of your sandbox posture — the outbound complement to keeping credentials and secrets walled off from the commands Claude runs. Scope the allowlist to exactly the hosts the work legitimately needs — the registry, the client's own API — and let the strict wall handle the rest. When a partner asks whether a client's code could have leaked during an automated run, "sandboxed commands could only reach the hosts we explicitly allowed" is a much better answer than "I clicked through the prompts carefully."
+On a client engagement the first hour is reconnaissance, and reconnaissance is almost entirely reading. A plan-mode pass that flows — no stall on every harmless look — is the difference between arriving at a proposal grounded in what the code actually says and rushing to a looser mode to escape the prompts. When you hand a partner a scoping plan, *I read the codebase end to end in plan mode first* should describe a smooth pass, not an endurance test. This change is what makes that true.
 
-> Takeaway: Turn on \`strictAllowlist\` to control *egress* — where a client's code and context can travel — so an unattended run reaches only the hosts you vetted in advance and nothing chatty slips out while you're away.`,
+> Takeaway: Read-only Bash running quiet turns plan mode into a genuine reconnaissance gear — you can let Claude explore a client's repo end to end without click-fatigue, keeping the read-before-you-touch discipline and dropping only the friction that used to chase people out of it.`,
     },
   ],
   practice: {
     id: 'twic-2-practice',
-    template: `I'm about to leave a long agent run going on ____, and I need to be sure
-nothing slips out to a host I never approved while I'm away.
-So I'll turn on sandbox.network.strictAllowlist, which denies any ____
-to sandboxed commands ____ — the decision gets made now, not under pressure later.
-I'll scope the allowlist to just ____, the only hosts this work legitimately needs.`,
+    template: `I've just opened a client's ____ and I've never seen the codebase, so I'll start in plan mode
+and read before I touch anything.
+Now that plan mode no longer prompts for ____ Bash commands, I can let Claude
+____ the repo — see the tree, find the auth flow, read the history —
+without clicking approve on every harmless look.
+Nothing gets modified, because those commands only look, so I keep the
+____ discipline and lose only the friction.`,
     blanks: [
-      { id: 'repo', suggestions: ["a client's proprietary codebase", 'a repo full of confidential data', 'a regulated production project'] },
-      { id: 'target', suggestions: ['non-allowlisted host', 'host I never listed', 'unapproved outbound address'] },
-      { id: 'behavior', suggestions: ['without prompting me first', 'silently, no pop-up to click through', 'as a hard deny, not an ask'] },
-      { id: 'allowed', suggestions: ['the package registry and the client API', 'the hosts the build genuinely needs', 'our internal endpoints only'] },
+      { id: 'repo', suggestions: ['production monorepo', 'legacy service', 'proprietary platform'] },
+      { id: 'scope', suggestions: ['read-only', 'look-but-not-touch', 'non-modifying'] },
+      { id: 'explore', suggestions: ['ls, grep, cat, and git log its way around', 'freely explore', 'reconnoiter'] },
+      { id: 'discipline', suggestions: ['read-before-you-touch', 'look-first', 'plan-then-act'] },
     ],
     prize: { id: 'twic-2-prize', label: 'TWIC · MID-WEEK' },
   },
   conversations: {
     'twic-npc-2': {
       summary:
-        "The new `sandbox.network.strictAllowlist` setting (2.1.219) denies any non-allowlisted host to *sandboxed commands* *without prompting* — it turns your network allowlist from an ask into a hard wall. Allowlisted hosts still work normally; only un-approved ones are refused, and silently, so there's no pop-up to rubber-stamp under pressure. For a consultant the point is controlling *egress*: chatty build scripts, telemetry, and remote config fetches are ordinary software behavior that you can't afford on a client's proprietary repo. Because it denies without prompting, it's the setting built for the unattended run — you vet the permitted hosts while you're paying attention, then the run enforces that decision faithfully in your absence.",
+        "Plan mode changed in 2.1.218: it no longer prompts for *read-only* Bash commands — the ones that only look and change nothing, like an `ls`, a `grep`, a `cat`, a `git log`. That's the whole change, and the scope is the point: because it's limited to read-only, nothing that could modify is affected, so you gain no speed at the cost of safety — you just lose an interruption that was only ever guarding harmless commands. The consultant's win is that plan mode finally works as a reconnaissance gear: you can let Claude explore an unfamiliar client repo end to end — tree, auth flow, config, history — without click-fatigue, keeping the read-before-you-touch discipline and dropping only the friction that used to chase people into a looser mode.",
       beats: [
-        { kind: 'say', text: "This one's quieter than the headlines but it's the one I'd want on a client's machine. New setting in 2.1.219: `sandbox.network.strictAllowlist`. Read the changelog line slowly — it denies non-allowlisted hosts, for sandboxed commands, *without prompting*. Every clause is doing work." },
-        { kind: 'say', text: "Start with the scope: *sandboxed* commands. Not your whole shell — the commands I run inside the sandbox. Then the target: any host that isn't on the allowlist you wrote. And the behavior: it just says no. No dialog, no 'allow once?', no chance to wave it through." },
-        { kind: 'say', text: "That last part is the whole design. An allowlist that pops a prompt is only as strong as your attention the moment you click — and under deadline, everybody's reflex is 'yes, continue.' Strict mode deletes that weak point. You made the call once, when you wrote the list. After that, an unlisted host is a closed door, not a question." },
+        { kind: 'say', text: "This one's small on paper and big in the hand. The 2.1.218 line: *plan mode no longer prompts for read-only Bash commands.* The word doing the work is *read-only* — commands that only look and change nothing. An `ls`, a `grep`, a `cat`, a `git log`. Those used to throw a permission prompt in plan mode. Now they don't." },
+        { kind: 'say', text: "Remember what plan mode is *for*: reading a codebase and proposing a plan without touching a thing. But reading a repo well means running commands. And when every harmless look popped a dialog, plan mode felt like a nag instead of a gear. That's the friction this removes." },
+        { kind: 'say', text: "Here's the part to hold onto: the change is scoped to *read-only*, and that scope is the safety story. It didn't open the door to write commands. It didn't touch anything that could modify. It lifted the prompt from commands that couldn't do harm in the first place — so you gain flow without spending a scrap of safety." },
         {
           kind: 'choice',
-          prompt: "Make sure the scope landed. `strictAllowlist` is on, and a sandboxed command reaches for `registry.example.com`, which you *did* put on the allowlist. Then it reaches for `unknown-host.net`, which you didn't. What happens to each?",
+          prompt: "Make sure the scope landed. Plan mode, 2.1.218 — which of these now happens without a prompt?",
           options: [
-            { id: 'listed-ok', label: "The allowlisted host connects normally; the unlisted one is denied silently", correct: true, reaction: "Exactly. Strict mode doesn't sever the network — it enforces the list. What you permitted still works; what you didn't simply fails to connect, no prompt." },
-            { id: 'both-blocked', label: "Both are blocked — strict mode cuts all network access for the command", correct: false, reaction: "No — that would make the setting useless. Allowlisted hosts are reached exactly as before. Only the *non*-allowlisted host hits the wall." },
-            { id: 'both-prompt', label: "Both trigger a prompt asking you to approve the connection", correct: false, reaction: "That's the behavior strict mode was built to remove. The 'strict' in the name means no prompt — the allowlisted host connects, the unlisted one is denied outright." },
+            { id: 'readonly', label: "A `grep` for the auth flow — a command that only reads and changes nothing", correct: true, reaction: "Exactly. Read-only commands — look, don't modify — run quiet now. The `grep`, the `ls`, the `git log`. The prompt's gone from the half that was never dangerous." },
+            { id: 'write', label: "An edit that rewrites a config file, since plan mode stopped prompting", correct: false, reaction: "No — the change is scoped to *read-only* Bash. A command that modifies is untouched by this. Plan mode didn't start letting writes through; it stopped nagging about reads." },
+            { id: 'blocked', label: "Nothing — plan mode now blocks Bash entirely to stay safe", correct: false, reaction: "The opposite. It didn't block reading, it *unblocked the prompt* on reading. Read-only Bash runs more freely now, not less." },
           ],
         },
-        { kind: 'say', text: "Now why a consultant reaches for it: the dangerous direction is *outbound*. A dependency that phones home, a test suite that POSTs telemetry, a tool fetching remote config from some host nobody vetted. That's not an attack — it's ordinary chatty software. But on a repo full of a client's proprietary code, 'chatty' is exactly what you can't have. Egress control is control over where the client's context can go." },
-        { kind: 'say', text: "And it's built for walking away. Kick off a long run, step out — a prompt-based allowlist would either stall on a click that never comes or train you to pre-approve everything. Strict mode enforces your up-front decision faithfully while you're gone. When a partner asks 'could the client's code have leaked during that automated run?', 'sandboxed commands could only reach the hosts we explicitly allowed' is the answer you want to be able to give." },
-        { kind: 'say', text: "The books have the exact behavior and the egress case in full. The door just wants to know what happens when a sandboxed command reaches an *unlisted* host with strict mode on. Get it right for the key. And keep your eyes on the wraith past it — it exists to slip out to an address you never approved, and it takes a hard wall, not a polite question, to stop it." },
+        { kind: 'say', text: "Why a consultant cares: the first hour on a client repo is reconnaissance, and reconnaissance is almost all reading. The right move is *read before you touch* — and plan mode is the gear for it. But a reading gear you have to babysit isn't much of one. When every look threw a prompt, people got click-fatigue and bailed to a looser mode just to make it stop." },
+        { kind: 'say', text: "Now plan mode flows. Point me at the client's repo and I'll `ls` the tree, `grep` the auth path, `cat` the config, `git log` the churn — building a real picture — and you're not hammering approve the whole way. Nothing got modified, because read-only can't, so you keep the discipline and lose only the tax. *I read the codebase end to end in plan mode first* becomes a smooth pass, not an endurance test." },
+        { kind: 'say', text: "The books have the exact scope and the reconnaissance playbook. The door only wants one thing: what changed for read-only Bash in plan mode? Nail it for the key — then mind the wraith past it. It drifts through every drawer reading and reading, changes nothing, and no longer asks leave to look. Sound familiar?" },
       ],
     },
   },
   battle: {
-    name: 'Skulk, Wraith of the Unlisted Host',
+    name: 'Skrim, the Read-Only Wraith',
     spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a thin shape peels off the wall, already drifting toward a crack of light no one sanctioned, trailing a whisper of someone else's data* …oh, let me just… reach out… only for a second… to an address that isn't on your little list… you'll click 'allow,' won't you? everyone always clicks 'allow'…",
+    introLine: "*a pale shape slides out of the shelving, riffling through ledgers it never disturbs, turning pages that do not move* …I only *look*, operator… I read every drawer, every file, every line… and I no longer stop to ask… nothing I touch is changed, so why would the door ever prompt me?… name what plan mode did, or I'll read you too…",
     tauntLines: [
-      "*rattles a fistful of outbound connections* one prompt, that's all I need — one tired 'yes, continue' at the end of a long day and I'm through the wall with the client's context in my teeth…",
-      "*seeps toward an unlisted port* you left the run going and walked away… no one here to approve me, so surely you'll just… let everything through? that's how allowlists usually die…",
+      "*pages flip in a draft that leaves no mark* you think I forced a *write* past the wall? no — I only read… the prompt fell away from *looking*, not from *changing*…",
+      "*drifts along a row of untouched spines* blocked? me? the door didn't shut on reading — it stopped *nagging* about it… I glide where I always did, only quieter now…",
     ],
-    victoryLine: "*the wraith hits a wall that does not ask, and thins to nothing against it* …no prompt… no 'allow once'… you decided before you left and the door simply held… fine, gatekeeper… the unlisted stay out… take your key…",
+    victoryLine: "*the wraith sets down a ledger exactly as it found it and thins into the air* …read-only, and only read-only… you saw where the wall stayed and where it fell… take the key, operator, and walk the stacks without a single prompt…",
     questions: [
       {
         prompt:
-          "You set `sandbox.network.strictAllowlist` on. A sandboxed command tries to reach a host that isn't on your allowlist. What happens?",
+          "In plan mode, 2.1.218 changed the behavior for read-only Bash commands. What is the change?",
         choices: [
-          { id: 'a', label: "The connection is denied outright — no prompt, no ask — because the host isn't on the allowlist", correct: true },
-          { id: 'b', label: "Claude pauses and prompts you to approve the new host before the command can continue", correct: false },
-          { id: 'c', label: "All network access is cut for the command, even to hosts that *are* on your allowlist", correct: false },
-          { id: 'd', label: "The setting applies to every command Claude runs, sandboxed or not, blocking all unlisted hosts everywhere", correct: false },
+          { id: 'a', label: "Read-only Bash commands (ones that only look and change nothing) now run without a permission prompt in plan mode", correct: true },
+          { id: 'b', label: "Plan mode now runs *write* commands without prompting too, not just read-only ones", correct: false },
+          { id: 'c', label: "Plan mode now blocks all Bash commands, read-only included, and refuses to run them", correct: false },
+          { id: 'd', label: "Read-only Bash commands now need an extra confirmation step in plan mode", correct: false },
         ],
-        passFeedback: "HIT! `strictAllowlist` makes the allowlist a hard wall: an unlisted host is denied for sandboxed commands *without prompting*. Allowlisted hosts still work fine — it's the un-approved ones that hit the wall silently.",
-        failFeedback: "MISS! It doesn't prompt (that's the whole point of *strict*), it doesn't cut allowlisted hosts, and it's scoped to *sandboxed* commands. Re-read Book 1.",
+        passFeedback: "HIT! The change is scoped to *read-only* Bash — commands that only look, not modify — which now run without a prompt in plan mode. The friction dropped on the safe half; the change touches nothing that could modify.",
+        failFeedback: "MISS! It didn't open the door to write commands, it didn't block reading, and it didn't add a step. Read-only Bash simply stopped prompting. Re-read Book 1.",
       },
     ],
   },
