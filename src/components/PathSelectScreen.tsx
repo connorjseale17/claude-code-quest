@@ -44,9 +44,8 @@ export function PathSelectScreen() {
   };
 
   useEffect(() => {
-    // Cowork is greyed out (coming soon) pending its map redesign, so it's
-    // excluded here — keyboard focus only lands on selectable tiles.
-    const ORDER: Choice[] = ['quest', 'twic'];
+    // Left-to-right visual order, so ←/→ walks the tiles as they're rendered.
+    const ORDER: Choice[] = ['quest', 'cowork', 'twic'];
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'a' || e.key === 'w') {
         e.preventDefault();
@@ -94,13 +93,12 @@ export function PathSelectScreen() {
           />
           <PathTile
             label="COWORK QUEST"
-            description="Learn Claude Cowork across seven modules — built for consultants. In development; a new map design is on the way."
-            badge="COMING SOON"
+            description="Learn Claude Cowork across seven modules — built for consultants. Delegate the work, collect the finished files."
+            badge="7 MODULES · NEW"
             accent={coworkAccent}
-            disabled
-            focused={false}
-            onHover={() => {}}
-            onClick={() => {}}
+            focused={focused === 'cowork'}
+            onHover={() => setFocused('cowork')}
+            onClick={() => select('cowork')}
           />
           <PathTile
             label="THIS WEEK IN CLAUDE"
