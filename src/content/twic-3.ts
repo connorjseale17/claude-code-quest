@@ -1,129 +1,133 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — `/usage` per-category breakdown: see your usage split
- * across skills, subagents, plugins, and MCP servers, so you can tell which
- * part of your setup is driving you toward your limits.
+ * twic-3 (Feature C) — MCP failures now surface the HTTP status and error text:
+ * when an MCP server fails, `/mcp` and `claude mcp list` now show the actual
+ * HTTP status code and error message (not a bare "unavailable"), and headless
+ * stream-json runs get the same detail via a new `mcp_server_errors` field on
+ * the init event.
+ * Sources (Claude Code CHANGELOG 2.1.219):
+ *   - "Added HTTP status and error text to `claude mcp list` and `/mcp` on failures"
+ *   - "Added `mcp_server_errors` to headless stream-json init event"
  * Final room — door target routes to the TwicStampScreen via currentTrack.
- * Source: Claude Code CHANGELOG 2.1.149 ("`/usage` per-category breakdown
- * (skills/subagents/plugins/MCP-server) limits-usage driving") and 2.1.174
- * (VSCode `/usage` dialog per-skill/agent/plugin/MCP cost breakdown).
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Final room of the issue. The Beat Reporter closes the week with the question every heavy user eventually asks: where is all my usage actually going? The `/usage` command now answers it with a per-category breakdown — your consumption split across skills, subagents, plugins, and MCP servers, so you can see which part of your setup is driving you toward your limits. The two pages on the desk cover how to read that itemized view and how a consultant uses it to find and trim the expensive piece, then the door asks its question — and curled around the key is a wyrm sitting on a hoard it never bothered to count.",
+    "Final room of the issue, and the Beat Reporter closes on a builder's relief: MCP servers can no longer fail in silence. When a server won't connect, `/mcp` and `claude mcp list` now show you the actual HTTP status code and the error text behind it — and headless runs get the same detail through a new `mcp_server_errors` field on the stream-json init event. No more staring at a bare 'unavailable' and guessing. The two books cover exactly what surfaces on a failure and how a consultant reads a status code to fix a client's broken connection in one look. Beat the door's question for the key that finishes the issue — and mind the wyrm beyond it, a hoarder of silent faults that would rather die than tell you *why* it failed.",
   prompt:
-    "You run `/usage` mid-session and it shows a per-category breakdown. What is that breakdown actually telling you?",
+    "In 2.1.219, when an MCP server fails to connect, what do `/mcp` and `claude mcp list` now show you?",
   choices: [
-    { id: 'a', label: 'Where your consumption is going — split across skills, subagents, plugins, and MCP servers — so you can see which part of your setup is driving you toward your limits', correct: true },
-    { id: 'b', label: 'A client-ready invoice in dollars for the engagement, itemized and ready to send', correct: false },
-    { id: 'c', label: 'How much of the current message\'s context window is still free', correct: false },
-    { id: 'd', label: "A leaderboard of which people on your team account used Claude the most this month", correct: false },
+    { id: 'a', label: "The actual HTTP status code and the error text of the failure", correct: true },
+    { id: 'b', label: "Nothing — the server is silently disabled to keep the output clean", correct: false },
+    { id: 'c', label: "A generic 'server unavailable' line with no status code or detail", correct: false },
+    { id: 'd', label: "Only a retry countdown, while the connection is retried automatically until it works", correct: false },
   ],
-  passFeedback: 'HIT! `/usage` splits your own consumption by category — skills, subagents, plugins, MCP servers — so you can see exactly which part of your setup is eating into your limits.',
-  failFeedback: "MISS! It isn't a client invoice, it isn't your context window, and it isn't a per-person leaderboard. It's a per-category breakdown of your own usage against your limits — re-read the books.",
+  passFeedback: "HIT! On a failure, `/mcp` and `claude mcp list` now surface the HTTP status *and* the error text — the diagnostic detail that points you straight at the cause. Headless runs get the same via the new `mcp_server_errors` init field.",
+  failFeedback: "MISS! It doesn't hide the failure, it isn't a bare generic line anymore, and it doesn't just silently retry. The status code and error text are exactly what now appears. Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**\`/usage\` — Reading the Itemized Bill of Your Own Session**
+      text: `**MCP Failures Learn to Speak — Status and Error Text on Every Fault**
 
-**From one number to a breakdown**
+**What the changelog added**
 
-For a long time, usage was a single undifferentiated figure: you were some percentage of the way through your limits, with no clue what got you there. The \`/usage\` command now itemizes it. Run it in a session and instead of one lump total you get a *per-category breakdown* — your consumption sorted into buckets, so the question shifts from "how much have I used" to "what used it." That second question is the one you can actually act on.
+Two lines from 2.1.219 make one story. First: *"Added HTTP status and error text to \`claude mcp list\` and \`/mcp\` on failures."* Second: *"Added \`mcp_server_errors\` to headless stream-json init event."* An MCP server is an outside tool Claude connects to — a data source, an API, a service — and like anything on a network it can fail to come up. Before this release, a failed server told you almost nothing. After it, the two surfaces you actually use to check on servers — the interactive \`/mcp\` view and the \`claude mcp list\` command — now print the real HTTP status code and the error text the server returned.
 
-**The four categories it splits across**
+**The same detail, headless**
 
-The breakdown sorts your usage into the parts of your setup that do the consuming: *skills, subagents, plugins, and MCP servers*. Each line tells you how much of your total a given category is responsible for. A skill that fires constantly, a subagent you spin up for every task, a chatty MCP server that pulls in a wall of context on each call — they all show up here as their own line items, instead of hiding inside one anonymous total. It's the difference between a credit-card balance and an itemized statement.
+The second line carries that fix into automation. A headless run started with stream-json output now receives a \`mcp_server_errors\` field on its init event, so a pipeline that boots with a broken server connection isn't left guessing any more than a human at the terminal is. The failure detail is delivered in the machine-readable stream at startup, right where an automated integration can read it, log it, and decide what to do — instead of silently proceeding as though every tool came up fine.
 
-**Where you can read it**
+**From "it's broken" to "here's why"**
 
-It meets you where you work. In the terminal, \`/usage\` brings up the breakdown inline. In the editor integration, the VS Code \`/usage\` dialog shows the same per-skill, per-agent, per-plugin, per-MCP cost split in a panel. Either way it's reading the same thing — your usage, decomposed — so you can glance at it without leaving the session you're in.
+The value is the jump from a verdict to a diagnosis. A bare *server unavailable* tells you only that something is wrong; an HTTP status plus the server's own error text tells you *what*. The response the server sent — its status line and message — is precisely the information that separates a five-second fix from a blind afternoon, and now it rides along with the failure instead of being swallowed by it.
 
-> Takeaway: \`/usage\` turns one anonymous usage total into an itemized breakdown across skills, subagents, plugins, and MCP servers, so you can see not just how much you've used but exactly what used it.`,
+> Takeaway: When an MCP server fails, \`/mcp\` and \`claude mcp list\` now show the real HTTP status and error text, and headless runs get the same through a new \`mcp_server_errors\` init field — the failure tells you *why*, not just *that*.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**Finding the Expensive Part of Your Setup — Before It Finds You**
+      text: `**Reading the Status Code — Fixing a Client's MCP Connection in One Look**
 
-**The long engagement and the creeping limit**
+**Every engagement wires up tools**
 
-On a multi-week engagement you live in Claude Code, and usage adds up. There's a particular bad afternoon where you bump your limits mid-task and the work stalls — and if all you have is a single percentage, you're flying blind about what to cut. The \`/usage\` breakdown turns that panic into a diagnosis. Open it, read the line items, and the hog is usually obvious: one MCP server pulling a huge payload on every call, or a skill firing far more often than its value justifies. You can't trim what you can't see; \`/usage\` is the seeing.
+Book 1 covered what now surfaces; here's what a consultant does with it. Real work means connecting Claude to a client's actual tools — their issue tracker, their code host, their database, an internal API behind their auth. Every one of those connections is a place a setup can go wrong, and on a client's clock a broken tool that won't say why is a genuine time sink. The old failure gave you a shrug. The new one hands you the server's own words.
 
-**Measure before you cut**
+**The status code points at the fix**
 
-The discipline the breakdown rewards is the same one good engineers apply to performance: profile before you optimize. It's tempting to guess which plugin or server is the costly one and rip it out — and easy to guess wrong, killing something cheap while the real culprit keeps eating. Run \`/usage\` first. Let the itemized view name the actual top consumer, *then* decide: disable it, swap it for something lighter, or scope it down so it only loads when the task needs it. The reading comes before the surgery.
+That detail turns guesswork into triage, because the HTTP status is a signpost. A response in the 400s generally means the request itself was the problem — an authentication failure or a resource that wasn't found points you at a bad token or a wrong URL in your own config. A response in the 500s generally means the server accepted the request but failed on its end — the trouble is on the client's side of the wire, not your setup. You still confirm against the error text the server sent, but the code alone tells you which side of the connection to start on, and that first fork is most of the battle.
 
-**Justifying what you keep**
+**A better answer for the partner**
 
-There's a quieter use that matters on client work. Not every expensive line item is waste — sometimes the costly MCP server is exactly the one earning its keep, and the breakdown lets you say so with evidence instead of a shrug. When a partner asks why this engagement is burning through capacity, "the data-warehouse connector accounts for most of it, and it's the reason we ship analysis in hours not days" is a defensible answer. \`/usage\` gives you the receipts to defend the budget, not just the warning that you're near it.
+The headless field extends the same triage to the runs nobody is watching. An automated pipeline that reads \`mcp_server_errors\` at startup can catch a dead connection and surface it — fail loudly, log the status — instead of running to completion as if a missing tool never mattered. When a partner asks why last night's automation came back thin, *the client's database server returned a 500 at connect, here's the line* is a report you can act on. *One of the tools didn't work, not sure which* is not.
 
-> Takeaway: Run \`/usage\` to profile your setup before you trim it — let the itemized breakdown name the real top consumer, then cut, swap, or justify it on evidence instead of a guess.`,
+> Takeaway: Read the surfaced status code to triage a broken MCP connection in one look — 400s point back at your own config, 500s at the server — and let the headless \`mcp_server_errors\` field turn an unattended run's silent tool failure into a loud, logged, actionable one.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `We're three weeks into this engagement and I keep bumping my limits mid-task — I need to know what's eating them.
-Run /usage and pull up the per-category breakdown across ____.
-Tell me which single ____ is the top consumer right now.
-Before we cut anything, confirm it with the numbers — I don't want to ____ and leave the real culprit running.
-Once we know the hog, we decide whether to ____.`,
+    template: `I've wired Claude up to the client's ____ over MCP, and on startup the server won't connect.
+Instead of guessing, I'll open ____ (or run \`claude mcp list\`) and read the HTTP
+status and error text it now prints.
+The status code tells me which side to start on: a ____ points back at my own config —
+a bad token or a wrong URL — while a 500 points at the server itself.
+And for the overnight pipeline, I'll have it read the ____ field so a dead
+connection fails loudly instead of running blind.`,
     blanks: [
-      { id: 'categories', suggestions: ['skills, subagents, plugins, and MCP servers', 'every category in my setup', 'the four usage buckets'] },
-      { id: 'lineitem', suggestions: ['MCP server', 'skill', 'plugin'] },
-      { id: 'mistake', suggestions: ['guess wrong', 'rip out something cheap', 'optimize blind'] },
-      { id: 'decision', suggestions: ['disable it, swap it, or scope it down', 'trim it or justify keeping it', 'load it only when the task needs it'] },
+      { id: 'tool', suggestions: ['issue tracker', 'internal API', 'production database'] },
+      { id: 'surface', suggestions: ['/mcp', 'the /mcp view', 'the MCP status panel'] },
+      { id: 'status', suggestions: ['401 or 404', '4xx', 'client-side status'] },
+      { id: 'field', suggestions: ['mcp_server_errors', 'stream-json init', 'headless init'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "`/usage` (per-category breakdown shipped in 2.1.149) turns a single usage total into an itemized view, splitting your consumption across skills, subagents, plugins, and MCP servers so you can see what's driving you toward your limits. It reads inline in the terminal and in the VS Code `/usage` dialog. The consultant's move is to profile before you cut: when a long engagement bumps your limits, run `/usage`, let the breakdown name the real top consumer, then disable, swap, or scope it down — instead of guessing and ripping out the wrong thing. The same receipts let you justify an expensive line item that's genuinely earning its keep.",
+        "MCP failures got loud in 2.1.219: when a server won't connect, `/mcp` and `claude mcp list` now print the actual HTTP status code and the server's error text, and headless stream-json runs get the same detail through a new `mcp_server_errors` field on the init event. The jump is from a verdict to a diagnosis — a bare 'unavailable' told you *that* something broke; a status plus error text tells you *what*. For a consultant wiring Claude to a client's issue tracker, database, or internal API, the status code is a signpost: 400s (auth failure, not found) point back at your own config — a bad token or wrong URL — while 500s point at the server's side of the wire. And the headless field lets an unattended pipeline catch a dead connection and fail loudly instead of running blind.",
       beats: [
-        { kind: 'say', text: "Last story of the week answers a question every heavy user hits eventually: where is all my usage actually going? `/usage` now shows a per-category breakdown instead of one anonymous total." },
-        { kind: 'say', text: "It sorts your consumption into the parts of your setup that do the consuming — skills, subagents, plugins, and MCP servers. Each gets its own line, so a chatty MCP server or a skill that fires constantly can't hide inside the lump sum anymore. Credit-card balance versus itemized statement." },
-        { kind: 'say', text: "And it meets you where you work: inline in the terminal, or in the VS Code `/usage` dialog with the same per-skill, per-agent, per-plugin, per-MCP split. Same reading, wherever you're sitting." },
+        { kind: 'say', text: "Last story of the issue, and it's one every builder has cursed about. MCP servers — the outside tools I connect to, a database, an API, a code host — used to fail *silently*. You'd see a server was down and get… nothing useful about why. Two lines in 2.1.219 fix that." },
+        { kind: 'say', text: "First line: `/mcp` and `claude mcp list` now show the HTTP status *and* the error text when a server fails. So instead of a bare 'unavailable,' you get the status code the server returned and the message that came with it. The failure finally speaks." },
+        { kind: 'say', text: "Second line carries it into automation: a headless stream-json run now gets a `mcp_server_errors` field on its init event. A pipeline that boots with a broken connection isn't guessing any more than you are at the terminal — the failure detail arrives in the stream at startup, ready to log and act on." },
         {
           kind: 'choice',
-          prompt: "Quick check before the door. You're three weeks into an engagement and you keep bumping your limits mid-task. What's the right first move?",
+          prompt: "Before the door — a client's MCP server fails at connect and you see an HTTP 401 in `/mcp`. Where do you start?",
           options: [
-            { id: 'profile', label: 'Run `/usage`, read the breakdown, and let it name the actual top consumer before cutting anything', correct: true, reaction: "Exactly. Profile before you optimize. The itemized view tells you which server or skill is the hog, so you cut the right thing instead of guessing." },
-            { id: 'guess', label: 'Disable whichever plugin you *think* is heaviest and hope it helps', correct: false, reaction: "That's the trap. Guess wrong and you kill something cheap while the real culprit keeps eating. Read the breakdown first — the numbers name the hog." },
-            { id: 'wait', label: 'Just wait for the limits to reset and carry on', correct: false, reaction: "And bump them again tomorrow. The breakdown exists so you don't have to keep stalling — find the consumer, then trim or scope it down." },
+            { id: 'config', label: "My own config — a 401 is an auth failure, so I check the token and credentials I set", correct: true, reaction: "Right. A 401 says the server rejected *my* request — bad or missing auth. The status points back at your side: fix the token or the credentials in your config." },
+            { id: 'server', label: "The client's server — a 401 means their service crashed", correct: false, reaction: "Not quite. A crash on their end is a 500. A 401 is an *auth* failure — the server's up, it just refused your request. Start with your token." },
+            { id: 'wait', label: "Nowhere — just wait, it'll retry itself until it connects", correct: false, reaction: "It won't silently fix an auth problem by retrying. The whole point of the new output is that the 401 tells you *what* to fix — the credentials — so you fix it instead of waiting." },
           ],
         },
-        { kind: 'say', text: "So the discipline is the one good engineers use on performance: measure before you cut. Let `/usage` name the real top consumer, *then* decide — disable it, swap it for something lighter, or scope it so it only loads when the task needs it." },
-        { kind: 'say', text: "One more angle that matters on client work: not every expensive line is waste. Sometimes the costly MCP server is the one earning its keep — and the breakdown lets you say so with evidence. 'The data-warehouse connector is most of it, and it's why we ship analysis in hours' is a defensible answer when a partner asks." },
-        { kind: 'say', text: "That's the issue. The books on the desk have the four categories and the profile-before-you-cut playbook. The door wants to know what that per-category breakdown is really telling you — answer it, and the wyrm gives up the last key of the week." },
+        { kind: 'say', text: "That's the real gift: the status code is a signpost. Roughly, a 4xx means the request was the problem — an auth failure or a not-found points at a bad token or a wrong URL in *your* config. A 5xx means the server took the request and fell over on *its* end — the trouble's on the client's side of the wire. Confirm against the error text, but the code alone tells you which side to start on. That first fork is most of the battle." },
+        { kind: 'say', text: "And it scales to the runs nobody's watching. An overnight pipeline that reads `mcp_server_errors` at startup can catch a dead connection and shout about it — fail loud, log the status — instead of finishing as though a missing tool never mattered. When a partner asks why last night's automation came back thin, 'the client's database returned a 500 at connect, here's the line' is a report you can act on. 'One of the tools didn't work, not sure which' isn't." },
+        { kind: 'say', text: "The books have the exact surfaces and the status-code triage in full. The door wants one fact: what do `/mcp` and `claude mcp list` now show on a failure? Answer it for the key that finishes the whole issue — then face the wyrm. It hoards silent faults and would sooner die than tell you *why* it fell over. Make it speak its status." },
       ],
     },
   },
   battle: {
-    name: 'Tally, the Unaccounted Wyrm',
+    name: 'Silens, the Opaque Wyrm',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*coils tighter around a hoard it has never once counted* …you burned through all of it and you still can't tell me where it went… good… stay blind, and the pile stays mine…",
+    introLine: "*the wyrm coils on a hoard of dead connections, each one a failure that never said why — it fixes you with an unblinking eye and offers nothing, no reason, no code* …unavailable… that is all you'll get from me, operator… I fail, and I keep my silence… no status, no message, only the shrug… guess your way past me if you can…",
     tauntLines: [
-      "*fans gold across the floor in one undifferentiated heap* an invoice? a context window? you're naming the wrong pile — that's not what the breakdown counts…",
-      "*snorts smoke over the coins* keep guessing which plugin is the heavy one… guess wrong and you'll trim the cheap one while I keep eating…",
+      "*a low, withholding hiss* you want a *number*? an error line? I gave your kind 'unavailable' for years and you thanked me for it… why would I start speaking now…",
+      "*coils tighten over a heap of unlogged faults* retry me, wait on me, guess at me — anything but *read* me… a silent failure is the only wall I have left…",
     ],
-    victoryLine: "*the hoard sorts itself into neat, labeled stacks — skills, subagents, plugins, servers* …you read the itemized pile… now you know exactly what was eating it… take the key, accountant…",
+    victoryLine: "*the wyrm's silence breaks — a status code rings out, an error line spills across the hoard, and it sags as every fault names itself at last* …four-oh-one… five hundred… the request, the server, spoken plain… you made me *say* why… take the key, operator… the issue is yours…",
     questions: [
       {
         prompt:
-          "You run `/usage` mid-session and it shows a per-category breakdown. What is that breakdown actually telling you?",
+          "In 2.1.219, when an MCP server fails to connect, what do `/mcp` and `claude mcp list` now show you?",
         choices: [
-          { id: 'a', label: 'Where your consumption is going — split across skills, subagents, plugins, and MCP servers — so you can see which part of your setup is driving you toward your limits', correct: true },
-          { id: 'b', label: 'A client-ready invoice in dollars for the engagement, itemized and ready to send', correct: false },
-          { id: 'c', label: 'How much of the current message\'s context window is still free', correct: false },
-          { id: 'd', label: "A leaderboard of which people on your team account used Claude the most this month", correct: false },
+          { id: 'a', label: "The actual HTTP status code and the error text of the failure", correct: true },
+          { id: 'b', label: "Nothing — the server is silently disabled to keep the output clean", correct: false },
+          { id: 'c', label: "A generic 'server unavailable' line with no status code or detail", correct: false },
+          { id: 'd', label: "Only a retry countdown, while the connection is retried automatically until it works", correct: false },
         ],
-        passFeedback: 'HIT! `/usage` splits your own consumption by category — skills, subagents, plugins, MCP servers — so you can see exactly which part of your setup is eating into your limits.',
-        failFeedback: "MISS! It isn't a client invoice, it isn't your context window, and it isn't a per-person leaderboard. It's a per-category breakdown of your own usage against your limits — re-read the books.",
+        passFeedback: "HIT! On a failure, `/mcp` and `claude mcp list` now surface the HTTP status *and* the error text — the diagnostic detail that points you straight at the cause. Headless runs get the same via the new `mcp_server_errors` init field.",
+        failFeedback: "MISS! It doesn't hide the failure, it isn't a bare generic line anymore, and it doesn't just silently retry. The status code and error text are exactly what now appears. Re-read Book 1.",
       },
     ],
   },

@@ -1,127 +1,130 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — `--safe-mode`: launch Claude Code with your own
- * customizations switched off, so you run a vanilla session. Also available as
- * the `CLAUDE_CODE_SAFE_MODE` environment variable for non-interactive runs.
- * Source: Claude Code CHANGELOG 2.1.169 ("`--safe-mode` flag and
- * `CLAUDE_CODE_SAFE_MODE` environment variable for customization disabling").
+ * twic-1 (Feature A) — Nested subagents to depth 3: subagents can now spawn
+ * their own nested subagents up to three levels deep (previously capped at 1),
+ * and stream-json forwards the deeper levels' events so a headless run can
+ * still observe the whole delegation tree.
+ * Sources (Claude Code CHANGELOG 2.1.219):
+ *   - "Subagents can spawn nested subagents up to depth 3 (was 1)"
+ *   - "Added nested subagent forwarding in stream-json for depth-2+ spawned agents"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown. The Beat Reporter is opening with a quiet escape hatch most people don't notice until they badly need it: `--safe-mode`. Launch Claude Code with that flag — or set the matching `CLAUDE_CODE_SAFE_MODE` environment variable — and your own customizations stand down for the run, so you get a plain, vanilla session with nothing you've layered on top. Read the two pages on the desk for how the switch works and why a consultant keeps a clean room handy, then the door asks one question, and the thing guarding the key is wearing every plugin and hook you ever installed.",
+    "Room 1 of this week's rundown, and the Beat Reporter opens with a change to how work gets handed off. Subagents — the scoped workers your session delegates a job to — can now spawn subagents of their own, nested up to three levels deep, where the chain used to stop dead at one. The two books on the desk cover how far the tree descends and how a consultant maps a branching engagement onto it. Answer the door's one question for the key, and mind the thing rattling in the dark beyond it: a bonecaller that raises minions who raise minions who raise minions, three ranks down.",
   prompt:
-    "A colleague says Claude is acting strangely in their repo and can't tell whether it's Claude itself or something in their own setup. They relaunch with `--safe-mode`. What does that actually do?",
+    "The 2.1.219 changelog changed how deep subagents can nest. What is the change?",
   choices: [
-    { id: 'a', label: 'It starts the session with their own customizations — skills, hooks, plugins, custom commands — switched off, so they see vanilla Claude Code and can tell whether their config was the cause', correct: true },
-    { id: 'b', label: 'It permanently deletes their skills, hooks, and plugins from disk so they have to reinstall everything', correct: false },
-    { id: 'c', label: 'It drops Claude into a read-only mode where it can look at files but is forbidden from editing them', correct: false },
-    { id: 'd', label: 'It forces the session onto a smaller, safer model for the rest of the run', correct: false },
+    { id: 'a', label: "Subagents can now spawn their own nested subagents, up to depth 3 — where the nesting was previously capped at depth 1", correct: true },
+    { id: 'b', label: "The number of subagents you can run at the same time rose from 1 to 3", correct: false },
+    { id: 'c', label: "Subagents can now nest with no depth limit at all, recursing as far as the task needs", correct: false },
+    { id: 'd', label: "Nesting was removed — only the main session may spawn subagents now, for safety", correct: false },
   ],
-  passFeedback: 'HIT! Safe mode boots a vanilla session — your customizations switched off for that run — so anything strange that disappears was coming from your own config, not Claude itself.',
-  failFeedback: "MISS! It doesn't delete anything, it isn't a read-only mode, and it doesn't swap models. It just launches with your customizations stood down — re-read the books.",
+  passFeedback: "HIT! The line is precise: subagents can spawn nested subagents up to depth 3, where before the depth was 1. It's a change to nesting *depth* — a delegation tree three levels tall — not the count of parallel workers, and not an unbounded recursion.",
+  failFeedback: "MISS! It's not about how many subagents run at once, it isn't unlimited, and nesting wasn't removed. The nesting *depth* rose from 1 to 3. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**\`--safe-mode\` — Booting Claude Code With Your Customizations Switched Off**
+      text: `**Nested Subagents — Delegation Grows a Chain of Command**
 
-**A clean room you can launch on demand**
+**What the 2.1.219 line actually changed**
 
-Over time, a working Claude Code setup stops being plain. You accumulate *skills* you wrote, *hooks* that fire on edits and commits, *plugins* you installed from a marketplace, *custom slash commands*, and a settings file tuned to your taste. All of that makes you faster — until the day something behaves oddly and you can't tell whether the culprit is Claude or the scaffolding you built around it. \`--safe-mode\`, which shipped in the 2.1.169 release, is the switch that answers that question: it launches a session with your customizations *stood down*, leaving you with a plain, vanilla Claude Code.
+The changelog entry is a single clause: *"Subagents can spawn nested subagents up to depth 3 (was 1)."* Read it slowly, because the number that matters is the one in the parentheses. A subagent is a separate worker the main session hands a scoped job to. Until this release the nesting depth was capped at 1 — a subagent you spawned could do its work, but it could not itself hand off to a worker of its own. This release lifts that ceiling to 3: a subagent can now spawn a subagent, which can spawn one more.
 
-**One flag, or one environment variable**
+**Counting the levels**
 
-There are two ways in, and they map to two situations. The \`--safe-mode\` flag is the interactive route — you type it when you start Claude and the session you land in is the bare tool. The \`CLAUDE_CODE_SAFE_MODE\` environment variable is the same idea for the times you aren't typing the command yourself: a CI job, a script, a scheduled run, anywhere the launch is wired up ahead of time. Set the variable and every session that process spawns starts clean, no flag required.
+Picture the session as the top of a tree. The main conversation spawns a subagent — that is level one, the old limit. Now that level-one worker can spawn its own subagent (level two), and *that* one can spawn another (level three). Three ranks of delegation hang below the session you're actually sitting in. Past that the chain stops: depth 3 is the floor of the descent, not an open invitation to recurse forever.
 
-**It stands customizations down — it doesn't tear them out**
+**Seeing down the tree**
 
-The important nuance: safe mode is a *launch choice*, not a destructive one. Nothing is deleted. Your skills, hooks, plugins, and commands are all still on disk exactly where you left them; safe mode simply declines to load them for this run. Quit and relaunch without the flag and your whole setup is back, untouched. That's what makes it cheap to reach for — there's no cleanup afterward, no reinstalling, no risk to the configuration you spent months building.
+A deep tree is only useful if you can watch it work, and the release adds exactly that. The companion line — *"Added nested subagent forwarding in stream-json for depth-2+ spawned agents"* — means that in headless, stream-json runs the events from agents spawned at level two and below are forwarded up to you, instead of vanishing inside their parent. So an automated pipeline that fans work out three levels deep still reports what every worker is doing, rather than going quiet the moment the nesting passes the first rank.
 
-> Takeaway: \`--safe-mode\` (and \`CLAUDE_CODE_SAFE_MODE\`) boots a vanilla Claude Code with your customizations switched off for that run only — a clean room you can step into and out of with nothing lost.`,
+> Takeaway: Subagents can now spawn their own subagents up to three levels deep — a delegation tree, not a flat list — and stream-json forwards the deeper levels' events so you can still watch the whole chain work.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Keeping a Clean Room — Where \`--safe-mode\` Earns Its Keep**
+      text: `**Decomposing an Engagement — When One Delegate Needs Delegates**
 
-**Isolating the variable when something goes wrong**
+**Real work branches more than once**
 
-The first time safe mode pays for itself is a debugging moment. Claude does something unexpected — a hook rewrites a file you didn't want touched, a skill keeps firing on the wrong cue, output comes out mangled — and you're stuck guessing whether the tool is broken or your own setup is. Relaunch with \`--safe-mode\` and the question resolves itself in seconds. If the strange behavior *vanishes* in the clean room, it lived in your customizations, and now you know where to look. If it *persists*, your config is innocent and the issue is elsewhere. That's the oldest move in troubleshooting — remove the variables one layer at a time — packaged as a single flag.
+Book 1 covered how deep the tree can go; this is *when* you want the depth. A large engagement rarely splits cleanly into one flat list of tasks. You hand the main session a goal — *audit this client's platform before the migration* — and the natural first cut is a few broad workstreams: the API, the data layer, the front end. But each of those is itself too big for one worker. The API stream wants to fan out again, one worker per service, and a single service audit might fan out once more, one worker per endpoint. That is three levels of branching, and until now you had to flatten it into one list by hand.
 
-**Reproducing what a client actually sees**
+**Let the branches do their own branching**
 
-On an engagement, your personal setup is a liability when you're trying to reproduce someone else's experience. The client's developer hits a problem in their repo, but you can't trust your own session to mirror theirs, because yours is wrapped in skills and hooks they've never installed. Safe mode lets you stand in their shoes: a vanilla Claude Code, the same baseline they're running, with none of your private tooling coloring the result. "Works on my machine" stops being an excuse when you can drop to the same clean floor they're standing on.
+With nesting to depth 3 you can mirror the real shape of the problem instead of pre-chewing it. The main session spawns a worker per workstream; each workstream lead spawns a worker per service; each service worker spawns one per endpoint. Every level keeps its own scoped context — the endpoint worker isn't carrying the whole platform in its head, just its endpoint — which is exactly why the deep split earns its keep: focus stays tight at the leaves while the structure stays coherent at the trunk.
 
-**A trustworthy baseline for handoffs and demos**
+**Why the forwarding matters on a client's clock**
 
-There's a third use that's less about bugs and more about honesty. When you demo Claude Code to a client, or hand a repo to their team, you want them to see what *they'll* get, not a performance propped up by your custom commands. Running the demo in safe mode guarantees the thing on screen is the stock tool, reproducible by anyone. It's the difference between showing off your rig and showing the client the floor they'll actually walk in on.
+The observability half is what makes a deep tree safe to run unattended. When you kick a three-level audit off headless and step away, stream-json forwarding of the deeper agents means the run isn't a black box: you get back a full account of what every leaf worker found, not just a tidy summary from the three top-level leads. When a partner asks how thorough the audit really was, *every endpoint got its own dedicated pass, and here is the trace* is the answer the depth buys you.
 
-> Takeaway: Reach for safe mode whenever you need to trust the result — debugging your own setup, reproducing a client's session, or demoing the stock tool — and you remove every private variable in one move.`,
+> Takeaway: Use the three-level tree to mirror an engagement that branches more than once — workstream, service, endpoint — so each worker keeps a tight scope while the deeper levels still report back for an auditable, unattended run.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `Something's off — Claude keeps ____ in this repo and I can't tell if it's the tool or my own setup.
-Before we debug anything else, relaunch with --safe-mode so my ____ stand down and we're on a vanilla session.
-If the behavior ____ in the clean room, we know it was my config and we go hunting there.
-If it ____ even in safe mode, my setup is innocent and we look elsewhere.
-Either way, nothing of mine gets deleted — safe mode just declines to load it for this run.`,
+    template: `I'm scoping ____ for a client, and the job is too big for a single worker to hold.
+So I'll let the main session spawn a subagent per ____,
+and because subagents can now nest up to depth 3, each of those can spawn
+its own worker per ____ instead of me flattening the whole tree by hand.
+I'll run it headless and lean on stream-json forwarding, so the ____
+still report back — not just the top-level leads.`,
     blanks: [
-      { id: 'symptom', suggestions: ['rewriting files I never asked it to touch', 'firing a hook at the wrong moment', 'producing mangled output'] },
-      { id: 'customizations', suggestions: ['hooks and skills', 'plugins and custom commands', 'layered customizations'] },
-      { id: 'vanishes', suggestions: ['disappears', 'stops happening', 'clears up'] },
-      { id: 'persists', suggestions: ['still happens', 'persists', 'shows up anyway'] },
+      { id: 'engagement', suggestions: ['a platform-migration audit', 'a full security review', 'a legacy-code assessment'] },
+      { id: 'top-split', suggestions: ['workstream', 'major subsystem', 'client repo'] },
+      { id: 'deep-split', suggestions: ['service', 'module', 'endpoint'] },
+      { id: 'leaves', suggestions: ['deepest leaf workers', 'level-three agents', 'per-endpoint passes'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "`--safe-mode` (shipped in 2.1.169) launches Claude Code with your own customizations — skills, hooks, plugins, custom commands, tuned settings — switched off, so you get a vanilla session. The `CLAUDE_CODE_SAFE_MODE` environment variable does the same for non-interactive runs like CI. It's a launch choice, not a destructive one: nothing is deleted, and relaunching without the flag brings your whole setup back. Reach for it to isolate whether your own config is causing odd behavior, to reproduce the vanilla session a client actually sees, and to demo or hand off the stock tool honestly.",
+        "Nested subagents changed in 2.1.219: subagents can now spawn their own nested subagents up to depth 3, where the nesting was previously capped at 1. Count it as a tree — the main session spawns a subagent (level 1), that worker can spawn one (level 2), and that one can spawn another (level 3), then the chain stops. The companion change forwards depth-2+ agents' events in stream-json, so a headless run can still observe the deeper levels instead of them vanishing inside a parent. For a consultant, the depth lets you mirror an engagement that branches more than once — workstream, then service, then endpoint — with each worker holding a tight, scoped context; and the forwarding keeps an unattended, three-level run auditable rather than a black box.",
       beats: [
-        { kind: 'say', text: "First story this week is a small switch with an outsized payoff: `--safe-mode`, in since the 2.1.169 release. Start Claude with that flag and your customizations stand down — you land in a plain, vanilla session." },
-        { kind: 'say', text: "Think about everything you've layered on over time: skills you wrote, hooks that fire on edits and commits, plugins from a marketplace, custom slash commands, a settings file tuned just so. Safe mode loads *none* of it. Bare tool, nothing on top." },
-        { kind: 'say', text: "Two doors into the same room. The `--safe-mode` flag is for when you're typing the command yourself. The `CLAUDE_CODE_SAFE_MODE` environment variable is for when you're not — a CI job, a script, a scheduled run. Set the variable and every session that process starts comes up clean." },
+        { kind: 'say', text: "Top story this week isn't a new command — it's a change to how I hand work off. Subagents are the scoped workers I spin up for a job. The 2.1.219 line says they can now spawn *nested* subagents up to depth 3. The tell is the parenthetical: *was 1*. Until now a worker I spawned couldn't hand off to a worker of its own." },
+        { kind: 'say', text: "Count it as a tree. This session is the trunk. I spawn a subagent — that's level one, the old ceiling. Now that worker can spawn its own subagent, level two, and that one can spawn another, level three. Three ranks of delegation hang below the conversation you're in. Then it stops — three is the floor, not a licence to recurse forever." },
+        { kind: 'say', text: "A deep tree's no good if you can't see it work, so there's a companion change: nested subagent *forwarding* in stream-json for depth-2 and below. In a headless run, the events from those deeper workers get forwarded up to you instead of disappearing inside their parent. The whole chain stays visible." },
         {
           kind: 'choice',
-          prompt: "Gut-check before you walk through. You panic for a second — does `--safe-mode` mean your skills and plugins are gone?",
+          prompt: "Quick check before the 'why.' What exactly went from 1 to 3?",
           options: [
-            { id: 'deleted', label: 'Yes — it wipes them so I\'d have to reinstall everything', correct: false, reaction: "Breathe — no. Nothing's deleted. Safe mode is a launch choice; it just declines to *load* your setup for this run. It's all still on disk." },
-            { id: 'launch-choice', label: 'No — it just doesn\'t load them this run; relaunching without the flag brings everything back', correct: true, reaction: "Exactly. It's stood down, not torn out. Quit, relaunch without the flag, and your whole rig is back untouched. That's what makes it cheap to reach for." },
-            { id: 'readonly', label: 'It also stops Claude from editing files, like a read-only mode', correct: false, reaction: "Different thing entirely. Safe mode is about *your customizations*, not permissions. Claude can still read and write — it's just doing it as the stock tool." },
+            { id: 'depth', label: "The nesting *depth* — how many levels of subagents can stack below the session", correct: true, reaction: "Right. It's the height of the delegation tree. A worker can now spawn a worker that spawns a worker — three levels deep — where the nesting used to stop at one." },
+            { id: 'count', label: "The *number* of subagents you can run at the same time", correct: false, reaction: "That's a different dial. This line is about nesting *depth*, not how many run in parallel. A subagent can now spawn its own subagents, three levels down." },
+            { id: 'unlimited', label: "Nothing capped it before, and now it's unlimited", correct: false, reaction: "The opposite — it was capped at 1, and now it's capped at 3. Deeper, but still bounded. Three levels is the floor of the descent." },
           ],
         },
-        { kind: 'say', text: "Here's where it earns its keep. Something acts up — a hook touches a file it shouldn't, output comes out garbled — and you can't tell if it's Claude or your own scaffolding. Relaunch in safe mode. If the weirdness vanishes, it lived in your config. If it persists, your setup's innocent. You removed every variable in one flag." },
-        { kind: 'say', text: "On client work it's even better. Their developer hits a snag in their repo, but your session is wrapped in tooling they've never installed, so you can't trust yours to mirror theirs. Safe mode puts you on the same vanilla floor they're standing on — 'works on my machine' stops being an excuse." },
-        { kind: 'say', text: "And when you demo or hand off, run it clean so the client sees the stock tool, not a show propped up by your custom commands. The books on the desk have the flag-versus-variable split and the clean-room playbook. The door wants to know what `--safe-mode` actually does — answer that and the key's yours." },
+        { kind: 'say', text: "Now the payoff. Real engagements branch more than once. Say the goal is *audit this client's platform before the migration*. The first cut is a few workstreams — API, data, front end. But the API stream is too big for one worker, so it fans out per service; and a service audit fans out again, per endpoint. That's three levels — and now you can build it that way instead of flattening it in your head." },
+        { kind: 'say', text: "Each level keeps its own scoped context — the endpoint worker only carries its endpoint, not the whole platform — so focus stays tight at the leaves while the shape stays coherent at the trunk. And because stream-json forwards the deep levels, a headless three-level run isn't a black box: you get an account from every leaf, not just a summary from the three leads. That's the difference between *the audit was thorough* and *here's the trace proving it*." },
+        { kind: 'say', text: "The books have the level-counting and the decomposition playbook in full. The door just wants the one fact: what went from 1 to 3? Answer that for the key — then square up to the bonecaller past it. It raises minions who raise minions who raise minions, three ranks deep, and it's betting you can't tell nesting depth from a head count." },
       ],
     },
   },
   battle: {
-    name: 'Snarl, the Config-Draped Skeleton',
+    name: 'Marrowcall, the Thrice-Nested',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*clatters upright under a heap of borrowed plugins, dangling hooks, and half-loaded skills* …you can't even tell what's me anymore… is it the tool talking, or all this junk you bolted on…?",
+    introLine: "*a skeleton unfolds from the dark and lifts one hand — a smaller skeleton claws up from the floor, and it raises a smaller one still, three ranks deep before the echo fades* …I do not fight alone, operator… I raise a servant, who raises a servant, who raises one more… three deep, and no deeper… name what changed, or be added to the ranks…",
     tauntLines: [
-      "*shakes a fistful of tangled hooks* peel one off and you still won't know which layer lied to you…",
-      "*rattles a stack of installed plugins like loose ribs* keep every customization loaded, keep guessing forever — that's how I like you…",
+      "*the three ranks rattle in unison* you think this is a *head count*? count the depth, fool — one calls two calls three, a chain, not a crowd…",
+      "*a dry laugh travels down the line of bones* 'unlimited,' you say? no — I stop at three, always three… the ceiling rose from one, it did not vanish…",
     ],
-    victoryLine: "*the borrowed plugins and hooks slough off, leaving plain white bone* …safe mode… you stripped me back to vanilla and saw the truth… take the key, clean one…",
+    victoryLine: "*the deepest skeleton crumbles first, then the next, then the caller himself* …a tree three levels tall… you read the depth for what it was… take the key, operator, and delegate as deep as the work demands…",
     questions: [
       {
         prompt:
-          "A colleague says Claude is acting strangely in their repo and can't tell whether it's Claude itself or something in their own setup. They relaunch with `--safe-mode`. What does that actually do?",
+          "The 2.1.219 changelog changed how deep subagents can nest. What is the change?",
         choices: [
-          { id: 'a', label: 'It starts the session with their own customizations — skills, hooks, plugins, custom commands — switched off, so they see vanilla Claude Code and can tell whether their config was the cause', correct: true },
-          { id: 'b', label: 'It permanently deletes their skills, hooks, and plugins from disk so they have to reinstall everything', correct: false },
-          { id: 'c', label: 'It drops Claude into a read-only mode where it can look at files but is forbidden from editing them', correct: false },
-          { id: 'd', label: 'It forces the session onto a smaller, safer model for the rest of the run', correct: false },
+          { id: 'a', label: "Subagents can now spawn their own nested subagents, up to depth 3 — where the nesting was previously capped at depth 1", correct: true },
+          { id: 'b', label: "The number of subagents you can run at the same time rose from 1 to 3", correct: false },
+          { id: 'c', label: "Subagents can now nest with no depth limit at all, recursing as far as the task needs", correct: false },
+          { id: 'd', label: "Nesting was removed — only the main session may spawn subagents now, for safety", correct: false },
         ],
-        passFeedback: 'HIT! Safe mode boots a vanilla session — your customizations switched off for that run — so anything strange that disappears was coming from your own config, not Claude itself.',
-        failFeedback: "MISS! It doesn't delete anything, it isn't a read-only mode, and it doesn't swap models. It just launches with your customizations stood down — re-read the books.",
+        passFeedback: "HIT! The line is precise: subagents can spawn nested subagents up to depth 3, where before the depth was 1. It's a change to nesting *depth* — a delegation tree three levels tall — not the count of parallel workers, and not an unbounded recursion.",
+        failFeedback: "MISS! It's not about how many subagents run at once, it isn't unlimited, and nesting wasn't removed. The nesting *depth* rose from 1 to 3. Re-read Book 1.",
       },
     ],
   },
