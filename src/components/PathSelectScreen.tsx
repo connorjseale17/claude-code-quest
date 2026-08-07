@@ -6,7 +6,7 @@ import { TWIC_ISSUE_INTRO } from '../content/twic-issue';
 import { recordRunStart } from '../lib/tracking';
 import { colorIdxFromHex } from '../lib/palette';
 
-type Choice = 'quest' | 'twic';
+type Choice = 'quest' | 'twic' | 'cowork';
 
 /**
  * Path-select screen — sits between CustomizeScreen and the first LoadingScreen.
@@ -20,49 +20,42 @@ export function PathSelectScreen() {
   const [focused, setFocused] = useState<Choice>('quest');
 
   const select = (track: Choice) => {
+    const levelId =
+      track === 'quest' ? 'orientation' : track === 'twic' ? 'twic-1' : 'cowork-1';
+    const cfg = LEVEL_CONFIGS[levelId];
+    const chamber = cfg.chambers[cfg.startingChamber];
+    dispatch({
+      type: 'SELECT_TRACK',
+      track,
+      levelId,
+      chamberId: cfg.startingChamber,
+      spawnX: chamber.spawnX,
+      spawnY: chamber.spawnY,
+    });
+    // Quest-only Firestore run tracking. The returned runId arrives async;
+    // SET_RUN_ID stamps it onto state for recordRunFinish on WrapUpSplash.
+    // TWiC and Cowork are intentionally untracked, so their runs never write
+    // into the shared Quest leaderboard.
     if (track === 'quest') {
-      const cfg = LEVEL_CONFIGS['orientation'];
-      const chamber = cfg.chambers[cfg.startingChamber];
-      dispatch({
-        type: 'SELECT_TRACK',
-        track: 'quest',
-        levelId: 'orientation',
-        chamberId: cfg.startingChamber,
-        spawnX: chamber.spawnX,
-        spawnY: chamber.spawnY,
-      });
-      // Fire-and-forget: kick off the Firestore run-start write. The returned
-      // runId arrives async; SET_RUN_ID stamps it onto state for the eventual
-      // recordRunFinish call on WrapUpSplash mount. Quest-only — TWiC is
-      // intentionally untracked.
       const colorIdx = colorIdxFromHex(player.botColor);
       void recordRunStart({ handle: player.name || 'operator', colorIdx })
         .then(runId => { if (runId) dispatch({ type: 'SET_RUN_ID', runId }); });
-    } else {
-      const cfg = LEVEL_CONFIGS['twic-1'];
-      const chamber = cfg.chambers[cfg.startingChamber];
-      dispatch({
-        type: 'SELECT_TRACK',
-        track: 'twic',
-        levelId: 'twic-1',
-        chamberId: cfg.startingChamber,
-        spawnX: chamber.spawnX,
-        spawnY: chamber.spawnY,
-      });
     }
   };
 
   useEffect(() => {
+    // Left-to-right visual order, so ←/→ walks the tiles as they're rendered.
+    const ORDER: Choice[] = ['quest', 'cowork', 'twic'];
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'w' || e.key === 'a') {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'a' || e.key === 'w') {
         e.preventDefault();
-        setFocused('quest');
-      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 's' || e.key === 'd') {
+        setFocused(f => ORDER[Math.max(0, ORDER.indexOf(f) - 1)]);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'd' || e.key === 's') {
         e.preventDefault();
-        setFocused('twic');
+        setFocused(f => ORDER[Math.min(ORDER.length - 1, ORDER.indexOf(f) + 1)]);
       } else if (e.key === 'Tab') {
         e.preventDefault();
-        setFocused(f => (f === 'quest' ? 'twic' : 'quest'));
+        setFocused(f => ORDER[(ORDER.indexOf(f) + 1) % ORDER.length]);
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         select(focused);
@@ -76,6 +69,7 @@ export function PathSelectScreen() {
 
   const questAccent = LEVEL_CONFIGS['orientation'].theme.accentColor;
   const twicAccent = LEVEL_CONFIGS['twic-1'].theme.accentColor;
+  const coworkAccent = LEVEL_CONFIGS['cowork-1'].theme.accentColor;
 
   return (
     <TerminalFrame title="claude-code-quest --select-path" accent>
@@ -87,15 +81,24 @@ export function PathSelectScreen() {
           <span style={{ color: '#E8633D' }}>{'>'}</span> CHOOSE YOUR PATH
         </div>
 
-        <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', gap: 24, alignItems: 'stretch' }}>
           <PathTile
-            label="THE QUEST"
+            label="CODE QUEST"
             description="A 7-level curriculum on Claude Code, start to finish. The full Quest. Recommended for new learners."
             badge="7 LEVELS · CANON"
             accent={questAccent}
             focused={focused === 'quest'}
             onHover={() => setFocused('quest')}
             onClick={() => select('quest')}
+          />
+          <PathTile
+            label="COWORK QUEST"
+            description="Learn Claude Cowork across seven modules — built for consultants. Delegate the work, collect the finished files."
+            badge="7 MODULES · NEW"
+            accent={coworkAccent}
+            focused={focused === 'cowork'}
+            onHover={() => setFocused('cowork')}
+            onClick={() => select('cowork')}
           />
           <PathTile
             label="THIS WEEK IN CLAUDE"
@@ -128,32 +131,37 @@ interface PathTileProps {
   focused: boolean;
   onHover: () => void;
   onClick: () => void;
+  /** Greyed-out, non-selectable "coming soon" tile. */
+  disabled?: boolean;
 }
 
-function PathTile({ label, description, badge, accent, focused, onHover, onClick }: PathTileProps) {
+function PathTile({ label, description, badge, accent, focused, onHover, onClick, disabled }: PathTileProps) {
   return (
     <button
-      onMouseEnter={onHover}
-      onFocus={onHover}
-      onClick={onClick}
+      onMouseEnter={disabled ? undefined : onHover}
+      onFocus={disabled ? undefined : onHover}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      aria-disabled={disabled}
       style={{
-        width: 320,
-        background: focused ? '#141414' : '#0F0F0F',
-        border: `1.5px solid ${focused ? accent : '#2A2A2A'}`,
+        width: 280,
+        background: disabled ? '#0B0B0B' : focused ? '#141414' : '#0F0F0F',
+        border: `1.5px solid ${disabled ? '#1C1C1C' : focused ? accent : '#2A2A2A'}`,
         padding: '22px 24px',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         textAlign: 'left',
         fontFamily: "'JetBrains Mono', monospace",
         color: '#E8E8E8',
+        opacity: disabled ? 0.55 : 1,
         transition: 'border-color 120ms ease, background 120ms ease',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
       }}
     >
-      <div style={{ color: accent, fontSize: 11, letterSpacing: '0.12em' }}>{badge}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.06em' }}>{label}</div>
-      <div style={{ fontSize: 13, lineHeight: 1.55, color: '#9A9A9A' }}>{description}</div>
+      <div style={{ color: disabled ? '#6A6A6A' : accent, fontSize: 11, letterSpacing: '0.12em' }}>{badge}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.06em', color: disabled ? '#7A7A7A' : '#E8E8E8' }}>{label}</div>
+      <div style={{ fontSize: 13, lineHeight: 1.55, color: disabled ? '#565656' : '#9A9A9A' }}>{description}</div>
       <div style={{ marginTop: 6, fontSize: 12, color: focused ? accent : '#3A3A3A' }}>
         {focused ? '▶ press Enter' : ' '}
       </div>

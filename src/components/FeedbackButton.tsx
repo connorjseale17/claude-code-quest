@@ -7,7 +7,7 @@ import { Cursor } from './TerminalFrame';
  * Where the feedback widget was opened from. Stored on the Firestore doc so we
  * can slice responses by surface (mid-run pause vs. either end screen).
  */
-export type FeedbackSource = 'pause' | 'quest-end' | 'twic-end';
+export type FeedbackSource = 'pause' | 'quest-end' | 'twic-end' | 'cowork-end';
 
 /**
  * A single themed button that opens a self-contained feedback overlay

@@ -34,7 +34,11 @@ import { currentUid } from '../lib/firebase';
  * The credential id is for visual completeness only.
  */
 
-const CERT_URL = '/cert/quest-certificate.html';
+// Base-aware so the cert resolves both at the site root (web build, base "/")
+// and from an arbitrary nested directory (SCORM/LMS build, base "./"). Vite
+// sets import.meta.env.BASE_URL to whatever `--base` the build used, so this
+// is "/cert/..." on Vercel and "./cert/..." inside an LMS iframe.
+const CERT_URL = `${import.meta.env.BASE_URL}cert/quest-certificate.html`;
 
 // The cert HTML is a standalone bundle that unpacks asynchronously and its
 // real rendered size isn't known until after the bundler runs. We measure

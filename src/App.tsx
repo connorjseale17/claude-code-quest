@@ -27,6 +27,7 @@ import { LayoutEditor } from './components/LayoutEditor';
 import { PathSelectScreen } from './components/PathSelectScreen';
 import { TwicIssueIntroOverlay } from './components/TwicIssueIntroOverlay';
 import { TwicStampScreen } from './components/TwicStampScreen';
+import { CoworkStampScreen } from './components/CoworkStampScreen';
 import { OriginSplash } from './components/OriginSplash';
 import { WrapUpSplash } from './components/WrapUpSplash';
 import { CertificationPage } from './components/CertificationPage';
@@ -101,6 +102,17 @@ function PhaseRouter() {
   const toggleDev = () => setDevOpen(v => !v);
   const closeDev = () => setDevOpen(false);
 
+  // SCORM bridge: when the learner reaches a terminal phase — the certification
+  // page (Quest) or the end/stamp screen (Quest or TWiC) — flag the module
+  // complete to the host LMS. window.SCORM exists only in the SCORM/LMS build
+  // (injected by scorm/scorm-api.js); the optional chaining makes this a
+  // harmless no-op on the standalone web build.
+  useEffect(() => {
+    if (state.gamePhase === 'certification' || state.gamePhase === 'gameOver') {
+      window.SCORM?.setComplete?.();
+    }
+  }, [state.gamePhase]);
+
   let screen: React.ReactNode;
   switch (state.gamePhase) {
     case 'boot':
@@ -131,9 +143,12 @@ function PhaseRouter() {
       screen = <CertificationPage />;
       break;
     case 'gameOver':
-      // Quest end → trophy/lesson tally. TWiC end → stamp screen.
+      // Quest end → trophy/lesson tally. TWiC end → issue stamp. Cowork end →
+      // its own light stamp. Quest is the fallthrough.
       screen = state.currentTrack === 'twic' ? (
         <TwicStampScreen />
+      ) : state.currentTrack === 'cowork' ? (
+        <CoworkStampScreen />
       ) : (
         <TerminalFrame title="claude-code-quest --complete" accent>
           <EndScreen />

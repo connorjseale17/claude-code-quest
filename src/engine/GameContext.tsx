@@ -20,7 +20,7 @@ export type GamePhase =
   | 'wrapUp'
   | 'certification'
   | 'gameOver';
-export type Track = 'quest' | 'twic';
+export type Track = 'quest' | 'twic' | 'cowork';
 
 export type PendingLevelTransition = {
   levelId: LevelId;

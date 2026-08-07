@@ -19,7 +19,14 @@ export type LevelId =
   | 'final-boss'
   | 'twic-1'
   | 'twic-2'
-  | 'twic-3';
+  | 'twic-3'
+  | 'cowork-1'
+  | 'cowork-2'
+  | 'cowork-3'
+  | 'cowork-4'
+  | 'cowork-5'
+  | 'cowork-6'
+  | 'cowork-7';
 
 export type ChamberId = string;
 
@@ -129,7 +136,7 @@ export type LevelConfig = {
   /** The chamber that contains the boss challenge + key spawn */
   challengeChamber: ChamberId;
   /** Which learning path this level belongs to. Defaults to 'quest'. */
-  track?: 'quest' | 'twic';
+  track?: 'quest' | 'twic' | 'cowork';
 };
 
 /** The editable subset of a ChamberConfig that Layout Mode serializes and that
@@ -247,6 +254,24 @@ const THEME_NEWSROOM: Theme = {
   floorColor: '#1B2230',
   floorDot: '#6EAAEF',
   accentColor: '#6EAAEF',
+};
+
+/** Cowork Module 2 — Steel-Blue Vault (least-privilege / permissions). */
+const THEME_STEELBLUE: Theme = {
+  wallColor: '#0C0B0A',
+  wallShadow: '#2F5BA8',
+  floorColor: '#18202C',
+  floorDot: '#6EAAEF',
+  accentColor: '#6EAAEF',
+};
+
+/** Cowork Module 6 — Slate-Green Citadel (review / sentinel). */
+const THEME_SLATEGREEN: Theme = {
+  wallColor: '#0C0B0A',
+  wallShadow: '#2A6B45',
+  floorColor: '#1A2A22',
+  floorDot: '#3FB950',
+  accentColor: '#3FB950',
 };
 
 // ============================================================================
@@ -1546,6 +1571,413 @@ function buildTwic3Level(): LevelConfig {
   };
 }
 
+// ============================================================================
+// COWORK QUEST — third track (additive; does not touch quest/twic)
+// ============================================================================
+//
+// Seven two-chamber mini-dungeons teaching Claude Cowork to consultants, built
+// in the Code Quest style: an Entry/Lore Hall (greeter NPC + 5 lore primers +
+// practice token) opens through an unlocked door into a Boss Hall (boss + key +
+// locked exit). Interior walls (corner crate clusters, flanking pillars, an
+// approach blocker / colonnade) and themed decorations from PROP_LIST dress each
+// room. The chain runs cowork-1-hall → cowork-1-boss → cowork-2-hall → … →
+// cowork-7-boss → {kind:'end'}. Item/NPC ids MUST match the ids in each module's
+// src/content/cowork-N.ts — this redesign only moves the same ids into nicer
+// rooms, so the content files are unchanged.
+
+type XY = { x: number; y: number };
+
+/** Furnished per-module layout: obstacles are SOLID props (crate/bookshelf/…),
+ *  not wall voids; plus non-solid floor decals + wall decor. Only rare real
+ *  walls. The helper attaches the content ids to these positions. Row 6 stays a
+ *  traversable entry/exit corridor (spawn (1,6); doors sit on row 6). */
+type CoworkDesign = {
+  hall: {
+    width: number;
+    height: number;
+    walls?: Array<[number, number, number, number]>;
+    props: DecorationConfig[];
+    lore: [XY, XY, XY, XY, XY];
+    practice: XY;
+    npc: XY;
+  };
+  boss: {
+    width: number;
+    height: number;
+    walls?: Array<[number, number, number, number]>;
+    props: DecorationConfig[];
+    boss: XY;
+    keySpawn: XY;
+  };
+};
+
+type CoworkModuleOpts = {
+  id: LevelId;
+  number: number;
+  title: string;
+  subtitle: string;
+  theme: Theme;
+  hallId: ChamberId;
+  hallName: string;
+  bossId: ChamberId;
+  bossName: string;
+  npc: { id: string; name: string; color: string; sprite?: string };
+  /** 5 lore item ids — must equal the lore[].id values in the content file. */
+  loreIds: [string, string, string, string, string];
+  /** Practice item id — must equal practice.id in the content file. */
+  practiceId: string;
+  /** Boss challenge item id (referenced only by the panel machinery). */
+  challengeId: string;
+  /** In-room boss sprite — a bestiary '<key>_a' frame, e.g. 'ghost_a'. */
+  bossSpriteA: string;
+  /** Exit door target: the next module ({kind:'level'}) or {kind:'end'}. */
+  exit: DoorTarget;
+  /** NEW furnished prop-obstacle layout (Module 1 pilot). When present it fully
+   *  defines both chambers; the legacy fields below are ignored. */
+  design?: CoworkDesign;
+  /** Legacy decorations for the fillRect path (Modules 2–7 until migrated). */
+  entryDecor?: DecorationConfig[];
+  bossDecor?: DecorationConfig[];
+  /** Legacy capstone colonnade flag (fillRect path). */
+  colonnade?: boolean;
+};
+
+/** Builds one Cowork module as two chambers (Entry/Lore Hall → Boss Hall). With
+ *  o.design the chambers are built from that furnished prop-obstacle layout;
+ *  otherwise the legacy fillRect geometry + entryDecor/bossDecor runs. Doors are
+ *  convention-based: spawn (1,6); hall east intra-door; boss west back-door +
+ *  locked east exit — so only the interior layout varies per module. */
+function buildCoworkModule(o: CoworkModuleOpts): LevelConfig {
+  let hall: ChamberConfig;
+  let bossHall: ChamberConfig;
+
+  if (o.design) {
+    const d = o.design;
+    // ---- Hall from furnished layout ----
+    const hW = d.hall.width, hH = d.hall.height;
+    const hTiles = blankTileMap(hW, hH);
+    hTiles[6][hW - 1] = 2;
+    (d.hall.walls ?? []).forEach(w => fillRect(hTiles, w[0], w[1], w[2], w[3], 1));
+    hall = {
+      id: o.hallId, level: o.id, name: o.hallName,
+      width: hW, height: hH, tiles: hTiles, spawnX: 1, spawnY: 6,
+      items: [
+        { id: o.loreIds[0], type: 'lore', x: d.hall.lore[0].x, y: d.hall.lore[0].y, sprite: 'paper' },
+        { id: o.loreIds[1], type: 'lore', x: d.hall.lore[1].x, y: d.hall.lore[1].y, sprite: 'paper' },
+        { id: o.loreIds[2], type: 'lore', x: d.hall.lore[2].x, y: d.hall.lore[2].y, sprite: 'paper' },
+        { id: o.loreIds[3], type: 'lore', x: d.hall.lore[3].x, y: d.hall.lore[3].y, sprite: 'paper' },
+        { id: o.loreIds[4], type: 'lore', x: d.hall.lore[4].x, y: d.hall.lore[4].y, sprite: 'paper' },
+        { id: o.practiceId, type: 'practice', x: d.hall.practice.x, y: d.hall.practice.y, sprite: 'hint_token' },
+      ],
+      doors: [{ id: 'to-boss', x: hW - 1, y: 6, target: { kind: 'chamber', chamber: o.bossId }, spawnX: 1, spawnY: 6, locked: false }],
+      npcs: [{ id: o.npc.id, x: d.hall.npc.x, y: d.hall.npc.y, color: o.npc.color, name: o.npc.name, dialog: [], ...(o.npc.sprite ? { sprite: o.npc.sprite } : {}) }],
+      decorations: d.hall.props,
+    };
+    // ---- Boss hall from furnished layout ----
+    const bW = d.boss.width, bH = d.boss.height;
+    const bTiles = blankTileMap(bW, bH);
+    bTiles[6][0] = 2;
+    bTiles[6][bW - 1] = 2;
+    (d.boss.walls ?? []).forEach(w => fillRect(bTiles, w[0], w[1], w[2], w[3], 1));
+    bossHall = {
+      id: o.bossId, level: o.id, name: o.bossName,
+      width: bW, height: bH, tiles: bTiles, spawnX: 1, spawnY: 6,
+      items: [{ id: o.challengeId, type: 'challenge', x: d.boss.boss.x, y: d.boss.boss.y, sprite: o.bossSpriteA }],
+      doors: [
+        { id: 'back', x: 0, y: 6, target: { kind: 'chamber', chamber: o.hallId }, spawnX: hW - 2, spawnY: 6, locked: false },
+        { id: 'exit', x: bW - 1, y: 6, target: o.exit, spawnX: 1, spawnY: 6, locked: true, requiresLevelKey: true },
+      ],
+      npcs: [],
+      decorations: d.boss.props,
+      keySpawn: { x: d.boss.keySpawn.x, y: d.boss.keySpawn.y },
+    };
+  } else {
+    // ---- Legacy fillRect path (Modules 2–7 until migrated to design) ----
+    const hW = 18, hH = 12;
+    const hTiles = blankTileMap(hW, hH);
+    hTiles[6][hW - 1] = 2;
+    fillRect(hTiles, 2, 2, 3, 3, 1);
+    fillRect(hTiles, 2, 8, 3, 9, 1);
+    fillRect(hTiles, 14, 2, 15, 3, 1);
+    fillRect(hTiles, 14, 8, 15, 9, 1);
+    fillRect(hTiles, 6, 5, 6, 7, 1);
+    fillRect(hTiles, 11, 5, 11, 7, 1);
+    hall = {
+      id: o.hallId, level: o.id, name: o.hallName, width: hW, height: hH, tiles: hTiles, spawnX: 1, spawnY: 6,
+      items: [
+        { id: o.loreIds[0], type: 'lore', x: 5, y: 2, sprite: 'paper' },
+        { id: o.loreIds[1], type: 'lore', x: 9, y: 2, sprite: 'paper' },
+        { id: o.loreIds[2], type: 'lore', x: 13, y: 2, sprite: 'paper' },
+        { id: o.loreIds[3], type: 'lore', x: 5, y: 9, sprite: 'paper' },
+        { id: o.loreIds[4], type: 'lore', x: 13, y: 9, sprite: 'paper' },
+        { id: o.practiceId, type: 'practice', x: 9, y: 9, sprite: 'hint_token' },
+      ],
+      doors: [{ id: 'to-boss', x: hW - 1, y: 6, target: { kind: 'chamber', chamber: o.bossId }, spawnX: 1, spawnY: 6, locked: false }],
+      npcs: [{ id: o.npc.id, x: 4, y: 6, color: o.npc.color, name: o.npc.name, dialog: [], ...(o.npc.sprite ? { sprite: o.npc.sprite } : {}) }],
+      decorations: o.entryDecor ?? [],
+    };
+    const bW = o.colonnade ? 20 : 17, bH = 12;
+    const bTiles = blankTileMap(bW, bH);
+    bTiles[6][0] = 2;
+    bTiles[6][bW - 1] = 2;
+    fillRect(bTiles, 2, 2, 3, 3, 1);
+    fillRect(bTiles, 2, 8, 3, 9, 1);
+    if (o.colonnade) {
+      for (const c of [5, 9, 13]) { fillRect(bTiles, c, 3, c, 4, 1); fillRect(bTiles, c, 8, c, 9, 1); }
+    } else {
+      fillRect(bTiles, bW - 4, 2, bW - 3, 3, 1);
+      fillRect(bTiles, bW - 4, 8, bW - 3, 9, 1);
+      fillRect(bTiles, 5, 5, 5, 7, 1);
+    }
+    const bossX = o.colonnade ? 16 : 10;
+    bossHall = {
+      id: o.bossId, level: o.id, name: o.bossName, width: bW, height: bH, tiles: bTiles, spawnX: 1, spawnY: 6,
+      items: [{ id: o.challengeId, type: 'challenge', x: bossX, y: 5, sprite: o.bossSpriteA }],
+      doors: [
+        { id: 'back', x: 0, y: 6, target: { kind: 'chamber', chamber: o.hallId }, spawnX: hW - 2, spawnY: 6, locked: false },
+        { id: 'exit', x: bW - 1, y: 6, target: o.exit, spawnX: 1, spawnY: 6, locked: true, requiresLevelKey: true },
+      ],
+      npcs: [],
+      decorations: o.bossDecor ?? [],
+      keySpawn: { x: bossX, y: 8 },
+    };
+  }
+
+  return {
+    id: o.id, number: o.number, title: o.title, subtitle: o.subtitle, theme: o.theme,
+    chambers: { [hall.id]: hall, [bossHall.id]: bossHall },
+    startingChamber: hall.id, challengeChamber: bossHall.id, track: 'cowork',
+  };
+}
+
+function buildCowork1Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-1', number: 10,
+    title: 'The Delegation Gate', subtitle: 'What Cowork actually is',
+    theme: THEME_AMBER,
+    hallId: 'cowork-1-hall', hallName: 'Amber Atrium',
+    bossId: 'cowork-1-boss', bossName: 'The Delegation Gate',
+    npc: { id: 'onboard-bot', name: 'Onboard-bot', color: '#E8C57A' },
+    loreIds: ['three-ways', 'around-outcome', 'where-it-lives', 'five-part-test', 'acts-on-behalf'],
+    practiceId: 'delegation-practice',
+    challengeId: 'delegation-boss',
+    bossSpriteA: 'ghost_a',
+    exit: { kind: 'level', level: 'cowork-2', chamber: 'cowork-2-hall' },
+    // PILOT: furnished prop-obstacle layout (an onboarding lobby). Obstacles are
+    // real crate/table sprites (not wall voids); a central reception island the
+    // player walks around; braziers, banners, sconces + floor runes for density.
+    design: {
+      hall: {
+        width: 18, height: 12,
+        props: [
+          // crate-stack corners (furnished, not voids)
+          { x: 2, y: 2, sprite: 'crate' }, { x: 2, y: 3, sprite: 'crate' },
+          { x: 15, y: 2, sprite: 'crate' }, { x: 15, y: 3, sprite: 'crate' },
+          { x: 2, y: 8, sprite: 'crate' }, { x: 2, y: 9, sprite: 'crate' },
+          { x: 15, y: 8, sprite: 'crate' }, { x: 15, y: 9, sprite: 'crate' },
+          // central reception island (2x2 tables) — player routes around it
+          { x: 8, y: 5, sprite: 'table' }, { x: 9, y: 5, sprite: 'table' },
+          { x: 8, y: 6, sprite: 'table' }, { x: 9, y: 6, sprite: 'table' },
+          // lights + banners along the walls
+          { x: 8, y: 1, sprite: 'banner', tint: '#E8C57A' },
+          { x: 5, y: 1, sprite: 'brazier' }, { x: 12, y: 1, sprite: 'brazier' },
+          { x: 5, y: 10, sprite: 'brazier' }, { x: 12, y: 10, sprite: 'brazier' },
+          { x: 1, y: 3, sprite: 'sconce' }, { x: 16, y: 3, sprite: 'sconce' },
+          // floor runes (non-solid texture)
+          { x: 6, y: 3, sprite: 'wall_runes', solid: false },
+          { x: 11, y: 8, sprite: 'wall_runes', solid: false },
+        ],
+        lore: [{ x: 4, y: 2 }, { x: 13, y: 2 }, { x: 4, y: 9 }, { x: 13, y: 9 }, { x: 14, y: 6 }],
+        practice: { x: 9, y: 9 },
+        npc: { x: 4, y: 6 },
+      },
+      boss: {
+        width: 17, height: 12,
+        props: [
+          // west crate-stack corners
+          { x: 2, y: 2, sprite: 'crate' }, { x: 2, y: 3, sprite: 'crate' },
+          { x: 2, y: 8, sprite: 'crate' }, { x: 2, y: 9, sprite: 'crate' },
+          // crate "gate" with a 1-tile gap at row 6 — the approach
+          { x: 6, y: 4, sprite: 'crate' }, { x: 6, y: 5, sprite: 'crate' },
+          { x: 6, y: 7, sprite: 'crate' }, { x: 6, y: 8, sprite: 'crate' },
+          // braziers flanking the wraith
+          { x: 8, y: 4, sprite: 'brazier' }, { x: 12, y: 4, sprite: 'brazier' },
+          // banners
+          { x: 2, y: 1, sprite: 'banner', tint: '#E8C57A' },
+          { x: 8, y: 1, sprite: 'banner', tint: '#E8C57A' },
+          { x: 14, y: 1, sprite: 'banner', tint: '#E8C57A' },
+          // floor rune under the boss
+          { x: 10, y: 7, sprite: 'wall_runes', solid: false },
+        ],
+        boss: { x: 10, y: 5 },
+        keySpawn: { x: 10, y: 8 },
+      },
+    },
+  });
+}
+
+function buildCowork2Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-2', number: 11,
+    title: 'The Permission Vault', subtitle: 'Safe day-one setup',
+    theme: THEME_STEELBLUE,
+    hallId: 'cowork-2-hall', hallName: 'Steel-Blue Vault',
+    bossId: 'cowork-2-boss', bossName: 'The Vault Floor',
+    npc: { id: 'warden-volt', name: 'Warden Volt', color: '#6EAAEF' },
+    loreIds: ['third-tab', 'least-privilege', 'sandbox', 'two-dials', 'delete-asks'],
+    practiceId: 'permission-practice',
+    challengeId: 'permission-boss',
+    bossSpriteA: 'goblin_a',
+    exit: { kind: 'level', level: 'cowork-3', chamber: 'cowork-3-hall' },
+    entryDecor: [
+      { x: 1, y: 1, sprite: 'sconce' }, { x: 16, y: 1, sprite: 'sconce' },
+      { x: 8, y: 1, sprite: 'server_stack' },
+      { x: 6, y: 10, sprite: 'crate' }, { x: 11, y: 10, sprite: 'barrel' },
+      { x: 1, y: 10, sprite: 'floor_lever' },
+    ],
+    bossDecor: [
+      { x: 8, y: 3, sprite: 'sconce' }, { x: 12, y: 3, sprite: 'sconce' },
+      { x: 2, y: 1, sprite: 'chains' }, { x: 14, y: 1, sprite: 'chains' },
+      { x: 2, y: 10, sprite: 'crate' }, { x: 14, y: 10, sprite: 'crate' },
+    ],
+  });
+}
+
+function buildCowork3Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-3', number: 12,
+    title: 'The Briefing Room', subtitle: 'Brief like a sharp analyst',
+    theme: THEME_ORANGE,
+    hallId: 'cowork-3-hall', hallName: 'Orange Drafting Room',
+    bossId: 'cowork-3-boss', bossName: 'The Foggy Sanctum',
+    npc: { id: 'brief-bot', name: 'Brief-bot', color: '#E8633D' },
+    loreIds: ['brief-outcome', 'context-beats-wording', 'read-back', 'approve-plan', 'sidebar-cockpit'],
+    practiceId: 'briefing-practice',
+    challengeId: 'briefing-boss',
+    bossSpriteA: 'warlock_a',
+    exit: { kind: 'level', level: 'cowork-4', chamber: 'cowork-4-hall' },
+    entryDecor: [
+      { x: 1, y: 1, sprite: 'bookshelf' }, { x: 16, y: 1, sprite: 'bookshelf' },
+      { x: 8, y: 1, sprite: 'banner', tint: '#E8633D' },
+      { x: 6, y: 10, sprite: 'table' }, { x: 11, y: 10, sprite: 'table' },
+      { x: 9, y: 6, sprite: 'wall_runes', solid: false },
+    ],
+    bossDecor: [
+      { x: 8, y: 3, sprite: 'brazier' }, { x: 12, y: 3, sprite: 'brazier' },
+      { x: 2, y: 1, sprite: 'banner', tint: '#E8633D' }, { x: 14, y: 1, sprite: 'banner', tint: '#E8633D' },
+    ],
+  });
+}
+
+function buildCowork4Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-4', number: 13,
+    title: 'The Connector Nexus', subtitle: 'Wire in your real tools',
+    theme: THEME_TEAL,
+    hallId: 'cowork-4-hall', hallName: 'Teal Network Hub',
+    bossId: 'cowork-4-boss', bossName: "Hookmaw's Switchboard",
+    npc: { id: 'connector-cat', name: 'Connector Cat', color: '#6FD7C2', sprite: 'cat' },
+    loreIds: ['two-surfaces', 'wiring-the-board', 'asymmetry-table', 'per-tool-controls', 'connected-not-unlimited'],
+    practiceId: 'connector-practice',
+    challengeId: 'connector-boss',
+    bossSpriteA: 'slime_a',
+    exit: { kind: 'level', level: 'cowork-5', chamber: 'cowork-5-hall' },
+    entryDecor: [
+      { x: 1, y: 1, sprite: 'server_stack' }, { x: 16, y: 1, sprite: 'server_stack' },
+      { x: 8, y: 1, sprite: 'mana_crystal' },
+      { x: 6, y: 10, sprite: 'crt_terminal' }, { x: 11, y: 10, sprite: 'crt_terminal' },
+      { x: 9, y: 6, sprite: 'cable_run', solid: false }, { x: 8, y: 4, sprite: 'cable_run', solid: false },
+    ],
+    bossDecor: [
+      { x: 8, y: 3, sprite: 'server_stack' }, { x: 12, y: 3, sprite: 'server_stack' },
+      { x: 2, y: 1, sprite: 'mana_crystal' }, { x: 14, y: 1, sprite: 'mana_crystal' },
+      { x: 10, y: 7, sprite: 'cable_run', solid: false },
+    ],
+  });
+}
+
+function buildCowork5Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-5', number: 14,
+    title: 'The Deliverable Forge', subtitle: 'Forge real consulting files',
+    theme: THEME_CRIMSON,
+    hallId: 'cowork-5-hall', hallName: 'Crimson Forge',
+    bossId: 'cowork-5-boss', bossName: 'The Back Forge',
+    npc: { id: 'forgemaster-quill', name: 'Forgemaster Quill', color: '#D43A2A' },
+    loreIds: ['three-artifact-pattern', 'four-workflows', 'native-files', 'citations', 'forge-limits'],
+    practiceId: 'forge-practice',
+    challengeId: 'forge-boss',
+    bossSpriteA: 'skeleton_a',
+    exit: { kind: 'level', level: 'cowork-6', chamber: 'cowork-6-hall' },
+    entryDecor: [
+      { x: 1, y: 1, sprite: 'anvil' }, { x: 16, y: 1, sprite: 'anvil' },
+      { x: 8, y: 1, sprite: 'brazier' },
+      { x: 6, y: 10, sprite: 'barrel' }, { x: 11, y: 10, sprite: 'crate' },
+      { x: 1, y: 10, sprite: 'table' },
+    ],
+    bossDecor: [
+      { x: 8, y: 3, sprite: 'brazier' }, { x: 12, y: 3, sprite: 'brazier' },
+      { x: 2, y: 10, sprite: 'anvil' }, { x: 14, y: 10, sprite: 'anvil' },
+      { x: 2, y: 1, sprite: 'barrel' },
+    ],
+  });
+}
+
+function buildCowork6Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-6', number: 15,
+    title: 'The Review Citadel', subtitle: 'Stay in the loop',
+    theme: THEME_SLATEGREEN,
+    hallId: 'cowork-6-hall', hallName: 'Slate-Green Citadel',
+    bossId: 'cowork-6-boss', bossName: 'The Moat Gate',
+    npc: { id: 'sentinel-ada', name: 'Sentinel Ada', color: '#3FB950', sprite: 'owl' },
+    loreIds: ['output-is-draft', 'approve-plan-review', 'prompt-injection', 'global-instructions', 'iterate-skill'],
+    practiceId: 'review-practice',
+    challengeId: 'review-boss',
+    bossSpriteA: 'ghost_a',
+    exit: { kind: 'level', level: 'cowork-7', chamber: 'cowork-7-hall' },
+    entryDecor: [
+      { x: 1, y: 1, sprite: 'bookshelf' }, { x: 16, y: 1, sprite: 'bookshelf' },
+      { x: 8, y: 1, sprite: 'banner', tint: '#3FB950' },
+      { x: 6, y: 10, sprite: 'weapon_rack' }, { x: 11, y: 10, sprite: 'weapon_rack' },
+      { x: 9, y: 6, sprite: 'wall_runes', solid: false }, { x: 1, y: 10, sprite: 'cobweb' },
+    ],
+    bossDecor: [
+      { x: 8, y: 3, sprite: 'sconce' }, { x: 12, y: 3, sprite: 'sconce' },
+      { x: 2, y: 1, sprite: 'chains' }, { x: 14, y: 1, sprite: 'chains' },
+      { x: 10, y: 7, sprite: 'wall_runes', solid: false },
+    ],
+  });
+}
+
+function buildCowork7Level(): LevelConfig {
+  return buildCoworkModule({
+    id: 'cowork-7', number: 16,
+    title: 'The Engagement Keep', subtitle: 'Run the whole engagement',
+    theme: THEME_PURPLE,
+    hallId: 'cowork-7-hall', hallName: 'Royal-Purple Antechamber',
+    bossId: 'cowork-7-boss', bossName: 'The Engagement Keep',
+    npc: { id: 'partner-vega', name: 'Managing Partner Vega', color: '#A972F0' },
+    loreIds: ['parallel-agents', 'schedule-recurring', 'governance-gap', 'admin-levers', 'de-identify'],
+    practiceId: 'engagement-practice',
+    challengeId: 'engagement-boss',
+    bossSpriteA: 'dragon_a',
+    exit: { kind: 'end' },
+    colonnade: true,
+    entryDecor: [
+      { x: 1, y: 1, sprite: 'banner', tint: '#A972F0' }, { x: 16, y: 1, sprite: 'banner', tint: '#A972F0' },
+      { x: 8, y: 1, sprite: 'brazier' },
+      { x: 6, y: 10, sprite: 'server_stack' }, { x: 11, y: 10, sprite: 'server_stack' },
+      { x: 9, y: 6, sprite: 'summoning_circle', solid: false },
+    ],
+    bossDecor: [
+      { x: 14, y: 4, sprite: 'brazier' }, { x: 18, y: 4, sprite: 'brazier' },
+      { x: 3, y: 1, sprite: 'banner', tint: '#A972F0' }, { x: 7, y: 1, sprite: 'banner', tint: '#A972F0' }, { x: 11, y: 1, sprite: 'banner', tint: '#A972F0' },
+      { x: 16, y: 6, sprite: 'summoning_circle', solid: false },
+    ],
+  });
+}
+
 /** Hand-authored levels BEFORE any layout overrides — used by getBaseChamber()
  *  so Layout Mode's "Reset to source" can restore the builder geometry. */
 const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
@@ -1559,6 +1991,13 @@ const BASE_LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   'twic-1': buildTwic1Level(),
   'twic-2': buildTwic2Level(),
   'twic-3': buildTwic3Level(),
+  'cowork-1': buildCowork1Level(),
+  'cowork-2': buildCowork2Level(),
+  'cowork-3': buildCowork3Level(),
+  'cowork-4': buildCowork4Level(),
+  'cowork-5': buildCowork5Level(),
+  'cowork-6': buildCowork6Level(),
+  'cowork-7': buildCowork7Level(),
 };
 
 export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
@@ -1572,6 +2011,13 @@ export const LEVEL_CONFIGS: Record<LevelId, LevelConfig> = {
   'twic-1': withOverrides(BASE_LEVEL_CONFIGS['twic-1']),
   'twic-2': withOverrides(BASE_LEVEL_CONFIGS['twic-2']),
   'twic-3': withOverrides(BASE_LEVEL_CONFIGS['twic-3']),
+  'cowork-1': withOverrides(BASE_LEVEL_CONFIGS['cowork-1']),
+  'cowork-2': withOverrides(BASE_LEVEL_CONFIGS['cowork-2']),
+  'cowork-3': withOverrides(BASE_LEVEL_CONFIGS['cowork-3']),
+  'cowork-4': withOverrides(BASE_LEVEL_CONFIGS['cowork-4']),
+  'cowork-5': withOverrides(BASE_LEVEL_CONFIGS['cowork-5']),
+  'cowork-6': withOverrides(BASE_LEVEL_CONFIGS['cowork-6']),
+  'cowork-7': withOverrides(BASE_LEVEL_CONFIGS['cowork-7']),
 };
 
 /** Convenience: lookup a chamber by ID across all levels. */

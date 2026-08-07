@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# SCORM packaging artifacts (regenerate with `npm run build:scorm`)
+scorm-build
+*.scorm.zip
+claude-code-quest-scorm12.zip
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
