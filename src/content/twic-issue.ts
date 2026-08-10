@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-08-03',
+  publishDate: '2026-08-10',
   framing:
-    "This week in Claude, the throughline is delegating deeper and losing less to friction and silence. Subagents can now spawn their own nested subagents up to three levels deep — where the chain used to stop at one — so a branching engagement can fan out as workstream, service, then endpoint, with stream-json forwarding keeping even a headless three-level run observable. Plan mode stops nagging: read-only Bash commands like `ls`, `grep`, and `git log` now run without a permission prompt, turning plan mode into a genuine reconnaissance gear you can walk a client's repo in without click-fatigue. And MCP failures finally speak — `/mcp` and `claude mcp list` now surface the real HTTP status and error text on a broken server (with a matching `mcp_server_errors` field for headless runs), so a 401 or a 500 tells you which side of the wire to fix instead of leaving you to guess.",
+    "This week in Claude, the throughline is drawing your own boundary around the work — where it runs, what it can see, and how far it can reach. Self-hosted environments arrive: `claude self-hosted-runner` turns your own machines or containers into the place Claude Code cloud sessions execute, so a client whose contract says code can't leave their network finally gets a yes. Sandbox credential masking lets a sandboxed command read a per-session sentinel while the real secret is swapped in only on egress to an allowed host, keeping raw keys out of the blast radius of every unattended command. And cross-session `SendMessage` opens a channel between independent sessions — discovered with `ListAgents`, carrying only text and no power to act — so a fleet of sessions on one engagement can coordinate without any of them driving another.",
 };
