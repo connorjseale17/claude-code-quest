@@ -1,137 +1,132 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-2 (Feature B) — Sandbox credential masking: `mode: "mask"` for sandbox
- * credential files on Linux and WSL. The sandboxed command reads a per-session
- * *sentinel* copy of the secret; the sandbox proxy substitutes the real value
- * on egress to allowed hosts (requires network.tlsTerminate). Structured
- * options: `extract`/`onExtractNoMatch` for env values, `decode: "jwt"` with
- * `maskClaims` for JWT-aware masking, and `awsPairs`/`sigv4` for AWS SigV4
- * re-signing. Honored only from user, managed, or --settings-supplied settings.
- * Sources (Claude Code CHANGELOG 2.1.224 + docs/en/sandboxing):
- *   - "Added `mode: \"mask\"` for sandbox credential files on Linux and WSL —
- *      sandboxed commands read a sentinel copy"
- *   - "Added sandbox credential-masking options: `extract` and
- *      `onExtractNoMatch` for structured env values, `decode: \"jwt\"` with
- *      `maskClaims` for JWT-aware masking, and `awsPairs`/`sigv4` for AWS
- *      SigV4 re-signing"
+ * twic-2 (Feature B) — `archive` plugin source: a plugin can now be installed
+ * from a zip fetched over HTTPS, without git or npm in the path, with optional
+ * SHA-256 pinning so the download only installs if its hash matches the value
+ * you recorded. This sits beside the existing git and npm plugin sources as a
+ * third way to distribute a plugin — a self-contained package at a URL rather
+ * than a repo to clone or a registry entry to resolve.
+ * Sources (Claude Code CHANGELOG 2.1.224):
+ *   - "Added `archive` plugin source: install plugins from a zip over HTTPS
+ *      without git or npm, with optional SHA-256 pinning"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic2Content: LessonContent = {
   roomId: 'twic-room-2',
   intro:
-    "Room 2, and the Beat Reporter turns to a quieter change with sharp teeth: how the sandboxed Bash tool now handles a real secret. With `mode: \"mask\"` on Linux and WSL, a sandboxed command no longer reads your actual credential — it reads a per-session *sentinel*, a decoy that only becomes the real value as the request leaves the box for an allowed host. The two books cover the swap mechanism — sentinel in, real value on egress — and why a consultant running unattended commands on a client's keys should care. Clear the door's question for the key, then face the wraith beyond it: a ghost that wears a false face and only shows its true one at the threshold.",
+    "Room 2, and the Beat Reporter picks up how a plugin gets *to* you in the first place. Alongside cloning a git repo or resolving an npm package, there's now a third door: the `archive` source installs a plugin from a plain zip fetched over HTTPS — no git, no npm — and it can be *pinned* to a SHA-256 hash so the download installs only if its bytes match what you recorded. The two books cover how the archive source and its hash pin work, and why a consultant handing a plugin to a client (or pulling one into a locked-down environment) should reach for the sealed, pinned package. Clear the door's question for the key, then face the wraith beyond it: a ghost that hands you a sealed parcel and swears the seal will tell you if anyone's been inside.",
   prompt:
-    "With sandbox credential masking (`mode: \"mask\"`), what does a sandboxed command actually read when it accesses the secret?",
+    "What does the new `archive` plugin source let you do?",
   choices: [
-    { id: 'a', label: "A per-session *sentinel* value standing in for the real one; the sandbox proxy substitutes the real value only as a request leaves the box for an allowed host", correct: true },
-    { id: 'b', label: "The real secret, but only after you approve a permission prompt each time the command reads it", correct: false },
-    { id: 'c', label: "Nothing — the variable is left unset inside the sandbox, so any command that needs it fails fast", correct: false },
-    { id: 'd', label: "An encrypted blob the command must first decrypt with a session key before it can be used", correct: false },
+    { id: 'a', label: "Install a plugin from a zip fetched over HTTPS — no git or npm in the path — with optional SHA-256 pinning so it installs only if the download's hash matches the value you recorded", correct: true },
+    { id: 'b', label: "Compress an installed plugin into a zip archive so you can email it to a teammate", correct: false },
+    { id: 'c', label: "Encrypt a plugin at rest so it can only run after you supply a decryption key each session", correct: false },
+    { id: 'd', label: "Mirror a git-hosted plugin locally so it keeps working after the upstream repository is deleted", correct: false },
   ],
-  passFeedback: "HIT! The command sees a sentinel — a decoy copy — never the real credential. Only when a request egresses to an allowed host does the sandbox proxy swap the sentinel for the true value. The secret is usable on the wire without ever sitting in plaintext inside the command's reach.",
-  failFeedback: "MISS! There's no per-read prompt, the value isn't unset (commands still work against the sentinel), and there's no blob to decrypt. The command reads a sentinel; the proxy substitutes the real value on egress. Re-read Book 1.",
+  passFeedback: "HIT! `archive` is a *source* — a way to install. Point it at a zip over HTTPS and Claude Code fetches and installs it with neither git nor npm involved. Add a SHA-256 pin and the install is refused unless the download hashes to exactly the value you recorded, so a swapped or corrupted package can't slip in.",
+  failFeedback: "MISS! It's not about zipping up or emailing an installed plugin, it's not at-rest encryption, and it's not a mirror of a git repo. It's a third install *source*: a zip over HTTPS, optionally SHA-256-pinned. Re-read Book 1.",
   lore: [
     {
       id: 'twic-2-lore-a',
-      text: `**Credential Masking — The Secret the Command Never Sees**
+      text: `**The \`archive\` Source — A Plugin From a Zip, Sealed With a Hash**
 
-**A decoy inside, the real thing on the way out**
+**A third way to say where a plugin comes from**
 
-The 2.1.224 line is compact but exact: *"Added \`mode: \"mask\"\` for sandbox credential files on Linux and WSL — sandboxed commands read a sentinel copy."* A *sentinel* is a per-session stand-in — a decoy string the same shape as the secret. Inside the sandbox, any command that reads the credential file gets the sentinel, not the real value. Then, when a request carrying that sentinel leaves the box for an allowed host, the sandbox proxy substitutes the true value on the wire. The command authenticates successfully; it just never held the real secret in plaintext.
+The 2.1.224 line is one sentence: *"Added \`archive\` plugin source: install plugins from a zip over HTTPS without git or npm, with optional SHA-256 pinning."* A plugin *source* is just the answer to "where does this come from." Two answers already existed: a git source clones a repository, an npm source resolves a package from a registry. \`archive\` adds a third — the plugin is a self-contained zip sitting at an HTTPS URL, and installing it means fetching that file and unpacking it. Nothing clones, nothing resolves a dependency tree.
 
-**Why the proxy has to be in the path**
+**Why "without git or npm" is the point, not a footnote**
 
-The swap happens at egress, which is why masking depends on the sandbox terminating TLS (\`network.tlsTerminate\`): the proxy must be able to see the outbound request to find the sentinel and replace it. And masking is only honored from user, managed, or \`--settings\`-supplied settings — not from something a session picks up mid-run — so the policy that protects the secret can't be rewritten by the work happening inside the box.
+Dropping git and npm from the path is the feature, not a caveat. It means a machine can install a plugin with neither a git client nor a package manager present — a stripped-down CI image, a hardened runner, a locked-down client box where npm is simply not allowed. The install surface shrinks to one thing: an HTTPS GET. Fewer tools in the path means fewer moving parts to trust and fewer to go wrong.
 
-**Masking part of a value, or a claim inside a token**
+**The SHA-256 pin, and what it actually guarantees**
 
-Beyond whole-file masking there are structured options for when the secret is embedded. \`extract\` with \`onExtractNoMatch\` masks only the spans a regex captures inside a structured env value, leaving the rest readable. \`decode: "jwt"\` with \`maskClaims\` is JWT-aware — it masks specific claims inside a token rather than the whole string. And \`awsPairs\`/\`sigv4\` handle AWS SigV4: the proxy detects a request signed with the sentinel access key and *re-signs* it with the real credentials on the way out, so signed AWS calls still verify.
+The optional part is the interesting part. SHA-256 is a hash — a fixed fingerprint computed from a file's exact bytes, where changing a single byte changes the fingerprint completely. Pin an archive to a SHA-256 value and Claude Code computes the hash of what it downloaded and compares: match, it installs; mismatch, it refuses. That's *integrity*, not secrecy — the pin doesn't hide the plugin, it proves the bytes you got are the exact bytes you expected. A package silently swapped at the URL, or mangled in transit, fails the check instead of installing quietly.
 
-> Takeaway: With \`mode: "mask"\`, a sandboxed command reads a sentinel decoy while the sandbox proxy swaps in the real credential only on egress to allowed hosts — so the secret works on the wire without ever sitting in plaintext where the command (or a stray prompt) could read it.`,
+> Takeaway: The \`archive\` source installs a plugin from a plain HTTPS zip with neither git nor npm required, and an optional SHA-256 pin makes the install verify the download's fingerprint against a value you recorded — so only the exact package you vetted ever lands.`,
     },
     {
       id: 'twic-2-lore-b',
-      text: `**Shrinking the Blast Radius — Autonomy on a Client's Keys**
+      text: `**Shipping Tools You Can Stand Behind — Distribution on a Client Engagement**
 
-**The problem masking is really solving**
+**The trust problem in "just install our plugin"**
 
-Book 1 was the how; this is the why it matters on an engagement. The whole appeal of the sandboxed Bash tool is letting Claude run commands without stopping to approve each one — which means, on a client's project, unattended commands touching the client's real API keys, database credentials, and cloud secrets. The uncomfortable question a security lead asks is: what stops one of those commands, or a stray instruction that slipped into a file Claude read, from simply printing the secret or shipping it somewhere it shouldn't go? Masking is the answer that lets you keep the autonomy.
+Book 1 was the how; here's why it matters when a plugin crosses an org boundary. On an engagement you often hand a client a plugin — your firm's review checklist, a scaffolder, an internal workflow — or pull a vendor's plugin into a client's environment. The uncomfortable questions are the client's: where is this coming from, and how do I know what I install today is what you vetted last week? "Clone our repo" and "npm install our package" both drag in a whole toolchain and a whole trust chain. A pinned archive answers both questions with one artifact and one hash.
 
-**A stolen sentinel is worthless**
+**Reproducible installs in places that forbid the usual tools**
 
-Because the command only ever reads the sentinel, the plaintext credential is never in its reach to log, echo, or exfiltrate. If something inside the box grabs the value and tries to send it to an unapproved host, what it's holding is the decoy — and the proxy only performs the swap for *allowed* hosts, so the real secret never rides a request to somewhere off the allowlist. You get the reduced friction of autonomous execution without the raw key sitting in the blast radius of every command.
+The "without git or npm" clause is what makes this land in the environments that matter. A hardened client runner, an air-gapped-adjacent build box, a minimal container — these are exactly the places that won't have npm and may not have git, and exactly the places a consultant needs a plugin to install *reproducibly*. Host the zip somewhere the box can reach over HTTPS, pin the hash, and every install of that URL is byte-identical or it doesn't happen. No "works on my machine" drift between what you tested and what the client ran.
 
-**Matching the tool to the credential**
+**The pin is a supply-chain control, so treat it like one**
 
-The structured options are what make this practical against real client stacks rather than toy examples. A client on AWS isn't handing you a bare token — they're signing SigV4 requests, so \`awsPairs\`/\`sigv4\` re-signing is what keeps those calls working while the access key stays masked. A client whose auth is a JWT wants \`maskClaims\` to hide the sensitive claims without breaking the token's structure. Reach for masking the moment an unattended run has to authenticate against something you'd be embarrassed to find in a log.
+Record the SHA-256 the way you'd record any control: alongside the URL, in the config or runbook you hand over, so an auditor can see that the install is pinned and to what. If the upstream package legitimately changes, the hash changes and the install fails loudly — which is the behavior you want, because it forces a human to re-vet and re-pin rather than letting a new version slip in unnoticed. An unpinned archive is convenient; a pinned one is defensible.
 
-> Takeaway: Masking lets you run autonomous, sandboxed commands against a client's real credentials while keeping the plaintext out of every command's reach — a leaked sentinel is useless, and SigV4 re-signing and JWT claim-masking make it hold up against real client auth.`,
+> Takeaway: Use a pinned \`archive\` source when a plugin crosses an org boundary or lands in a locked-down box — one HTTPS zip installs without git or npm, the SHA-256 pin makes every install byte-identical to what you vetted, and a legitimate upstream change fails loudly instead of sneaking in.`,
     },
   ],
   practice: {
     id: 'twic-2-practice',
-    template: `I'm letting the sandboxed Bash tool run unattended against the client's ____,
-so I don't want the raw credential sitting where any command could read it.
-I'll set the credential file to ____ so commands read a sentinel instead of the real value.
-Because the swap happens at egress, I'll make sure ____ is on so the proxy can see the request.
-Their stack signs with ____, so I'll turn on the matching re-signing option
-to keep the real calls verifying while the key stays masked.`,
+    template: `The client's build box is locked down — no npm, and git isn't guaranteed either —
+but they still need our review plugin. So instead of a repo to clone, I'll ship it as a ____
+that the box pulls over ____.
+To make the install defensible, I'll ____ it to the exact hash of the package I vetted,
+so a swapped or corrupted download ____ instead of installing quietly.
+I'll record that hash right next to the URL in the runbook I hand over.`,
     blanks: [
-      { id: 'target', suggestions: ['production API keys', 'cloud access credentials', 'database secrets'] },
-      { id: 'mask-mode', suggestions: ['`mode: "mask"`', 'masking mode', 'the sentinel-copy mode'] },
-      { id: 'tls-req', suggestions: ['`network.tlsTerminate`', 'TLS termination in the sandbox', 'the sandbox proxy in the TLS path'] },
-      { id: 'auth-scheme', suggestions: ['AWS SigV4', 'a JWT', 'a signed cloud request'] },
+      { id: 'artifact', suggestions: ['zip archive', 'self-contained package', 'sealed archive'] },
+      { id: 'transport', suggestions: ['HTTPS', 'a plain HTTPS GET', 'an HTTPS URL'] },
+      { id: 'pin-verb', suggestions: ['SHA-256-pin', 'pin', 'lock'] },
+      { id: 'fail-mode', suggestions: ['fails the check', 'is refused', 'stops the install'] },
     ],
     prize: { id: 'twic-2-prize', label: 'TWIC · MID-WEEK' },
   },
   conversations: {
     'twic-npc-2': {
       summary:
-        "Sandbox credential masking (2.1.224): `mode: \"mask\"` on Linux and WSL means a sandboxed command reads a per-session *sentinel* copy of a secret, not the real value; the sandbox proxy substitutes the true value only on egress to an allowed host. That swap needs `network.tlsTerminate` so the proxy sits in the request path, and masking is honored only from user, managed, or --settings-supplied settings, so work inside the box can't rewrite the policy. Structured options: `extract`/`onExtractNoMatch` mask only regex-captured spans of a structured env value; `decode: \"jwt\"` with `maskClaims` masks specific JWT claims; `awsPairs`/`sigv4` re-sign AWS SigV4 requests with the real credentials on egress. The point for a consultant: run autonomous sandboxed commands against a client's real keys while the plaintext stays out of every command's reach — a leaked sentinel is worthless, and the swap only happens for allowed hosts.",
+        "The `archive` plugin source (2.1.224): a third way to install a plugin, beside git (clone a repo) and npm (resolve a package). `archive` installs a plugin from a plain zip fetched over HTTPS, with neither git nor npm required in the path — so a stripped-down CI image, hardened runner, or locked-down client box can install it with just an HTTPS GET. The optional SHA-256 pin is the safety feature: SHA-256 is a fingerprint of the file's exact bytes, so pinning makes Claude Code compute the download's hash and install only if it matches the value you recorded — a swapped or corrupted package fails the check instead of installing quietly. It's an integrity control, not secrecy: the pin proves the bytes are the ones you vetted, it doesn't hide the plugin. For a consultant this is how you distribute a plugin across an org boundary or into a minimal environment reproducibly — host the zip, pin the hash, record it in the runbook, and every install is byte-identical to what you vetted or it doesn't happen.",
       beats: [
-        { kind: 'say', text: "Second story's quieter but it's the one a security lead will thank you for. The sandboxed Bash tool lets me run commands without asking each time — great for momentum, but it means unattended commands near a client's real secrets. The 2.1.224 answer: `mode: \"mask\"` on Linux and WSL. A sandboxed command now reads a *sentinel* — a decoy copy — instead of the actual credential." },
-        { kind: 'say', text: "Here's the trick. The command holds the decoy the whole time it's working. Only when a request carrying that sentinel leaves the box for an *allowed* host does the sandbox proxy swap in the real value on the wire. The call authenticates fine; the plaintext secret was never in the command's hands to log or leak." },
-        { kind: 'say', text: "Two guardrails make that trustworthy. The swap happens at egress, so it needs `network.tlsTerminate` — the proxy has to be in the request path to see the sentinel and replace it. And masking is only honored from user, managed, or `--settings` config — never something the session picks up mid-run — so the work inside the box can't quietly turn the protection off." },
+        { kind: 'say', text: "Second story is about how a plugin even reaches you. A *source* is just 'where does this come from.' You already had two answers — git clones a repo, npm resolves a package. The 2.1.224 line adds a third: `archive`. Install a plugin straight from a zip over HTTPS, with neither git nor npm in the path." },
+        { kind: 'say', text: "That 'without git or npm' bit isn't a footnote — it's the whole point. It means a box with no package manager and maybe no git client can still install a plugin. A hardened CI image, a locked-down client machine — the install shrinks to one thing: an HTTPS GET of a zip. Fewer tools in the path, fewer things to trust and fewer to break." },
+        { kind: 'say', text: "Then the optional half, which is the part I care about most: SHA-256 pinning. SHA-256 is a fingerprint of a file's exact bytes — change one byte and the fingerprint changes completely. Pin an archive to a hash and Claude Code checks the download against it: match, it installs; mismatch, it refuses. You get exactly the bytes you vetted, or you get nothing." },
         {
           kind: 'choice',
-          prompt: "Suppose a command inside the sandbox reads the masked key and tries to POST it to some random server that isn't on your allowlist. What actually goes out?",
+          prompt: "A security lead asks what the SHA-256 pin buys them. What's the honest answer — what does the pin actually guarantee?",
           options: [
-            { id: 'sentinel', label: "The sentinel — the decoy — because the proxy only swaps in the real value for allowed hosts", correct: true, reaction: "Right. The command only ever had the decoy, and the substitution happens only on egress to an *allowed* host. Send it somewhere off the allowlist and the real secret never rides along. A stolen sentinel is worthless." },
-            { id: 'real', label: "The real secret, because masking only hides it at rest, not in flight", correct: false, reaction: "No — masking is exactly about in-flight. The command holds a sentinel, and the proxy substitutes the true value only for allowed hosts. An unapproved host gets the decoy." },
-            { id: 'blocked', label: "Nothing — masking blocks every outbound request that carries a credential", correct: false, reaction: "Not quite. Masking doesn't block traffic; the allowlist governs which hosts are reachable. What masking guarantees is that the *real* value is only ever substituted for allowed hosts — elsewhere the sentinel goes out harmless." },
+            { id: 'integrity', label: "Integrity: the install only proceeds if the download's bytes hash to the value you recorded, so a swapped or corrupted package is refused", correct: true, reaction: "Right, and say it precisely: it's integrity, not secrecy. The pin doesn't hide or encrypt the plugin — it proves the package you got is byte-identical to the one you vetted. A silent swap at the URL fails the check." },
+            { id: 'encryption', label: "Confidentiality: the pin encrypts the plugin so nobody can read it without the hash", correct: false, reaction: "No — a hash isn't a key. SHA-256 pinning verifies the download hasn't changed; it doesn't encrypt or hide anything. The plugin is as readable as any zip; what's guaranteed is that it's the *right* zip." },
+            { id: 'availability', label: "Availability: the pin keeps a local copy so the plugin still installs if the URL goes down", correct: false, reaction: "Not that. The pin is about the bytes matching, not about caching or uptime. If the URL is down there's nothing to hash; what the pin promises is that whatever you *do* download is exactly what you expected." },
           ],
         },
-        { kind: 'say', text: "And it's built for real client stacks, not toy tokens. `extract` with `onExtractNoMatch` masks just the regex-captured spans of a structured value. `decode: \"jwt\"` with `maskClaims` hides specific claims inside a token without breaking its shape. And `awsPairs`/`sigv4` handle AWS: the proxy spots a request signed with the sentinel access key and *re-signs* it with the real credentials on the way out, so SigV4 calls still verify." },
-        { kind: 'say', text: "So the play is: reach for masking the moment an unattended run has to authenticate against a client credential you'd hate to find in a log. You keep the autonomy of sandboxed Bash, and the raw key stays out of the blast radius of every command it runs." },
-        { kind: 'say', text: "Books have the full swap mechanism and all the structured options. The door wants one thing: what does the command actually *read* under masking? Answer it for the key. Then face Falseface past the arch — a wraith that wears a decoy over its real face and only lets the true one show at the threshold going out. It's betting you think the mask comes off inside." },
+        { kind: 'say', text: "So the engagement play: any time a plugin crosses an org boundary — you handing a client your firm's review plugin, or pulling a vendor's into a client's box — reach for a pinned archive. One HTTPS zip installs without dragging in a toolchain, and the pin means every install is byte-identical to what you tested. No 'works on my machine' drift between your bench and theirs." },
+        { kind: 'say', text: "And treat the hash like the control it is: record the SHA-256 right next to the URL in the runbook you hand over, so an auditor sees the install is pinned and to what. If the upstream legitimately changes, the hash changes and the install fails *loudly* — which is what you want, because it forces a human to re-vet and re-pin instead of letting a new version sneak in." },
+        { kind: 'say', text: "Books have the full source model and exactly what the pin guarantees. The door wants one thing: what does the `archive` source let you do? Answer for the key. Then face Sealwarden past the arch — a wraith that hands you a parcel bound with a wax seal and swears the seal, not the wrapping, is what tells you whether anyone's been inside." },
       ],
     },
   },
   battle: {
-    name: 'Falseface, the Sentinel Wraith',
+    name: 'Sealwarden, the Pinned Parcel Wraith',
     spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a pale shape drifts up wearing a blank porcelain face, and behind it something truer flickers and hides* …look all you like, operator… what you *read* of me is a decoy worn for the room… my real face shows only at the threshold, only to those I'm let out to… tell me what you actually see in here, or wear a false face of your own forever…",
+    introLine: "*a hooded shade drifts forward holding a plain parcel bound in cord, a wax seal pressed hard across the knot* …take the package, operator — no cart of tools rolls behind it, only the parcel and its seal… but tell me what the seal is *for*, or carry a stranger's bundle and never know whose hand packed it…",
     tauntLines: [
-      "*the porcelain face tilts, unbroken* you reached for the truth inside the box? there is none here — only the stand-in… the real value waits at the door…",
-      "*a cold laugh behind the mask* you'd carry my decoy to a stranger's gate and call it a theft? go on — it's worth *nothing* off the list I'm let out to…",
+      "*the wax seal glints, unbroken* you think the seal *hides* what's within? no — press it and read it… it tells you only whether the bytes are the ones you trusted…",
+      "*the cord tightens on its own* you'd swap my parcel for another and hope I don't notice? the seal would not match, and the door would not open… try again…",
     ],
-    victoryLine: "*the porcelain face dissolves; the true one turns, briefly, and is gone* …you knew the decoy from the real, and where the swap is made… take the key, operator, and let no raw secret sit where a command can read it…",
+    victoryLine: "*the seal holds firm as the wraith offers the parcel* …no git, no registry, only the package and a fingerprint that must match… you read the seal true… take the key, operator, and install only what you sealed yourself…",
     questions: [
       {
         prompt:
-          "With sandbox credential masking (`mode: \"mask\"`), what does a sandboxed command actually read when it accesses the secret?",
+          "What does the new `archive` plugin source let you do?",
         choices: [
-          { id: 'a', label: "A per-session *sentinel* value standing in for the real one; the sandbox proxy substitutes the real value only as a request leaves the box for an allowed host", correct: true },
-          { id: 'b', label: "The real secret, but only after you approve a permission prompt each time the command reads it", correct: false },
-          { id: 'c', label: "Nothing — the variable is left unset inside the sandbox, so any command that needs it fails fast", correct: false },
-          { id: 'd', label: "An encrypted blob the command must first decrypt with a session key before it can be used", correct: false },
+          { id: 'a', label: "Install a plugin from a zip fetched over HTTPS — no git or npm in the path — with optional SHA-256 pinning so it installs only if the download's hash matches the value you recorded", correct: true },
+          { id: 'b', label: "Compress an installed plugin into a zip archive so you can email it to a teammate", correct: false },
+          { id: 'c', label: "Encrypt a plugin at rest so it can only run after you supply a decryption key each session", correct: false },
+          { id: 'd', label: "Mirror a git-hosted plugin locally so it keeps working after the upstream repository is deleted", correct: false },
         ],
-        passFeedback: "HIT! The command sees a sentinel — a decoy copy — never the real credential. Only when a request egresses to an allowed host does the sandbox proxy swap the sentinel for the true value. The secret is usable on the wire without ever sitting in plaintext inside the command's reach.",
-        failFeedback: "MISS! There's no per-read prompt, the value isn't unset (commands still work against the sentinel), and there's no blob to decrypt. The command reads a sentinel; the proxy substitutes the real value on egress. Re-read Book 1.",
+        passFeedback: "HIT! `archive` is a *source* — a way to install. Point it at a zip over HTTPS and Claude Code fetches and installs it with neither git nor npm involved. Add a SHA-256 pin and the install is refused unless the download hashes to exactly the value you recorded, so a swapped or corrupted package can't slip in.",
+        failFeedback: "MISS! It's not about zipping up or emailing an installed plugin, it's not at-rest encryption, and it's not a mirror of a git repo. It's a third install *source*: a zip over HTTPS, optionally SHA-256-pinned. Re-read Book 1.",
       },
     ],
   },
