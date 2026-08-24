@@ -1,139 +1,134 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — GitLab merge request support: the `--worktree` flag and
- * the `claude agents` view now accept GitLab *merge request* URLs, the same way
- * they already accepted GitHub pull request URLs. Passing an MR URL to
- * `--worktree` checks that MR's branch out into an isolated git worktree — a
- * separate working directory sharing the repo's history — so you can review and
- * run it without disturbing your current checkout; the session then appears in
- * the `claude agents` view alongside your other agent sessions. Companion
- * GitLab items landed the same window: plugin marketplaces now clone bare
- * `gitlab.com` repo URLs like `github.com` URLs, and secret redaction covers
- * GitLab token families with the `glab` CLI config store sandbox-protected.
- * Sources (Claude Code CHANGELOG 2.1.233 + 2.1.232):
- *   - "Added GitLab merge request URL support to the `--worktree` flag and the
- *      `claude agents` view"
- *   - "Added GitLab support to plugin marketplaces: bare `gitlab.com` repo URLs
- *      now clone like `github.com` URLs"
- *   - "Added secret redaction for GitLab token families and full redaction of
- *      routable tokens; the `glab` CLI config store gets sandbox protection"
+ * twic-1 (Feature A) — the built-in "Concise" output style. Claude Code ships a
+ * new output style, selectable under Output style in `/config`, that has Claude
+ * lead with results and skip the preamble and narration around them — while
+ * doing the work just as thoroughly. It changes Claude's *voice*, not its rigor:
+ * the same reads, edits, and checks happen; only the connective prose around
+ * them is trimmed.
+ * Source (Claude Code CHANGELOG 2.1.237):
+ *   - "Added a built-in \"Concise\" output style: Claude leads with results and
+ *      skips preamble and narration, while doing the work just as thoroughly.
+ *      Select it under Output style in /config."
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown, and the Beat Reporter opens with a small line that quietly widens the door: GitLab has arrived in Claude Code. The `--worktree` flag and the `claude agents` view — which already knew how to take a GitHub pull request URL — now take a GitLab *merge request* URL too, so the review flow you had on one platform is the review flow you have on both. The two books cover how `--worktree` turns an MR URL into an isolated checkout you can review, and why a consultant working a GitLab-hosted client can now stop leaving Claude Code to do it. Answer the door's one question for the key — then face the revenant past it, a skeleton that guards a bridge between two hosts and swears only one of them is real.",
+    "Room 1 of this week's rundown, and the Beat Reporter is holding two versions of the same answer: one buried under three paragraphs of 'Let me start by…' and 'Now I'll…', the other opening with the result. The 2.1.237 release adds a built-in *Concise* output style — pick it under Output style in `/config` and Claude leads with the result, skipping the preamble and narration, while doing the work exactly as thoroughly as before. The two books cover what an output style actually changes and why a consultant scanning a wall of Claude output wants the narration gone but the rigor kept. Answer the door's one question for the key — then face the thing that guards it, a skeleton that has never once gotten to the point.",
   prompt:
-    "What did the 2.1.233 release add for GitLab merge requests?",
+    "What does the new built-in \"Concise\" output style change about how Claude works?",
   choices: [
-    { id: 'a', label: "GitLab *merge request* URL support in the `--worktree` flag and the `claude agents` view — so an MR checks out into an isolated worktree you can review, and the session shows up among your agents, exactly as GitHub PRs already did", correct: true },
-    { id: 'b', label: "Automatic merging of a GitLab MR once its pipeline passes and it has the required approvals", correct: false },
-    { id: 'c', label: "A replacement for GitLab CI runners that executes the project's `.gitlab-ci.yml` pipelines on Claude Code's own infrastructure", correct: false },
-    { id: 'd', label: "Only plugin-marketplace cloning of `gitlab.com` URLs — nothing that touches reviewing merge requests", correct: false },
+    { id: 'a', label: "It changes Claude's *voice* only: Claude leads with the result and skips preamble and narration, while doing the same work just as thoroughly — you select it under Output style in `/config`", correct: true },
+    { id: 'b', label: "It makes Claude do less — fewer file reads, skipped checks, and shorter reasoning — to produce a faster, lighter answer", correct: false },
+    { id: 'c', label: "It's a new faster, cheaper model you switch to for routine work, separate from your main model", correct: false },
+    { id: 'd', label: "It truncates Claude's final answers to a fixed length to save tokens, cutting off long results", correct: false },
   ],
-  passFeedback: "HIT! The `--worktree` flag and the `claude agents` view learned to take a GitLab MR URL, the same surfaces that already took GitHub PR URLs. Pass an MR URL and its branch checks out into an isolated worktree for review; the session appears among your agents. It's the existing review flow, now on GitLab too.",
-  failFeedback: "MISS! It doesn't auto-merge, it isn't a CI-runner replacement, and it's more than a marketplace tweak. What shipped is MR URL support in `--worktree` and the `claude agents` view — checkout-and-review, not merge-and-ship. Re-read Book 1.",
+  passFeedback: "HIT! Concise is an output *style*, not a shortcut. Claude still reads, edits, and checks exactly as thoroughly — it just leads with the result and drops the 'Let me…' / 'Now I'll…' narration around it. You turn it on under Output style in `/config`.",
+  failFeedback: "MISS! It doesn't make Claude do less, it isn't a model, and it doesn't truncate results. Concise trims the *narration*, not the work: same rigor, fewer words of preamble. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**GitLab Merge Requests — The Same Review Flow, Now on the Other Host**
+      text: `**The Concise Output Style — Losing the Preamble Without Losing the Rigor**
 
-**One line, but it opens a second platform**
+**What an output style actually is**
 
-The 2.1.233 entry is short: *"Added GitLab merge request URL support to the \`--worktree\` flag and the \`claude agents\` view."* To read it you need to know what those two surfaces already did for GitHub. \`--worktree\` takes a change-request URL and checks that request's branch out into a *git worktree* — a second working directory that shares the same repository history but sits apart from your current checkout — so you can read, run, and poke at someone's proposed change without disturbing what you're working on. Until now that trick knew GitHub pull requests. Now it knows GitLab *merge requests* too. Same flag, same behavior, second host.
+An *output style* in Claude Code is a setting that shapes Claude's *voice* — how it narrates and presents its work — without touching what the work is. It's a different lever than the model (which decides the engine) or permission mode (which decides how much Claude can do unattended). The 2.1.237 release adds a new built-in one called *Concise*, and you select it the same place as any other: under Output style in \`/config\`.
 
-**Where the session shows up**
+**What Concise trims, and what it doesn't**
 
-The other half of the line is the \`claude agents\` view — the roster of your background and agent sessions. A worktree you spun up from an MR URL surfaces there as a session you can jump back into, so a review you started doesn't vanish into a stray terminal tab. GitLab MR sessions now sit in that list next to your GitHub ones; the view stopped caring which host the change came from.
+The changelog line is precise about the trade: *"Claude leads with results and skips preamble and narration, while doing the work just as thoroughly."* Read that last clause twice, because it's the whole point. Concise does not make Claude cut corners. The file reads still happen, the edits still happen, the checks still run — Claude is doing exactly as much under the hood. What disappears is the connective prose around it: the "Let me start by looking at…", the "Now I'll run the tests…", the paragraph re-explaining what it just did. You get the result first, and the reasoning stays available where it matters, minus the play-by-play.
 
-**The rest of GitLab arriving at once**
+**Why it's a style, not a mode or a model**
 
-This didn't land alone. In the same window plugin marketplaces learned to clone bare \`gitlab.com\` repo URLs exactly like \`github.com\` URLs, so a team distributing internal tooling off GitLab isn't a second-class case. And secret redaction grew to cover GitLab token families — with full redaction of routable tokens and sandbox protection for the \`glab\` CLI's config store — so a GitLab credential doesn't leak into a transcript the way an unguarded token might.
+It's worth being exact about the category, because the misreadings are all category errors. Concise isn't a smaller model you swap in for speed. It isn't a permission mode that changes what Claude may touch. And it isn't a truncation cap that lops the end off long answers. It's a presentation setting — one row under Output style in \`/config\` — that changes the shape of the reply and nothing about the substance behind it.
 
-> Takeaway: \`--worktree\` and the \`claude agents\` view now accept GitLab merge request URLs, giving MRs the same isolated-worktree review flow GitHub PRs already had — and marketplace cloning plus token redaction round out GitLab as a first-class host.`,
+> Takeaway: Concise is an output style that makes Claude lead with the result and drop the preamble/narration, doing the same work just as thoroughly — chosen under Output style in \`/config\`.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Meeting the Client Where Their Code Lives — GitLab Without Leaving Claude Code**
+      text: `**Reading Claude at Engagement Speed — When to Reach for Concise, and When Not To**
 
-**Not every client is on GitHub**
+**The problem Concise solves for a consultant**
 
-Book 1 was the mechanism; this is when it matters. A large share of enterprise and public-sector clients self-host GitLab or run GitLab.com, not GitHub — often precisely because they want their SCM inside their own boundary. Before this, reviewing one of their merge requests through Claude Code meant friction: clone by hand, check out the branch yourself, and you'd lost the worktree isolation and the agent-session bookkeeping you get for free on GitHub. The change erases that gap. Paste the MR URL into \`--worktree\` and you're reviewing their proposed change in an isolated checkout, no manual plumbing.
+Book 1 was the mechanism; here's when it earns its place. On a live engagement you are often *scanning* Claude's output, not reading it — you kicked off a task, you're watching for the result and whether anything looks wrong, and every "Let me now examine…" paragraph is a speed bump between you and the answer. Turn on Concise and Claude opens with the thing you were waiting for. Across a long session, or a screen you're sharing with a client who just wants to see the outcome, that's the difference between skimming and wading.
 
-**Why the worktree, specifically, matters on an engagement**
+**The judgment call: when narration is the deliverable**
 
-The isolation is the part a careful consultant values. Because the MR lands in its own worktree rather than on top of your working tree, you can review a client's change — run their tests against it, read the diff, try a fix — while whatever you were already doing stays untouched a directory away. Juggle three open MRs across two client repos and each is its own session in the \`claude agents\` view, not a pile of stashes you're afraid to pop. That's the difference between reviewing at a client's pace and reviewing at the pace of your git housekeeping.
+The consultant's skill here is knowing when *not* to use it. Sometimes the narration is the point. When you're teaching a client's junior engineer how Claude reached a fix, the "first I checked X, then I ruled out Y" is the lesson. When you need an audit trail of exactly what was touched and why, the play-by-play is the record. In those moments the default, more narrated voice is the right tool, and because Concise is just a style row in \`/config\`, you switch back the instant the audience changes. Match the voice to who's reading.
 
-**The credential story that comes with it**
+**The reassurance to give a nervous client**
 
-There's a trust dividend in the companion items. A GitLab-hosted client's tokens are exactly the kind of secret you don't want surfacing in a shared transcript or a shipped log; the new GitLab token redaction and the sandbox-protected \`glab\` config store mean those credentials are handled with the same care GitHub's already were. When a client asks whether using Claude Code against their GitLab is safe, "it redacts your token families and isolates the \`glab\` config" is a concrete, quotable answer.
+There's a client-facing worry worth heading off: "if it's writing less, is it doing less?" No — and you can say so with confidence, because the feature is explicit that the work is done *just as thoroughly*. Concise changes how much Claude explains itself, not how carefully it works. That distinction lets you run a leaner, faster-to-read session without anyone quietly wondering whether corners got cut.
 
-> Takeaway: Reach for GitLab MR support the moment a client's code lives on GitLab — you review their merge requests in an isolated worktree, track each as its own agent session, and lean on the new token redaction to keep their credentials out of your transcripts.`,
+> Takeaway: Reach for Concise when you're scanning for outcomes at engagement speed; switch back to the narrated default when the reasoning itself is the deliverable — and reassure clients that "fewer words" never means "less work."`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `This client hosts everything on GitLab, so the review that used to mean manual cloning
-is now a single command: I pass the ____ straight to the \`--worktree\` flag.
-That checks the change out into an ____ so my current work stays untouched a directory away.
-I can find the review later in the ____, where it sits beside my GitHub sessions.
-And because their credentials shouldn't leak, I'll lean on the new ____ that landed alongside it.`,
+    template: `We're deep in a long refactor for this client and I'm scanning output for results,
+not reading every play-by-play — so I'll switch Claude to a leaner voice.
+In \`/config\`, under ____, I'll pick the ____ output style.
+That makes Claude ____ and drop the preamble and narration around it —
+while still doing the work ____.
+And when I move to walking their junior engineer through the reasoning, I'll ____.`,
     blanks: [
-      { id: 'input-url', suggestions: ['GitLab merge request URL', 'MR link', "client's merge request URL"] },
-      { id: 'isolation', suggestions: ['isolated git worktree', 'separate working directory', 'worktree of its own'] },
-      { id: 'roster', suggestions: ['`claude agents` view', 'agents roster', 'list of agent sessions'] },
-      { id: 'cred-guard', suggestions: ['GitLab token redaction', 'sandbox-protected `glab` config store', 'redaction of routable tokens'] },
+      { id: 'setting-row', suggestions: ['Output style', 'the Output style row', 'the Output style setting'] },
+      { id: 'style-name', suggestions: ['Concise', 'built-in Concise', 'new "Concise"'] },
+      { id: 'behavior', suggestions: ['lead with the result', 'open with the result first', 'put the outcome up front'] },
+      { id: 'rigor', suggestions: ['just as thoroughly', 'with the same rigor', 'exactly as carefully as before'] },
+      { id: 'switch-back', suggestions: ['switch back to the narrated default', 'turn Concise back off', 'return to the default output style'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "GitLab merge request support (2.1.233): the `--worktree` flag and the `claude agents` view now accept GitLab *merge request* URLs, exactly as they already accepted GitHub pull request URLs. Passing an MR URL to `--worktree` checks that MR's branch out into an isolated git worktree — a separate working directory sharing the repo's history — so you can review and run the proposed change without disturbing your current checkout; the session then shows up in the `claude agents` view next to your GitHub ones. It's the existing review flow extended to a second host, not auto-merge and not a CI-runner replacement. Companion GitLab items landed the same window: plugin marketplaces now clone bare `gitlab.com` repo URLs like `github.com` URLs, and secret redaction covers GitLab token families with full redaction of routable tokens and sandbox protection for the `glab` CLI config store. For a consultant, this means a GitLab-hosted client's merge requests get first-class, isolated review inside Claude Code, with their credentials kept out of transcripts.",
+        "The built-in \"Concise\" output style (2.1.237): selected under Output style in `/config`, it has Claude lead with the result and skip the preamble and narration around it, while doing the work *just as thoroughly*. It's a voice setting, not a model and not a permission mode, and it does not truncate answers or make Claude cut corners — the reads, edits, and checks all still happen; only the connective 'Let me…' / 'Now I'll…' prose is trimmed. For a consultant, reach for it when you're scanning a long session for outcomes or sharing a screen with a results-focused client; switch back to the narrated default when the reasoning itself is the deliverable — teaching a junior, or keeping an audit trail. The one thing to tell a nervous client: fewer words never means less work.",
       beats: [
-        { kind: 'say', text: "Lead story this week is a two-word addition that opens a whole platform: *merge requests*. The 2.1.233 line reads plainly — GitLab merge request URL support was added to the `--worktree` flag and the `claude agents` view. If you've reviewed a GitHub pull request through Claude Code, you already know this flow. It just learned a second host." },
-        { kind: 'say', text: "Here's what `--worktree` actually does with that URL. It takes the change's branch and checks it out into a *git worktree* — a second working directory that shares the repository's history but sits apart from your current checkout. So you can read the diff, run their tests, try a fix, all without touching whatever you had open. Before this, a GitLab MR meant doing that plumbing by hand." },
-        { kind: 'say', text: "And the review doesn't get lost. The `claude agents` view — your roster of agent sessions — now lists MR-based sessions too, right alongside your GitHub ones. The view stopped caring which host the change came from. Three open reviews across two repos become three named sessions, not three terminal tabs you're afraid to close." },
+        { kind: 'say', text: "Lead story is small and immediately usable: a new built-in *output style* called Concise, added in 2.1.237. You pick it under Output style in `/config`, same place you'd change any style. What it does is trim the throat-clearing — Claude leads with the result instead of narrating its way there." },
+        { kind: 'say', text: "First, get the category right, because every wrong guess about this feature is a category mistake. An output style shapes Claude's *voice* — how it presents the work. It is not the model, which is the engine. It is not a permission mode, which is what Claude's allowed to touch. It's one row that changes how the answer reads." },
+        { kind: 'say', text: "Here's the line that matters, almost word for word: Claude leads with results and skips preamble and narration, *while doing the work just as thoroughly*. Sit with that last part. The reads still happen. The edits still happen. The checks still run. Concise deletes the 'Let me start by…' and the 'Now I'll…' — not a single step of the actual work." },
         {
           kind: 'choice',
-          prompt: "A partner asks: 'So Claude now merges our GitLab MRs for us once they're approved?' Set them straight — what did this actually add?",
+          prompt: "A client watching your screen asks: 'If it's Concise now, is it being lazier — skipping checks to answer faster?' What's the honest answer?",
           options: [
-            { id: 'review-flow', label: "Checkout-and-review: an MR URL now checks out into an isolated worktree, surfaced as an agent session — the same review flow GitHub PRs had", correct: true, reaction: "Exactly. It's about *reviewing* a merge request in isolation, not merging it. `--worktree` checks the branch out, the `claude agents` view tracks the session, and the decision to merge stays entirely yours." },
-            { id: 'auto-merge', label: "Yes — once the pipeline passes and approvals are in, Claude merges the MR automatically", correct: false, reaction: "No — nothing here auto-merges. What shipped is MR URL support in `--worktree` and the agents view: checkout and review. Merging is still a human call." },
-            { id: 'ci-runner', label: "It runs their `.gitlab-ci.yml` pipelines on Claude's infrastructure instead of GitLab's runners", correct: false, reaction: "Not that at all. This doesn't touch CI. It's the review flow — check the MR out into a worktree and read it — extended from GitHub to GitLab." },
+            { id: 'voice-only', label: "No — Concise changes the voice, not the work: same reads, edits, and checks, just without the preamble and narration", correct: true, reaction: "Exactly right. The feature is explicit that the work is done just as thoroughly. You're cutting the play-by-play, not the diligence — and that's a promise you can make to a client with a straight face." },
+            { id: 'less-work', label: "A little — it does fewer checks and shorter reasoning to keep things fast", correct: false, reaction: "No, and it's important you don't tell a client that. Concise does the work just as thoroughly; only the narration around it is trimmed. Nothing under the hood gets skipped." },
+            { id: 'truncates', label: "Sort of — it caps the answer length, so long results get cut off", correct: false, reaction: "That's a different thing entirely. Concise doesn't truncate results — it drops the preamble and narration. A long result stays a full result; it just doesn't arrive wrapped in three paragraphs of throat-clearing." },
           ],
         },
-        { kind: 'say', text: "The worktree isolation is the part I'd sell to a careful reviewer. Because the MR lands in its *own* working directory, you review a client's change — run it, diff it, patch it — while everything you were already doing sits untouched one directory over. That's reviewing at the client's pace instead of the pace of your git stash-juggling." },
-        { kind: 'say', text: "It didn't arrive alone, either. Plugin marketplaces now clone bare `gitlab.com` URLs just like `github.com` ones, so a team shipping internal tooling off GitLab isn't second-class. And secret redaction grew to cover GitLab token families — full redaction of routable tokens, plus sandbox protection for the `glab` CLI's config store — so a GitLab credential doesn't bleed into a transcript." },
-        { kind: 'say', text: "That last part is your answer when a GitLab-hosted client asks whether this is safe: it redacts your token families and isolates the `glab` config. Concrete, quotable, true. The books have the full picture. The door wants only this: what did 2.1.233 add for merge requests? Answer for the key. Then square up to Mergewright past it — a revenant guarding a bridge between two hosts, betting you'll swear only GitHub is real." },
+        { kind: 'say', text: "Now the consultant's real skill: knowing when *not* to use it. On a long refactor where you're scanning for the result, Concise is a gift — you stop wading through 'first I'll examine…' to reach the answer. But when the narration IS the deliverable, keep the default voice." },
+        { kind: 'say', text: "Two cases where the play-by-play is the point. One: you're teaching a client's junior engineer, and 'first I checked X, then I ruled out Y' is the whole lesson. Two: you need an audit trail — a record of exactly what was touched and why. In both, the narrated default earns its words. Because Concise is just a `/config` row, you flip back the moment the audience changes." },
+        { kind: 'say', text: "So: match the voice to who's reading. Scanning for outcomes — Concise. Explaining or documenting — the narrated default. The books have the full picture. The door asks only this: what does Concise actually change about how Claude works? Answer for the key. Then square up to Longwind past it — a skeleton that has buried every answer it ever gave under a landslide of preamble, and swears the padding was the point." },
       ],
     },
   },
   battle: {
-    name: 'Mergewright, the Two-Host Revenant',
+    name: 'Longwind, the Endless Preamble',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a gaunt skeleton hauls itself upright astride a stone bridge that spans two gorges at once, a rusted request-branch clutched in each hand* …you'd cross to review a change, operator? then tell me true — for I have guarded but ONE gate for years, and now a second has opened beneath me… name what the flag learned to carry across, or stand at the near bank forever…",
+    introLine: "*a tall skeleton clears a throat it does not have, bones clattering into a slow bow* …ahh, operator, before I begin, allow me to first set the scene, and then to contextualize the scene, and then to preface my contextualization… *it has not moved toward the point in a hundred years* …tell me — when they trimmed my kind from the answer, what exactly did they cut away?",
     tauntLines: [
-      "*the bridge groans and one gorge darkens* you think it *merges* what crosses? no — I only let you look… the sealing of the seam is never mine to do…",
-      "*bones rattle against the far rail* you'd have me run their pipelines on some far tower's fire? I am a bridge, not a forge… I carry the request to a room of its own, nothing more…",
+      "*rattles grandly* you think they made me do LESS? never! the labor was untouched — it was only my beautiful, necessary narration they silenced…",
+      "*gestures at nothing for a long while* a model? a cap on my length? no, no — I am a *style*, a voice, a manner of speaking… get the category right or stand here through my next preamble…",
     ],
-    victoryLine: "*Mergewright lowers both branches and the second span steadies* …a merge request, checked out to its own ground, tracked among your agents… you named it true and both banks hold… take the key, operator, and review where the client's code actually lives…",
+    victoryLine: "*Longwind stops mid-sentence, and for the first time simply hands over the key* …the result, first, and none of my throat-clearing before it… you understood it — the work stayed whole, only my preamble fell… go, and lead with the answer…",
     questions: [
       {
         prompt:
-          "What did the 2.1.233 release add for GitLab merge requests?",
+          "What does the new built-in \"Concise\" output style change about how Claude works?",
         choices: [
-          { id: 'a', label: "GitLab *merge request* URL support in the `--worktree` flag and the `claude agents` view — so an MR checks out into an isolated worktree you can review, and the session shows up among your agents, exactly as GitHub PRs already did", correct: true },
-          { id: 'b', label: "Automatic merging of a GitLab MR once its pipeline passes and it has the required approvals", correct: false },
-          { id: 'c', label: "A replacement for GitLab CI runners that executes the project's `.gitlab-ci.yml` pipelines on Claude Code's own infrastructure", correct: false },
-          { id: 'd', label: "Only plugin-marketplace cloning of `gitlab.com` URLs — nothing that touches reviewing merge requests", correct: false },
+          { id: 'a', label: "It changes Claude's *voice* only: Claude leads with the result and skips preamble and narration, while doing the same work just as thoroughly — you select it under Output style in `/config`", correct: true },
+          { id: 'b', label: "It makes Claude do less — fewer file reads, skipped checks, and shorter reasoning — to produce a faster, lighter answer", correct: false },
+          { id: 'c', label: "It's a new faster, cheaper model you switch to for routine work, separate from your main model", correct: false },
+          { id: 'd', label: "It truncates Claude's final answers to a fixed length to save tokens, cutting off long results", correct: false },
         ],
-        passFeedback: "HIT! The `--worktree` flag and the `claude agents` view learned to take a GitLab MR URL, the same surfaces that already took GitHub PR URLs. Pass an MR URL and its branch checks out into an isolated worktree for review; the session appears among your agents. It's the existing review flow, now on GitLab too.",
-        failFeedback: "MISS! It doesn't auto-merge, it isn't a CI-runner replacement, and it's more than a marketplace tweak. What shipped is MR URL support in `--worktree` and the `claude agents` view — checkout-and-review, not merge-and-ship. Re-read Book 1.",
+        passFeedback: "HIT! Concise is an output *style*, not a shortcut. Claude still reads, edits, and checks exactly as thoroughly — it just leads with the result and drops the 'Let me…' / 'Now I'll…' narration around it. You turn it on under Output style in `/config`.",
+        failFeedback: "MISS! It doesn't make Claude do less, it isn't a model, and it doesn't truncate results. Concise trims the *narration*, not the work: same rigor, fewer words of preamble. Re-read Book 1.",
       },
     ],
   },

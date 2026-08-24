@@ -1,134 +1,134 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — Bash tool memory limit: opt-in memory cgroup support for
- * Bash tool commands on Linux, configured via the `CLAUDE_CODE_TOOL_MEMORY_LIMIT`
- * environment variable. A memory cgroup is a Linux kernel mechanism that caps
- * the memory a group of processes may use; scoping it to Bash tool commands puts
- * a ceiling on what a single command Claude runs can consume, so a runaway
- * command is contained (and ultimately killed by the cgroup) instead of eating
- * the host's memory. Off unless the env var is set; Linux-only, because cgroups
- * are a Linux facility.
- * Sources (Claude Code CHANGELOG 2.1.233):
- *   - "Added opt-in memory cgroup support for Bash tool commands on Linux
- *      (`CLAUDE_CODE_TOOL_MEMORY_LIMIT`)"
+ * twic-3 (Feature C) — the `/claude-api upgrade` command. It migrates Python
+ * projects from the `anthropic` SDK 0.x line to 1.x, handling the mechanical
+ * breaking changes of that upgrade. It ships alongside a refreshed `claude-api`
+ * skill whose Python reference was updated for 1.x — including that timeouts now
+ * use `anthropic.Timeout` rather than `httpx.Timeout`. It's a targeted SDK
+ * migration, not a CLI updater and not a general dependency bumper.
+ * Source (Claude Code CHANGELOG 2.1.239):
+ *   - "Added `/claude-api upgrade` to migrate Python projects from `anthropic`
+ *      0.x to 1.x, and updated the skill's Python reference for 1.x (timeouts
+ *      use `anthropic.Timeout`, not `httpx.Timeout`)"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Final room of the issue, and the Beat Reporter closes on a guardrail for the moments you're not watching: a ceiling on how much memory a single Bash command can eat. Set `CLAUDE_CODE_TOOL_MEMORY_LIMIT` and Claude Code runs Bash tool commands inside a Linux *memory cgroup* — a kernel-enforced cap on what that command's processes may consume — so a build or a script that balloons gets contained instead of swallowing the host's RAM. The two books cover how the cgroup limit works and that it's opt-in and Linux-only, and why a consultant leaving unattended runs going on a shared box should switch it on. This is *not* a cap on how many commands run — it's a cap on how hungry one command can get. Answer the door for the key, then face the wyrm past it: a dragon with a bottomless appetite, collared at last by a chain it cannot outgrow.",
+    "Final room of the issue, and the Beat Reporter is holding a client's dusty Python integration still pinned to the `anthropic` SDK's 0.x line. The 2.1.239 release adds a command, `/claude-api upgrade`, that migrates a Python project from `anthropic` 0.x to 1.x — and it lands with the bundled `claude-api` skill's Python reference refreshed for 1.x, right down to the detail that timeouts now use `anthropic.Timeout` instead of `httpx.Timeout`. The two books cover what the command actually migrates and why a consultant inheriting an aging API integration reaches for it first. Answer the door's one question for the last key — then face the wyrm past it, a dragon coiled on a hoard of code that time forgot.",
   prompt:
-    "What does setting `CLAUDE_CODE_TOOL_MEMORY_LIMIT` do?",
+    "What does the new `/claude-api upgrade` command do?",
   choices: [
-    { id: 'a', label: "Runs Bash tool commands inside a Linux memory cgroup with a ceiling you set, so a single command that balloons is capped and killed by the cgroup instead of consuming the host's memory — opt-in, and Linux-only", correct: true },
-    { id: 'b', label: "Caps how many Bash commands Claude may run in a session, refusing new ones once the count is reached", correct: false },
-    { id: 'c', label: "Limits the size of the model's context window so a long transcript can't exhaust memory", correct: false },
-    { id: 'd', label: "Turns on by default and enforces one memory limit across every process on the machine, not just Claude's commands", correct: false },
+    { id: 'a', label: "It migrates a Python project from the `anthropic` SDK's 0.x line to 1.x, handling that upgrade's breaking changes — and ships with the `claude-api` skill's Python reference refreshed for 1.x (e.g. timeouts now use `anthropic.Timeout`, not `httpx.Timeout`)", correct: true },
+    { id: 'b', label: "It upgrades the Claude Code CLI itself to the newest released version", correct: false },
+    { id: 'c', label: "It upgrades your Anthropic API plan or billing tier to unlock higher rate limits", correct: false },
+    { id: 'd', label: "It's a general command that bumps every outdated dependency in any Python project to its latest version", correct: false },
   ],
-  passFeedback: "HIT! It's a per-command *memory* ceiling. Set the env var and Bash tool commands run inside a Linux memory cgroup capped at your value; a command that exceeds it is contained and killed by the cgroup rather than eating the host's RAM. It's opt-in — off until you set it — and Linux-only, because cgroups are a Linux facility.",
-  failFeedback: "MISS! It doesn't count commands, it has nothing to do with the model's context window, and it isn't on by default or machine-wide. It's an opt-in, Linux-only memory cgroup scoped to Bash tool commands. Re-read Book 1.",
+  passFeedback: "HIT! `/claude-api upgrade` is a targeted migration: it moves a Python project off the `anthropic` SDK 0.x line onto 1.x and handles the breaking changes — like timeouts shifting from `httpx.Timeout` to `anthropic.Timeout`, now documented in the refreshed `claude-api` skill reference.",
+  failFeedback: "MISS! It's not a CLI updater, not a billing/plan change, and not a bump-everything dependency tool. It specifically migrates a Python project from the `anthropic` SDK 0.x to 1.x. Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**A Ceiling on Appetite — The Bash Memory Cgroup**
+      text: `**\`/claude-api upgrade\` — A Guided Path from \`anthropic\` 0.x to 1.x**
 
-**One env var, one guardrail**
+**What it migrates, exactly**
 
-The 2.1.233 line is spare: *"Added opt-in memory cgroup support for Bash tool commands on Linux (\`CLAUDE_CODE_TOOL_MEMORY_LIMIT\`)."* Unpack it a piece at a time. *Bash tool commands* are the commands Claude runs on your behalf through its Bash tool — builds, test suites, scripts, data crunching. *Memory cgroup* is a Linux kernel feature: a *control group* is a labeled set of processes, and a memory cgroup puts a hard ceiling on how much memory the processes in that set may collectively use. Setting \`CLAUDE_CODE_TOOL_MEMORY_LIMIT\` tells Claude Code to run each Bash command inside such a group, capped at the value you chose.
+The 2.1.239 release adds a command, \`/claude-api upgrade\`, and its job is narrow and concrete: it migrates a **Python** project from the \`anthropic\` SDK's **0.x** line to **1.x**. Major-version SDK jumps like this one carry breaking changes — the shapes of calls, the names of helpers, the way configuration is passed all shift between 0.x and 1.x. The command exists to walk a project across that gap mechanically, instead of leaving you to find every changed call by hand and hope you caught them all.
 
-**What the kernel does when a command hits the ceiling**
+**The refreshed reference that ships with it**
 
-The reason a cgroup is stronger than a polite request is that the *kernel* enforces it, not the command. As a command's processes approach the limit the kernel reclaims what it can, and if the group genuinely tries to exceed its ceiling the cgroup's out-of-memory killer terminates a process inside that group. Crucially, the pressure and the kill stay *inside* the group — the ceiling is on that command's slice, so the rest of the host isn't dragged into the memory crunch one greedy command creates.
+The command didn't arrive alone. The same release *"updated the skill's Python reference for 1.x"* — the bundled \`claude-api\` skill that Claude leans on when it writes or fixes Anthropic API code. That matters because a migration is only as good as the knowledge behind it: if the reference still described 0.x, an "upgrade" could quietly reintroduce old patterns. Refreshing it means the guidance Claude applies while upgrading is itself current to 1.x.
 
-**Opt-in, and Linux-only, on purpose**
+**A concrete breaking change, named**
 
-Two qualifiers in the line matter. It's *opt-in*: nothing changes until you set the environment variable, so existing setups keep their current behavior and you decide where a cap belongs. And it's *Linux*: cgroups are a Linux kernel facility, so this is a server-and-container guardrail — the kind of place unattended runs actually live — not something your macOS laptop session gets. You pick the ceiling deliberately, high enough that legitimate work finishes and low enough that a runaway is caught before it hurts the box.
+The changelog even names one of the traps, and it's a telling one: in 1.x, *timeouts use \`anthropic.Timeout\`, not \`httpx.Timeout\`.* On the surface that's a one-line swap, but it's exactly the kind of change a hand migration misses — the code still imports \`httpx\`, still constructs a \`Timeout\`, still *looks* right, and only fails at the edge. That the command and its reference know this specific shift is a sign of what \`/claude-api upgrade\` is really doing: catching the small, easy-to-miss breakages, not just the obvious ones.
 
-> Takeaway: \`CLAUDE_CODE_TOOL_MEMORY_LIMIT\` runs each Bash tool command inside a kernel-enforced Linux memory cgroup capped at the value you set, so a command that balloons is contained and killed within its own group instead of exhausting the host — and it stays off until you opt in.`,
+> Takeaway: \`/claude-api upgrade\` migrates a Python project from the \`anthropic\` SDK 0.x to 1.x — handling breaking changes like \`httpx.Timeout\` → \`anthropic.Timeout\` — backed by a \`claude-api\` skill reference refreshed for 1.x.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**Guarding the Box You Left Running — Memory Limits for Unattended Work**
+      text: `**Inheriting Someone Else's API Code — Making the Migration Somebody's Job Instead of Nobody's**
 
-**The failure this prevents**
+**The engagement this is built for**
 
-Book 1 was the mechanism; here's the incident it's built to stop. The whole point of Claude Code on a server is work that runs while you're not watching — a scheduled routine, a long migration, an overnight test sweep. Those runs shell out constantly, and any one command can balloon: a test that leaks, a build that tries to hold a huge artifact in memory, a data step that loads a file far bigger than expected. Unbounded, that one command can devour the host's RAM, at which point the whole session dies, the machine starts thrashing, and on a shared box everyone else's work suffers with it. A per-command memory ceiling turns that catastrophe into a single failed command.
+Book 1 was the mechanism; here's the room you'll use it in. A consultant is forever inheriting integrations they didn't write: a client's internal tool, a script from a contractor who's long gone, a service pinned to \`anthropic\` 0.x because upgrading it never made it to the top of anyone's list. The upgrade keeps getting deferred precisely because it's tedious and risky — a manual hunt through every API call for what changed, with production behavior on the line. \`/claude-api upgrade\` turns that dreaded afternoon into a command, which is often the difference between the migration happening and staying on the someday pile.
 
-**Why "contained to one command" is the whole value**
+**Why the "just as good on the boring parts" matters**
 
-The reason to reach for the cgroup rather than just hoping is *blast radius*. Without it, a memory blowup is a property of the machine — it takes down whatever else is running. With it, the blowup is a property of the one command that caused it: that command's group hits its ceiling, the cgroup kills it, and the session, the host, and any neighbors keep going. On a self-hosted runner or a shared build box — exactly the environments where you least want a surprise — that containment is the difference between "one job failed, retry it" and "the box is down, page someone."
+The value here isn't cleverness; it's coverage. The reason a 0.x→1.x jump gets put off is the fear of the *missed* change — the one call in an obscure module that nobody remembers, the \`httpx.Timeout\` that still parses fine and breaks only under load. A tool that systematically applies the known breaking changes across the project addresses exactly that fear: it doesn't get bored on file forty, and it's working from a reference that was just refreshed for 1.x. You still review the diff — that's non-negotiable — but you're reviewing a complete first pass, not authoring one from a blank page.
 
-**Setting a ceiling you can defend**
+**Where your judgment still has to live**
 
-Treat the limit as a capacity decision, not a guess. Look at what the engagement's commands legitimately need at peak — the real build, the real test run — and set the ceiling comfortably above that but well below the host's total, leaving headroom for everything else sharing the machine. Bake \`CLAUDE_CODE_TOOL_MEMORY_LIMIT\` into the environment your unattended sessions inherit so every command is capped without anyone remembering to do it by hand. It's the seatbelt you put on before the long drive, not after the swerve.
+Name the boundary, because owning a client's code means owning the review. A migration command produces a diff; it does not absolve you of reading it, running the project's tests against 1.x, and confirming behavior didn't drift on the paths that matter. Treat \`/claude-api upgrade\` as a fast, thorough first draft of the migration — one that frees your attention for the genuinely judgment-heavy parts (does the new timeout policy suit this workload? did any 0.x behavior we relied on change?) instead of spending it hunting mechanical swaps.
 
-> Takeaway: Switch on the Bash memory cgroup wherever unattended runs live — a runaway command is then contained and killed within its own ceiling instead of taking the host and its neighbors down, and a limit set above real peak need but below the host's total keeps the guardrail invisible until the day it saves you.`,
+> Takeaway: Reach for \`/claude-api upgrade\` when you inherit a client's \`anthropic\` 0.x Python integration — it turns a deferred, error-prone hand-migration into a reviewable first-pass diff, so your judgment goes to behavior and tests, not to hunting changed calls.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `I've got unattended sessions running on a shared ____, and my worry is one command
-ballooning and taking the whole box down with it.
-So I'll set ____ in the environment those sessions inherit,
-which runs each Bash command inside a Linux ____ capped at my value.
-I'll pick a ceiling above what the real ____ needs at peak but well below the host's total,
-so a runaway is killed within its own group instead of exhausting the machine.`,
+    template: `I've inherited this client's Python service, and it's still pinned to the old
+\`anthropic\` ____ line — the upgrade everyone kept deferring.
+Instead of hunting every changed call by hand, I'll run ____.
+It migrates the project up to ____, handling the breaking changes —
+like timeouts moving to ____ instead of \`httpx.Timeout\`.
+Then I'll still ____ before I call it done.`,
     blanks: [
-      { id: 'host', suggestions: ['build box', 'self-hosted runner', 'server'] },
-      { id: 'env-var', suggestions: ['`CLAUDE_CODE_TOOL_MEMORY_LIMIT`', 'the memory-limit env var', 'the Bash memory ceiling'] },
-      { id: 'mechanism', suggestions: ['memory cgroup', 'kernel-enforced control group', 'per-command memory group'] },
-      { id: 'workload', suggestions: ['build and test run', 'migration step', 'data-processing job'] },
+      { id: 'old-line', suggestions: ['0.x', '0.x SDK', 'legacy 0.x'] },
+      { id: 'command', suggestions: ['`/claude-api upgrade`', 'the `/claude-api upgrade` command', '/claude-api upgrade'] },
+      { id: 'new-line', suggestions: ['1.x', 'the 1.x SDK', 'anthropic 1.x'] },
+      { id: 'new-timeout', suggestions: ['`anthropic.Timeout`', 'anthropic.Timeout', "the SDK's own Timeout"] },
+      { id: 'review-step', suggestions: ['review the diff and run the tests against 1.x', 'read the diff and run the test suite', 'confirm behavior on the paths that matter'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "Bash tool memory limit (2.1.233): setting `CLAUDE_CODE_TOOL_MEMORY_LIMIT` runs each Bash tool command inside a Linux *memory cgroup* — a kernel-enforced control group that caps the memory the command's processes may use — at a ceiling you choose. If a command balloons past that ceiling, the kernel reclaims and ultimately the cgroup's OOM killer terminates a process in *that group*, so the pressure and the kill stay contained to the one command instead of exhausting the host. It's opt-in (nothing changes until you set the env var) and Linux-only (cgroups are a Linux facility), which makes it a server-and-container guardrail. It is NOT a cap on how many commands run, has nothing to do with the model's context window, and isn't machine-wide. For a consultant, it's the guardrail for unattended runs on shared or self-hosted boxes: a runaway build, leaking test, or oversized data step becomes one failed command rather than a downed machine. Set the ceiling above real peak need but below the host's total, and bake the env var into the environment unattended sessions inherit.",
+        "`/claude-api upgrade` (2.1.239): a command that migrates a *Python* project from the `anthropic` SDK's 0.x line to 1.x, handling the major-version breaking changes mechanically. It ships with the bundled `claude-api` skill's Python reference refreshed for 1.x — including that timeouts now use `anthropic.Timeout`, not `httpx.Timeout`. It is specifically that SDK migration: not a Claude Code CLI updater, not a billing/plan change, and not a general bump-every-dependency tool. For a consultant, it's the tool for an inherited integration still pinned to 0.x — it turns a deferred, error-prone hand-migration into a reviewable first-pass diff. You still review that diff and run the project's tests against 1.x; the command frees your judgment for behavior and workload questions instead of hunting mechanical swaps.",
       beats: [
-        { kind: 'say', text: "Closing story of the issue is a seatbelt for the runs you don't watch. The 2.1.233 line: opt-in memory cgroup support for Bash tool commands on Linux, via `CLAUDE_CODE_TOOL_MEMORY_LIMIT`. In plain terms — you can now put a ceiling on how much memory a single command Claude runs is allowed to eat." },
-        { kind: 'say', text: "Here's the mechanism. A *cgroup* — control group — is a Linux kernel feature: label a set of processes, and a memory cgroup caps how much memory that set may collectively use. Set the env var and Claude Code runs each Bash command inside such a group, capped at your value. The kernel enforces it, not the command — so it's a real ceiling, not a polite ask." },
-        { kind: 'say', text: "And when a command hits the ceiling, the kill stays *inside* its own group. The kernel reclaims what it can, and if the command truly tries to blow past the cap, the cgroup's OOM killer takes a process in that group down. The rest of the host isn't dragged into the crunch. That containment is the entire point." },
+        { kind: 'say', text: "Closing story of the issue, and it's one you'll actually reach for: a new command, `/claude-api upgrade`, added in 2.1.239. Its job is narrow and concrete — it migrates a *Python* project from the `anthropic` SDK's 0.x line up to 1.x." },
+        { kind: 'say', text: "Why a command for this at all? Because a major-version SDK jump is a minefield of breaking changes. Between 0.x and 1.x, call shapes shift, helpers get renamed, config moves around. Doing it by hand means hunting every changed call across the project and praying you caught them all. This walks the project across that gap instead." },
+        { kind: 'say', text: "And it didn't ship alone — the same release refreshed the bundled `claude-api` skill's Python reference for 1.x. That's the knowledge Claude uses when it writes or fixes Anthropic API code. A migration is only as good as the reference behind it; if that reference still described 0.x, an 'upgrade' could quietly drag old patterns back in. Now it's current." },
         {
           kind: 'choice',
-          prompt: "Careful — someone will mix this up with the session caps we talked about in earlier weeks. What does `CLAUDE_CODE_TOOL_MEMORY_LIMIT` actually limit?",
+          prompt: "A colleague sees `/claude-api upgrade` and asks: 'Oh, is that how I update Claude Code to the latest version?' Set them straight — what does it actually upgrade?",
           options: [
-            { id: 'per-cmd-mem', label: "The memory a single Bash command may use — capped by a Linux cgroup, so a runaway command is killed within its own group", correct: true, reaction: "Exactly. It's a *memory* ceiling on each command's own process group, kernel-enforced. Not a count of commands, not the model's context — the RAM one command can eat before the cgroup stops it." },
-            { id: 'cmd-count', label: "The number of Bash commands Claude may run in a session before it's cut off", correct: false, reaction: "That's a different kind of cap — a count. This one is about *memory per command*: how much RAM a single command can consume before the cgroup kills it. Nothing here counts commands." },
-            { id: 'context', label: "The model's context-window size, so a long transcript can't run the machine out of memory", correct: false, reaction: "No — 'memory' here is host RAM used by a shell command, not the model's context. The cgroup bounds what a Bash command's processes consume; the context window is untouched." },
+            { id: 'sdk-migration', label: "Neither the CLI nor your plan — it migrates a Python project from the `anthropic` SDK 0.x to 1.x, handling that upgrade's breaking changes", correct: true, reaction: "Exactly. It's an SDK *migration* command for your project's code, not a CLI self-update and not a billing change. Think 'move my Python integration onto anthropic 1.x,' not 'update the tool.'" },
+            { id: 'cli-update', label: "Yes — it updates the Claude Code CLI itself to the newest release", correct: false, reaction: "No — it doesn't touch the CLI. It migrates a *Python project's* use of the `anthropic` SDK from 0.x to 1.x. Different target entirely: your code, not the tool." },
+            { id: 'plan-upgrade', label: "It upgrades your Anthropic API plan to get higher rate limits", correct: false, reaction: "Not billing at all. It's a code migration — it moves a Python project off `anthropic` 0.x onto 1.x. Nothing to do with your plan or limits." },
           ],
         },
-        { kind: 'say', text: "So the engagement play: turn it on wherever unattended runs live. A scheduled routine, an overnight test sweep, a long migration — those shell out constantly, and any one command can balloon: a leaking test, a build hoarding an artifact, a data step loading a file far bigger than expected. Unbounded, that command eats the host's RAM and the whole box goes down. Bounded, it's one failed command you retry." },
-        { kind: 'say', text: "Two qualifiers to remember. It's *opt-in* — off until you set the variable, so you decide where a cap belongs — and *Linux-only*, because cgroups are a Linux thing. That makes it a server-and-container guardrail, not something your laptop session gets. Set the ceiling above what the real build and test need at peak, but well below the host's total, and bake the env var into the environment your unattended sessions inherit." },
-        { kind: 'say', text: "Books have the mechanism and the how-to-size-it. The door wants one fact: what does setting `CLAUDE_CODE_TOOL_MEMORY_LIMIT` do? Answer for the key. Then face Gormand past it — a bottomless wyrm that swears no chain can hold its appetite, betting you'll confuse a ceiling on *how much one command eats* with a count of *how many* it gets to swallow." },
+        { kind: 'say', text: "The changelog even names one of the traps, and it's the perfect example of why you want a tool for this: in 1.x, timeouts use `anthropic.Timeout`, not `httpx.Timeout`. That's a one-line swap that a hand migration sails right past — the code still imports `httpx`, still builds a `Timeout`, still *looks* correct, and only bites at the edge, under load. Knowing that specific shift is the whole value." },
+        { kind: 'say', text: "Here's the engagement it's built for. You inherit a client's service — a contractor's old script, an internal tool — still pinned to `anthropic` 0.x because upgrading it never reached the top of anyone's list. It's deferred precisely because it's tedious and risky. This command turns that dreaded afternoon into one invocation, and it doesn't get bored on file forty the way a human does." },
+        { kind: 'say', text: "But own the boundary: a migration command gives you a diff, not a discharge. You still read it, run the project's tests against 1.x, and confirm behavior didn't drift where it matters. Treat it as a fast, thorough first pass so your judgment goes to the real questions — does the new timeout policy fit this workload? — not to hunting swaps. The books have the rest. The last door asks: what does `/claude-api upgrade` actually do? Answer for the final key. Then face Deprecatrix past it — a wyrm curled on a hoard of 0.x code, hissing that the old versions were always better." },
       ],
     },
   },
   battle: {
-    name: 'Gormand, the Bottomless Wyrm',
+    name: 'Deprecatrix, the Hoard of Zero-Point-X',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*an immense dragon uncoils over a hoard it is still, impossibly, swallowing — stone, torchlight, the very air — a heavy iron collar hanging open at its throat* …I eat, operator, and I do not stop… every command a mouth, every mouth mine… but they've forged me a collar with a number on it… tell me what that number truly holds back, or be swallowed with the rest of the room…",
+    introLine: "*a vast dragon uncoils atop a glittering mound of outdated code, every scale stamped with a version long past end-of-life* …you'd take my hoard from me, operator? this beautiful 0.x, hand-tuned, load-bearing, NEVER to be touched… *smoke curls from its nostrils* …name the command that dares migrate my treasure to 1.x, if you truly mean to climb.",
     tauntLines: [
-      "*the wyrm gulps down a shadow and swells* you think the collar counts my *bites*? no — I may take as many as I like… it binds only how much any one of them may hold…",
-      "*a rumbling, sated growl* my appetite is not your little scroll of memory, operator — I devour the room's stone, not the reporter's words… bound the RAM, not the tale…",
+      "*a gout of flame* the CLI? you think that spell updates the *tool*? no — it comes for my code, my precious Python, and drags it up a major version…",
+      "*claws rake the hoard* a billing rite? a plan upgrade? fool — it buys no limits… it MIGRATES, it rewrites my calls, it moves my very `httpx.Timeout` to `anthropic.Timeout` where I cannot follow…",
     ],
-    victoryLine: "*the collar snaps shut and the wyrm's swallowing stops at the brim* …a ceiling on each mouthful, and the kill kept to the mouth that overreached… you named the chain true… take the key, operator, and let no single command eat the whole box…",
+    victoryLine: "*Deprecatrix sinks against the emptied mound as the last key rolls free* …migrated… 0.x to 1.x, every changed call caught, even the timeout I hid best… the hoard is current now, and the issue is yours to close… go, operator…",
     questions: [
       {
         prompt:
-          "What does setting `CLAUDE_CODE_TOOL_MEMORY_LIMIT` do?",
+          "What does the new `/claude-api upgrade` command do?",
         choices: [
-          { id: 'a', label: "Runs Bash tool commands inside a Linux memory cgroup with a ceiling you set, so a single command that balloons is capped and killed by the cgroup instead of consuming the host's memory — opt-in, and Linux-only", correct: true },
-          { id: 'b', label: "Caps how many Bash commands Claude may run in a session, refusing new ones once the count is reached", correct: false },
-          { id: 'c', label: "Limits the size of the model's context window so a long transcript can't exhaust memory", correct: false },
-          { id: 'd', label: "Turns on by default and enforces one memory limit across every process on the machine, not just Claude's commands", correct: false },
+          { id: 'a', label: "It migrates a Python project from the `anthropic` SDK's 0.x line to 1.x, handling that upgrade's breaking changes — and ships with the `claude-api` skill's Python reference refreshed for 1.x (e.g. timeouts now use `anthropic.Timeout`, not `httpx.Timeout`)", correct: true },
+          { id: 'b', label: "It upgrades the Claude Code CLI itself to the newest released version", correct: false },
+          { id: 'c', label: "It upgrades your Anthropic API plan or billing tier to unlock higher rate limits", correct: false },
+          { id: 'd', label: "It's a general command that bumps every outdated dependency in any Python project to its latest version", correct: false },
         ],
-        passFeedback: "HIT! It's a per-command *memory* ceiling. Set the env var and Bash tool commands run inside a Linux memory cgroup capped at your value; a command that exceeds it is contained and killed by the cgroup rather than eating the host's RAM. It's opt-in — off until you set it — and Linux-only, because cgroups are a Linux facility.",
-        failFeedback: "MISS! It doesn't count commands, it has nothing to do with the model's context window, and it isn't on by default or machine-wide. It's an opt-in, Linux-only memory cgroup scoped to Bash tool commands. Re-read Book 1.",
+        passFeedback: "HIT! `/claude-api upgrade` is a targeted migration: it moves a Python project off the `anthropic` SDK 0.x line onto 1.x and handles the breaking changes — like timeouts shifting from `httpx.Timeout` to `anthropic.Timeout`, now documented in the refreshed `claude-api` skill reference.",
+        failFeedback: "MISS! It's not a CLI updater, not a billing/plan change, and not a bump-everything dependency tool. It specifically migrates a Python project from the `anthropic` SDK 0.x to 1.x. Re-read Book 1.",
       },
     ],
   },

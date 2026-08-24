@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-08-17',
+  publishDate: '2026-08-24',
   framing:
-    "This week in Claude, the throughline is the plumbing of a real engagement — where your reviews live, how your tooling ships, and what a runaway command can consume. GitLab arrives as a first-class host: the `--worktree` flag and the `claude agents` view now take a GitLab merge request URL, so a client who isn't on GitHub finally gets the same isolated-worktree review flow. The new `archive` plugin source installs a plugin from a plain HTTPS zip with neither git nor npm in the path — and an optional SHA-256 pin makes every install byte-identical to the package you vetted. And an opt-in Bash memory cgroup, set with `CLAUDE_CODE_TOOL_MEMORY_LIMIT`, puts a kernel-enforced ceiling on any single command, so a ballooning build on an unattended box is one failed command instead of a downed machine.",
+    "This week in Claude, the throughline is control over the surface of the work — how it reads, what engine it starts on, and how you drag old integrations forward. The new built-in `Concise` output style, chosen under Output style in `/config`, has Claude lead with the result and drop the preamble and narration while doing the work just as thoroughly — trimming the words, never the rigor. The `ANTHROPIC_DEFAULT_MODEL` environment variable sets the model new sessions *start* on as a soft default a `/model` pick still overrides and keeps, so you can standardize a whole fleet without taking the wheel from anyone — unlike the hard-pinning `ANTHROPIC_MODEL`. And `/claude-api upgrade` migrates a Python project from the `anthropic` SDK's 0.x line to 1.x, catching even the easy-to-miss breakages like `httpx.Timeout` becoming `anthropic.Timeout`, so an inherited integration's dreaded upgrade becomes a reviewable diff.",
 };
