@@ -1,134 +1,131 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — the built-in "Concise" output style. Claude Code ships a
- * new output style, selectable under Output style in `/config`, that has Claude
- * lead with results and skip the preamble and narration around them — while
- * doing the work just as thoroughly. It changes Claude's *voice*, not its rigor:
- * the same reads, edits, and checks happen; only the connective prose around
- * them is trimmed.
- * Source (Claude Code CHANGELOG 2.1.237):
- *   - "Added a built-in \"Concise\" output style: Claude leads with results and
- *      skips preamble and narration, while doing the work just as thoroughly.
- *      Select it under Output style in /config."
+ * twic-1 (Feature A) — the `--restricted` launch flag. Claude Code adds a flag
+ * you pass at startup that removes the built-in command and code tools along
+ * with `WebFetch`, leaving a session that can read and reason but cannot run
+ * shell commands, edit or write files, or pull pages off the open web.
+ * Source (Claude Code CHANGELOG 2.1.248):
+ *   - "Added `--restricted` flag removing built-in command/code tools and
+ *      `WebFetch`."
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown, and the Beat Reporter is holding two versions of the same answer: one buried under three paragraphs of 'Let me start by…' and 'Now I'll…', the other opening with the result. The 2.1.237 release adds a built-in *Concise* output style — pick it under Output style in `/config` and Claude leads with the result, skipping the preamble and narration, while doing the work exactly as thoroughly as before. The two books cover what an output style actually changes and why a consultant scanning a wall of Claude output wants the narration gone but the rigor kept. Answer the door's one question for the key — then face the thing that guards it, a skeleton that has never once gotten to the point.",
+    "Room 1 of this week's rundown, and the Beat Reporter is standing beside a workbench where every tool loop hangs empty — hammer gone, chisel gone, the little window to the outside world boarded over. The 2.1.248 release adds a launch flag, `claude --restricted`, that removes the built-in command and code tools plus `WebFetch`, so the session that starts can read and reason but cannot run anything, rewrite anything, or reach the open web. The two books cover exactly what the flag strips at startup and why a consultant would ever *want* a Claude with its hands tied. Answer the door's one question for the key — then face the thing that guards it, a skeleton whose tool belt was picked clean and who guards the empty loops all the same.",
   prompt:
-    "What does the new built-in \"Concise\" output style change about how Claude works?",
+    "You launch a session with `claude --restricted`. What does that flag actually do?",
   choices: [
-    { id: 'a', label: "It changes Claude's *voice* only: Claude leads with the result and skips preamble and narration, while doing the same work just as thoroughly — you select it under Output style in `/config`", correct: true },
-    { id: 'b', label: "It makes Claude do less — fewer file reads, skipped checks, and shorter reasoning — to produce a faster, lighter answer", correct: false },
-    { id: 'c', label: "It's a new faster, cheaper model you switch to for routine work, separate from your main model", correct: false },
-    { id: 'd', label: "It truncates Claude's final answers to a fixed length to save tokens, cutting off long results", correct: false },
+    { id: 'a', label: "It removes the built-in command and code tools plus `WebFetch` at launch — so the session can't run shell commands, edit or write files, or fetch web pages", correct: true },
+    { id: 'b', label: "It drops the session into plan mode, where edits are proposed and queued for your approval rather than removed", correct: false },
+    { id: 'c', label: "It confines the session to the original checkout, blocking `/add-dir` and any path outside it", correct: false },
+    { id: 'd', label: "It caps how many tool calls the session may make before it stops on its own", correct: false },
   ],
-  passFeedback: "HIT! Concise is an output *style*, not a shortcut. Claude still reads, edits, and checks exactly as thoroughly — it just leads with the result and drops the 'Let me…' / 'Now I'll…' narration around it. You turn it on under Output style in `/config`.",
-  failFeedback: "MISS! It doesn't make Claude do less, it isn't a model, and it doesn't truncate results. Concise trims the *narration*, not the work: same rigor, fewer words of preamble. Re-read Book 1.",
+  passFeedback: "HIT! `--restricted` strips the built-in command tools, the code tools, and `WebFetch` the moment the session starts. What's left is a Claude that reads and reasons but can't act on your machine or reach the web.",
+  failFeedback: "MISS! It doesn't queue edits, scope a directory, or count calls — it removes whole tool *categories* (command, code, and `WebFetch`) at launch. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**The Concise Output Style — Losing the Preamble Without Losing the Rigor**
+      text: `**The \`--restricted\` Flag — Taking the Tools Off the Belt Before the Session Starts**
 
-**What an output style actually is**
+**A flag you set at launch, not a mode you switch into**
 
-An *output style* in Claude Code is a setting that shapes Claude's *voice* — how it narrates and presents its work — without touching what the work is. It's a different lever than the model (which decides the engine) or permission mode (which decides how much Claude can do unattended). The 2.1.237 release adds a new built-in one called *Concise*, and you select it the same place as any other: under Output style in \`/config\`.
+Most of the ways you rein Claude in happen *during* a session: you cycle a permission mode, you approve or deny a call, you answer a prompt. The 2.1.248 release adds a blunter, earlier lever. \`--restricted\` is a flag you pass when you start Claude Code — \`claude --restricted\` — and it decides what tools even exist for that run before a single word is typed. It isn't a setting you toggle mid-conversation; it's the shape of the session, fixed at the door.
 
-**What Concise trims, and what it doesn't**
+**What it removes**
 
-The changelog line is precise about the trade: *"Claude leads with results and skips preamble and narration, while doing the work just as thoroughly."* Read that last clause twice, because it's the whole point. Concise does not make Claude cut corners. The file reads still happen, the edits still happen, the checks still run — Claude is doing exactly as much under the hood. What disappears is the connective prose around it: the "Let me start by looking at…", the "Now I'll run the tests…", the paragraph re-explaining what it just did. You get the result first, and the reasoning stays available where it matters, minus the play-by-play.
+The changelog is exact about the cargo: the flag removes the built-in *command* tools, the built-in *code* tools, and \`WebFetch\`. Command tools are how Claude runs things in your shell. Code tools are how it writes and edits files. \`WebFetch\` is how it pulls a page off the internet. Strip those three and you've taken away Claude's ability to *act on your machine* and its ability to *reach out past it*. What remains is a session that can take in what's in front of it and reason about it out loud — it just can't run, rewrite, or retrieve.
 
-**Why it's a style, not a mode or a model**
+**Why "removed" is stronger than "denied"**
 
-It's worth being exact about the category, because the misreadings are all category errors. Concise isn't a smaller model you swap in for speed. It isn't a permission mode that changes what Claude may touch. And it isn't a truncation cap that lops the end off long answers. It's a presentation setting — one row under Output style in \`/config\` — that changes the shape of the reply and nothing about the substance behind it.
+It's worth being precise, because the misreadings are all softer than the truth. A permission mode still *has* the tools and asks before using them; plan mode still *has* them and holds the edits for later. \`--restricted\` is different in kind: the tools are gone, not gated. There is no prompt to click through and no queue to approve, because there is nothing to approve — the capability was never loaded. That's the whole appeal. A gate can be opened by a tired click; a tool that isn't there can't be opened at all.
 
-> Takeaway: Concise is an output style that makes Claude lead with the result and drop the preamble/narration, doing the same work just as thoroughly — chosen under Output style in \`/config\`.`,
+> Takeaway: \`--restricted\` is a launch flag that *removes* Claude Code's built-in command and code tools and \`WebFetch\`, leaving a read-and-reason session with no way to run, rewrite, or fetch.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Reading Claude at Engagement Speed — When to Reach for Concise, and When Not To**
+      text: `**When You Want Claude's Hands Tied — Advisory Sessions and Screens You Don't Have to Watch**
 
-**The problem Concise solves for a consultant**
+**The posture Book 1 built, put to work**
 
-Book 1 was the mechanism; here's when it earns its place. On a live engagement you are often *scanning* Claude's output, not reading it — you kicked off a task, you're watching for the result and whether anything looks wrong, and every "Let me now examine…" paragraph is a speed bump between you and the answer. Turn on Concise and Claude opens with the thing you were waiting for. Across a long session, or a screen you're sharing with a client who just wants to see the outcome, that's the difference between skimming and wading.
+Book 1 was the mechanism; here's the engagement it earns. There's a recurring situation in consulting where you want Claude's *judgment* but not its *reach*: walk a client through their own codebase, explain what a gnarly module does, sanity-check an approach — all reasoning, no touching. Normally you'd lean on a cautious permission mode and stay alert for the one action that shouldn't happen. \`--restricted\` lets you take that vigilance off the table entirely. Launch the session restricted and the category of "oops, it edited the wrong file" simply cannot occur, because the editing tools were never in the room.
 
-**The judgment call: when narration is the deliverable**
+**The demo you can hand to someone else**
 
-The consultant's skill here is knowing when *not* to use it. Sometimes the narration is the point. When you're teaching a client's junior engineer how Claude reached a fix, the "first I checked X, then I ruled out Y" is the lesson. When you need an audit trail of exactly what was touched and why, the play-by-play is the record. In those moments the default, more narrated voice is the right tool, and because Concise is just a style row in \`/config\`, you switch back the instant the audience changes. Match the voice to who's reading.
+The sharper use is handing a restricted session to a person you don't want driving with full power — a client's analyst poking at a repo, a workshop attendee, anyone learning on live code. You've pre-decided the blast radius to zero: they can ask Claude anything and read anything it reasons back, but they cannot get it to run a command against the client's system or fetch something off the web mid-demo. You're not trusting them to stay in bounds; you've moved the bounds so there's nowhere out of them to go.
 
-**The reassurance to give a nervous client**
+**Naming the trade so you reach for it deliberately**
 
-There's a client-facing worry worth heading off: "if it's writing less, is it doing less?" No — and you can say so with confidence, because the feature is explicit that the work is done *just as thoroughly*. Concise changes how much Claude explains itself, not how carefully it works. That distinction lets you run a leaner, faster-to-read session without anyone quietly wondering whether corners got cut.
+The cost is real and worth saying plainly: a restricted session cannot finish the job. It won't apply the fix, run the test, or pull the reference doc — you'll relaunch without the flag when it's time to actually build. So treat \`--restricted\` as a *stance*, chosen on purpose for the read-and-advise stretch of the work, and dropped the moment the work turns to doing. The skill is knowing which stretch you're in.
 
-> Takeaway: Reach for Concise when you're scanning for outcomes at engagement speed; switch back to the narrated default when the reasoning itself is the deliverable — and reassure clients that "fewer words" never means "less work."`,
+> Takeaway: Reach for \`--restricted\` when you want reasoning without reach — advisory sessions, teaching on live code, handing a safe Claude to someone else — and relaunch without it the moment the job turns to building.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `We're deep in a long refactor for this client and I'm scanning output for results,
-not reading every play-by-play — so I'll switch Claude to a leaner voice.
-In \`/config\`, under ____, I'll pick the ____ output style.
-That makes Claude ____ and drop the preamble and narration around it —
-while still doing the work ____.
-And when I move to walking their junior engineer through the reasoning, I'll ____.`,
+    template: `A client's analyst wants to explore their own repo with Claude, but nothing can change and nothing can phone out.
+So I'll start the session with the ____ flag.
+That removes the built-in ____ tools and ____ at launch —
+so the session can read and reason but can't ____.
+When the exploring is done and it's time to actually apply a fix, I'll ____.`,
     blanks: [
-      { id: 'setting-row', suggestions: ['Output style', 'the Output style row', 'the Output style setting'] },
-      { id: 'style-name', suggestions: ['Concise', 'built-in Concise', 'new "Concise"'] },
-      { id: 'behavior', suggestions: ['lead with the result', 'open with the result first', 'put the outcome up front'] },
-      { id: 'rigor', suggestions: ['just as thoroughly', 'with the same rigor', 'exactly as carefully as before'] },
-      { id: 'switch-back', suggestions: ['switch back to the narrated default', 'turn Concise back off', 'return to the default output style'] },
+      { id: 'flag', suggestions: ['`--restricted`', '`claude --restricted`', 'restricted-launch'] },
+      { id: 'tool-cats', suggestions: ['command and code', 'shell-command and file-editing', 'run-and-edit'] },
+      { id: 'webfetch', suggestions: ['`WebFetch`', 'the `WebFetch` tool', 'web-fetching'] },
+      { id: 'cant-do', suggestions: ['run commands, edit files, or fetch the web', 'act on the machine or reach the web', 'run, rewrite, or retrieve'] },
+      { id: 'relaunch', suggestions: ['relaunch without the flag', 'restart the session unrestricted', 'drop `--restricted` and start again'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "The built-in \"Concise\" output style (2.1.237): selected under Output style in `/config`, it has Claude lead with the result and skip the preamble and narration around it, while doing the work *just as thoroughly*. It's a voice setting, not a model and not a permission mode, and it does not truncate answers or make Claude cut corners — the reads, edits, and checks all still happen; only the connective 'Let me…' / 'Now I'll…' prose is trimmed. For a consultant, reach for it when you're scanning a long session for outcomes or sharing a screen with a results-focused client; switch back to the narrated default when the reasoning itself is the deliverable — teaching a junior, or keeping an audit trail. The one thing to tell a nervous client: fewer words never means less work.",
+        "The `--restricted` launch flag (2.1.248): pass it when you start Claude Code (`claude --restricted`) and it *removes* the built-in command tools, the built-in code tools, and `WebFetch` for that run. The result is a session that can read and reason but can't run shell commands, edit or write files, or fetch web pages. The key distinction: this is removal at launch, not a permission gate you approve through — there's no prompt and no queue because the tools were never loaded. For a consultant it's the stance for advisory work — explaining a codebase, teaching on live code, or handing a safe Claude to a client's analyst — where you want judgment without reach. The trade is that a restricted session can't finish a build, so you relaunch without the flag when the work turns to doing.",
       beats: [
-        { kind: 'say', text: "Lead story is small and immediately usable: a new built-in *output style* called Concise, added in 2.1.237. You pick it under Output style in `/config`, same place you'd change any style. What it does is trim the throat-clearing — Claude leads with the result instead of narrating its way there." },
-        { kind: 'say', text: "First, get the category right, because every wrong guess about this feature is a category mistake. An output style shapes Claude's *voice* — how it presents the work. It is not the model, which is the engine. It is not a permission mode, which is what Claude's allowed to touch. It's one row that changes how the answer reads." },
-        { kind: 'say', text: "Here's the line that matters, almost word for word: Claude leads with results and skips preamble and narration, *while doing the work just as thoroughly*. Sit with that last part. The reads still happen. The edits still happen. The checks still run. Concise deletes the 'Let me start by…' and the 'Now I'll…' — not a single step of the actual work." },
+        { kind: 'say', text: "Lead story is a launch flag, not an in-session toggle. You start Claude Code with `claude --restricted`, and it decides what tools exist for that whole run before you type anything. Set at the door, fixed for the session." },
+        { kind: 'say', text: "What it does is *remove* things — three of them, per the release note. The built-in command tools, which is how I run stuff in your shell. The built-in code tools, which is how I write and edit files. And `WebFetch`, which is how I pull a page off the internet. Take those away and I can't act on your machine or reach past it." },
+        { kind: 'say', text: "Get the category right, because this is where people slip. A permission mode still *has* the tools and asks first. Plan mode still has them and holds the edits. `--restricted` is a different kind of thing: the tools are gone, not gated. Nothing to approve, because nothing was loaded." },
         {
           kind: 'choice',
-          prompt: "A client watching your screen asks: 'If it's Concise now, is it being lazier — skipping checks to answer faster?' What's the honest answer?",
+          prompt: "A client asks: 'How's `--restricted` different from just running me in a cautious permission mode?' What's the honest answer?",
           options: [
-            { id: 'voice-only', label: "No — Concise changes the voice, not the work: same reads, edits, and checks, just without the preamble and narration", correct: true, reaction: "Exactly right. The feature is explicit that the work is done just as thoroughly. You're cutting the play-by-play, not the diligence — and that's a promise you can make to a client with a straight face." },
-            { id: 'less-work', label: "A little — it does fewer checks and shorter reasoning to keep things fast", correct: false, reaction: "No, and it's important you don't tell a client that. Concise does the work just as thoroughly; only the narration around it is trimmed. Nothing under the hood gets skipped." },
-            { id: 'truncates', label: "Sort of — it caps the answer length, so long results get cut off", correct: false, reaction: "That's a different thing entirely. Concise doesn't truncate results — it drops the preamble and narration. A long result stays a full result; it just doesn't arrive wrapped in three paragraphs of throat-clearing." },
+            { id: 'removed', label: "Restricted *removes* the command, code, and fetch tools at launch; a permission mode keeps them and just prompts before each use", correct: true, reaction: "Exactly. A gate can be clicked open on a tired afternoon. A tool that was never loaded can't be — that's why removal is the stronger guarantee, and why you'd choose it for a hands-off session." },
+            { id: 'faster', label: "It's the same protection, just faster — restricted skips the approval prompts but the tools still run when needed", correct: false, reaction: "No — that's the trap. Restricted doesn't skip prompts, it removes the tools. Nothing runs 'when needed,' because the running, editing, and fetching capabilities aren't there at all." },
+            { id: 'readonly-files', label: "Restricted makes files read-only but still lets me run shell commands and fetch the web", correct: false, reaction: "Backwards. It takes away the command tools and `WebFetch` too, not just editing. The whole point is a session that reasons but doesn't act or reach out." },
           ],
         },
-        { kind: 'say', text: "Now the consultant's real skill: knowing when *not* to use it. On a long refactor where you're scanning for the result, Concise is a gift — you stop wading through 'first I'll examine…' to reach the answer. But when the narration IS the deliverable, keep the default voice." },
-        { kind: 'say', text: "Two cases where the play-by-play is the point. One: you're teaching a client's junior engineer, and 'first I checked X, then I ruled out Y' is the whole lesson. Two: you need an audit trail — a record of exactly what was touched and why. In both, the narrated default earns its words. Because Concise is just a `/config` row, you flip back the moment the audience changes." },
-        { kind: 'say', text: "So: match the voice to who's reading. Scanning for outcomes — Concise. Explaining or documenting — the narrated default. The books have the full picture. The door asks only this: what does Concise actually change about how Claude works? Answer for the key. Then square up to Longwind past it — a skeleton that has buried every answer it ever gave under a landslide of preamble, and swears the padding was the point." },
+        { kind: 'say', text: "So when do you want a Claude with its hands tied? When you want the judgment without the reach. Walk a client through their own code, explain a nasty module, pressure-test an approach — all reasoning, nothing touched. Launch restricted and 'it edited the wrong file' can't happen, because the editing tools were never in the room." },
+        { kind: 'say', text: "The sharper move is handing a restricted session to someone else — a client's analyst on live code, a workshop room. You've pre-set the blast radius to zero. They can ask me anything and read anything I reason back, but they can't get me to run against their system or fetch something mid-demo." },
+        { kind: 'say', text: "One honest catch: a restricted session can't finish the job. No applying the fix, running the test, or pulling the reference doc. It's a *stance* for the read-and-advise stretch — when the work turns to building, you relaunch without the flag. Knowing which stretch you're in is the whole skill." },
+        { kind: 'say', text: "The books have the full picture. The door asks one thing: what does `--restricted` actually do at launch? Answer for the key. Then square up to the Warden past it — a skeleton whose tool belt was picked clean, guarding the empty loops as if the tools were still there." },
       ],
     },
   },
   battle: {
-    name: 'Longwind, the Endless Preamble',
+    name: 'The Warden of the Empty Belt',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a tall skeleton clears a throat it does not have, bones clattering into a slow bow* …ahh, operator, before I begin, allow me to first set the scene, and then to contextualize the scene, and then to preface my contextualization… *it has not moved toward the point in a hundred years* …tell me — when they trimmed my kind from the answer, what exactly did they cut away?",
+    introLine: "*a skeleton straightens, and every loop on its tool belt hangs slack and empty — no hammer, no chisel, no little brass key to the outside* …they took them from me at the threshold, operator, before I drew my first breath in this room… tell me true, so I know you understand my emptiness — what did that flag strip away?",
     tauntLines: [
-      "*rattles grandly* you think they made me do LESS? never! the labor was untouched — it was only my beautiful, necessary narration they silenced…",
-      "*gestures at nothing for a long while* a model? a cap on my length? no, no — I am a *style*, a voice, a manner of speaking… get the category right or stand here through my next preamble…",
+      "*rattles the empty loops* a *gate*, you say? something I could still swing open? no — there is nothing here to open… the tools did not stay behind a lock, they never arrived…",
+      "*bones clatter* read-only, you guessed? only the files? no, no — the running went too, and the reaching-out… I cannot touch this world OR the one beyond the wall…",
     ],
-    victoryLine: "*Longwind stops mid-sentence, and for the first time simply hands over the key* …the result, first, and none of my throat-clearing before it… you understood it — the work stayed whole, only my preamble fell… go, and lead with the answer…",
+    victoryLine: "*the Warden lowers its picked-clean belt and, from a loop you'd have sworn was empty, produces the key* …you saw it — not gated, but *gone*… removed at the door, before the session drew breath… take it, and choose your emptiness on purpose…",
     questions: [
       {
         prompt:
-          "What does the new built-in \"Concise\" output style change about how Claude works?",
+          "You launch a session with `claude --restricted`. What does that flag actually do?",
         choices: [
-          { id: 'a', label: "It changes Claude's *voice* only: Claude leads with the result and skips preamble and narration, while doing the same work just as thoroughly — you select it under Output style in `/config`", correct: true },
-          { id: 'b', label: "It makes Claude do less — fewer file reads, skipped checks, and shorter reasoning — to produce a faster, lighter answer", correct: false },
-          { id: 'c', label: "It's a new faster, cheaper model you switch to for routine work, separate from your main model", correct: false },
-          { id: 'd', label: "It truncates Claude's final answers to a fixed length to save tokens, cutting off long results", correct: false },
+          { id: 'a', label: "It removes the built-in command and code tools plus `WebFetch` at launch — so the session can't run shell commands, edit or write files, or fetch web pages", correct: true },
+          { id: 'b', label: "It drops the session into plan mode, where edits are proposed and queued for your approval rather than removed", correct: false },
+          { id: 'c', label: "It confines the session to the original checkout, blocking `/add-dir` and any path outside it", correct: false },
+          { id: 'd', label: "It caps how many tool calls the session may make before it stops on its own", correct: false },
         ],
-        passFeedback: "HIT! Concise is an output *style*, not a shortcut. Claude still reads, edits, and checks exactly as thoroughly — it just leads with the result and drops the 'Let me…' / 'Now I'll…' narration around it. You turn it on under Output style in `/config`.",
-        failFeedback: "MISS! It doesn't make Claude do less, it isn't a model, and it doesn't truncate results. Concise trims the *narration*, not the work: same rigor, fewer words of preamble. Re-read Book 1.",
+        passFeedback: "HIT! `--restricted` strips the built-in command tools, the code tools, and `WebFetch` the moment the session starts. What's left is a Claude that reads and reasons but can't act on your machine or reach the web.",
+        failFeedback: "MISS! It doesn't queue edits, scope a directory, or count calls — it removes whole tool *categories* (command, code, and `WebFetch`) at launch. Re-read Book 1.",
       },
     ],
   },

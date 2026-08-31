@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-08-24',
+  publishDate: '2026-08-31',
   framing:
-    "This week in Claude, the throughline is control over the surface of the work — how it reads, what engine it starts on, and how you drag old integrations forward. The new built-in `Concise` output style, chosen under Output style in `/config`, has Claude lead with the result and drop the preamble and narration while doing the work just as thoroughly — trimming the words, never the rigor. The `ANTHROPIC_DEFAULT_MODEL` environment variable sets the model new sessions *start* on as a soft default a `/model` pick still overrides and keeps, so you can standardize a whole fleet without taking the wheel from anyone — unlike the hard-pinning `ANTHROPIC_MODEL`. And `/claude-api upgrade` migrates a Python project from the `anthropic` SDK's 0.x line to 1.x, catching even the easy-to-miss breakages like `httpx.Timeout` becoming `anthropic.Timeout`, so an inherited integration's dreaded upgrade becomes a reviewable diff.",
+    "This week in Claude, the throughline is drawing hard lines around a session — what it's allowed to touch, when it may change engines, and how much it's allowed to burn. The new `--restricted` launch flag removes the built-in command and code tools along with `WebFetch`, so you can hand someone a Claude that reads and reasons over a codebase but can't run, rewrite, or reach the open web. The `PreModelSwitch` and `PostModelSwitch` hook events fire around a model change, letting you block, confirm, or annotate the swap at the lever instead of discovering it in the bill. And a new spend-limit bar in `/usage`, with a matching `rate_limits.spend_limit` status-line field, puts an engagement's dollar burn in plain sight — the on-demand check and the always-on read — so cost is something you catch at sixty percent instead of at the invoice.",
 };

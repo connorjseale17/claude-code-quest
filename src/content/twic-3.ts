@@ -1,134 +1,130 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — the `/claude-api upgrade` command. It migrates Python
- * projects from the `anthropic` SDK 0.x line to 1.x, handling the mechanical
- * breaking changes of that upgrade. It ships alongside a refreshed `claude-api`
- * skill whose Python reference was updated for 1.x — including that timeouts now
- * use `anthropic.Timeout` rather than `httpx.Timeout`. It's a targeted SDK
- * migration, not a CLI updater and not a general dependency bumper.
- * Source (Claude Code CHANGELOG 2.1.239):
- *   - "Added `/claude-api upgrade` to migrate Python projects from `anthropic`
- *      0.x to 1.x, and updated the skill's Python reference for 1.x (timeouts
- *      use `anthropic.Timeout`, not `httpx.Timeout`)"
+ * twic-3 (Feature C) — the spend-limit surfacing. Claude Code adds a spend-limit
+ * bar to `/usage` and a `rate_limits.spend_limit` field to the status line, so
+ * the dollar burn of a session is visible both on demand and always-on. This is
+ * visibility, not an enforced brake.
+ * Source (Claude Code CHANGELOG 2.1.251):
+ *   - "Added Spend limit bar to `/usage` and `rate_limits.spend_limit` status
+ *      line field."
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Final room of the issue, and the Beat Reporter is holding a client's dusty Python integration still pinned to the `anthropic` SDK's 0.x line. The 2.1.239 release adds a command, `/claude-api upgrade`, that migrates a Python project from `anthropic` 0.x to 1.x — and it lands with the bundled `claude-api` skill's Python reference refreshed for 1.x, right down to the detail that timeouts now use `anthropic.Timeout` instead of `httpx.Timeout`. The two books cover what the command actually migrates and why a consultant inheriting an aging API integration reaches for it first. Answer the door's one question for the last key — then face the wyrm past it, a dragon coiled on a hoard of code that time forgot.",
+    "Final room of the week, and the Beat Reporter is watching a slow bar fill along one wall — the money burning down against a line drawn across it. The 2.1.251 release adds a *spend-limit bar* to `/usage` and a matching `rate_limits.spend_limit` field you can put in your status line, so how much you've spent against your limit is readable both on demand and always, right in the footer. The two books cover exactly what got surfaced and why a consultant watching an engagement's burn wants it in plain sight rather than buried in a dashboard. Answer the door's question for the key — then face what hoards it, a dragon coiled on a ledger it will not let you read.",
   prompt:
-    "What does the new `/claude-api upgrade` command do?",
+    "What did the new spend-limit additions bring to Claude Code?",
   choices: [
-    { id: 'a', label: "It migrates a Python project from the `anthropic` SDK's 0.x line to 1.x, handling that upgrade's breaking changes — and ships with the `claude-api` skill's Python reference refreshed for 1.x (e.g. timeouts now use `anthropic.Timeout`, not `httpx.Timeout`)", correct: true },
-    { id: 'b', label: "It upgrades the Claude Code CLI itself to the newest released version", correct: false },
-    { id: 'c', label: "It upgrades your Anthropic API plan or billing tier to unlock higher rate limits", correct: false },
-    { id: 'd', label: "It's a general command that bumps every outdated dependency in any Python project to its latest version", correct: false },
+    { id: 'a', label: "A spend-limit bar in `/usage` and a `rate_limits.spend_limit` field you can surface in your status line", correct: true },
+    { id: 'b', label: "A hard per-session dollar cap that halts the session the instant your spend is exceeded", correct: false },
+    { id: 'c', label: "An automatic downgrade to a cheaper model once you cross a spend threshold", correct: false },
+    { id: 'd', label: "A weekly spend report emailed to your organization's billing owner", correct: false },
   ],
-  passFeedback: "HIT! `/claude-api upgrade` is a targeted migration: it moves a Python project off the `anthropic` SDK 0.x line onto 1.x and handles the breaking changes — like timeouts shifting from `httpx.Timeout` to `anthropic.Timeout`, now documented in the refreshed `claude-api` skill reference.",
-  failFeedback: "MISS! It's not a CLI updater, not a billing/plan change, and not a bump-everything dependency tool. It specifically migrates a Python project from the `anthropic` SDK 0.x to 1.x. Re-read Book 1.",
+  passFeedback: "HIT! It's visibility, not a brake: a spend-limit bar in `/usage`, plus a `rate_limits.spend_limit` field you can drop into your status line for an always-on read of the burn.",
+  failFeedback: "MISS! It doesn't hard-halt the session, downgrade your model, or email a report — it *surfaces* spend, as a `/usage` bar and a status-line field. Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**\`/claude-api upgrade\` — A Guided Path from \`anthropic\` 0.x to 1.x**
+      text: `**The Spend-Limit Bar — Putting the Burn Where You Can See It**
 
-**What it migrates, exactly**
+**Two surfaces, one number**
 
-The 2.1.239 release adds a command, \`/claude-api upgrade\`, and its job is narrow and concrete: it migrates a **Python** project from the \`anthropic\` SDK's **0.x** line to **1.x**. Major-version SDK jumps like this one carry breaking changes — the shapes of calls, the names of helpers, the way configuration is passed all shift between 0.x and 1.x. The command exists to walk a project across that gap mechanically, instead of leaving you to find every changed call by hand and hope you caught them all.
+The 2.1.251 release takes a figure that used to live out of sight — how much you've spent against your spend limit — and puts it in two places you actually look. First, \`/usage\` gains a *spend-limit bar*: run the command and you get a visual read of spend against the ceiling, the same way a fuel gauge shows a tank. Second, a new \`rate_limits.spend_limit\` field becomes available to the status line, the strip of information Claude Code keeps at the bottom of the session. One surface is on demand; the other is always on.
 
-**The refreshed reference that ships with it**
+**On-demand versus always-on**
 
-The command didn't arrive alone. The same release *"updated the skill's Python reference for 1.x"* — the bundled \`claude-api\` skill that Claude leans on when it writes or fixes Anthropic API code. That matters because a migration is only as good as the knowledge behind it: if the reference still described 0.x, an "upgrade" could quietly reintroduce old patterns. Refreshing it means the guidance Claude applies while upgrading is itself current to 1.x.
+The split matters more than it looks. \`/usage\` is the deliberate check — you type it when you want the full picture, and the bar gives you spend at a glance inside it. The status-line field is the ambient check: because the status line is on screen the whole session, dropping \`rate_limits.spend_limit\` into it means the number is simply *there*, updating as you work, with nothing to type. You get to choose how present the figure is — pull it up when you want it, or pin it so you never have to ask.
 
-**A concrete breaking change, named**
+**What it is, and what it isn't**
 
-The changelog even names one of the traps, and it's a telling one: in 1.x, *timeouts use \`anthropic.Timeout\`, not \`httpx.Timeout\`.* On the surface that's a one-line swap, but it's exactly the kind of change a hand migration misses — the code still imports \`httpx\`, still constructs a \`Timeout\`, still *looks* right, and only fails at the edge. That the command and its reference know this specific shift is a sign of what \`/claude-api upgrade\` is really doing: catching the small, easy-to-miss breakages, not just the obvious ones.
+Read the change precisely, because it's easy to inflate. What shipped is *surfacing* — a bar and a field that show you the spend. It is not a gate that stops the session when the bar fills, not a switch that swaps you to a cheaper model at a threshold, and not a report mailed off somewhere. The feature makes the number visible; what you *do* when the bar runs high is still your call, made with better information than you had before.
 
-> Takeaway: \`/claude-api upgrade\` migrates a Python project from the \`anthropic\` SDK 0.x to 1.x — handling breaking changes like \`httpx.Timeout\` → \`anthropic.Timeout\` — backed by a \`claude-api\` skill reference refreshed for 1.x.`,
+> Takeaway: The spend-limit additions surface your spend two ways — a bar inside \`/usage\` for the on-demand check and a \`rate_limits.spend_limit\` status-line field for an always-on read — turning an invisible figure into one you can watch.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**Inheriting Someone Else's API Code — Making the Migration Somebody's Job Instead of Nobody's**
+      text: `**Watching the Burn on an Engagement — Spend You Can See Is Spend You Can Manage**
 
-**The engagement this is built for**
+**The problem of the invisible meter**
 
-Book 1 was the mechanism; here's the room you'll use it in. A consultant is forever inheriting integrations they didn't write: a client's internal tool, a script from a contractor who's long gone, a service pinned to \`anthropic\` 0.x because upgrading it never made it to the top of anyone's list. The upgrade keeps getting deferred precisely because it's tedious and risky — a manual hunt through every API call for what changed, with production behavior on the line. \`/claude-api upgrade\` turns that dreaded afternoon into a command, which is often the difference between the migration happening and staying on the someday pile.
+Book 1 was the mechanism; here's the engagement it serves. Cost on an AI-heavy engagement has a nasty quality: it accrues silently. A long autonomous run, a fleet of sessions, a night of unattended work — none of it announces its spend as it goes, and the first time many people see the total is when it's already the total. Putting the spend-limit bar in \`/usage\` and the figure in the status line closes that gap. The meter is no longer invisible; it's a glance away, or already on screen, while there's still room to react.
 
-**Why the "just as good on the boring parts" matters**
+**Pin it to the status line for the long, quiet runs**
 
-The value here isn't cleverness; it's coverage. The reason a 0.x→1.x jump gets put off is the fear of the *missed* change — the one call in an obscure module that nobody remembers, the \`httpx.Timeout\` that still parses fine and breaks only under load. A tool that systematically applies the known breaking changes across the project addresses exactly that fear: it doesn't get bored on file forty, and it's working from a reference that was just refreshed for 1.x. You still review the diff — that's non-negotiable — but you're reviewing a complete first pass, not authoring one from a blank page.
+The status-line field is the move for exactly the situations where cost usually hides. When you've got a session grinding through a big refactor, or you're stepping away from an unattended run, \`rate_limits.spend_limit\` in the footer means the burn is in your peripheral vision the whole time. You don't have to remember to check; the number is watching itself. For a consultant managing a fixed-budget engagement, that ambient read is the difference between noticing at sixty percent and finding out at a hundred and ten.
 
-**Where your judgment still has to live**
+**Visibility is the input to the decision, not the decision**
 
-Name the boundary, because owning a client's code means owning the review. A migration command produces a diff; it does not absolve you of reading it, running the project's tests against 1.x, and confirming behavior didn't drift on the paths that matter. Treat \`/claude-api upgrade\` as a fast, thorough first draft of the migration — one that frees your attention for the genuinely judgment-heavy parts (does the new timeout policy suit this workload? did any 0.x behavior we relied on change?) instead of spending it hunting mechanical swaps.
+Worth being honest with a client and yourself: the bar doesn't manage the budget for you. It tells you where you stand; the choice to narrow scope, pause a run, or push on is still yours. But that's precisely why it's useful — good cost calls need current numbers, and this hands you current numbers at the moment you'd be making the call. Pair it with the harder ceilings and policies you already run, and the bar becomes the dashboard you glance at before you decide which lever to pull.
 
-> Takeaway: Reach for \`/claude-api upgrade\` when you inherit a client's \`anthropic\` 0.x Python integration — it turns a deferred, error-prone hand-migration into a reviewable first-pass diff, so your judgment goes to behavior and tests, not to hunting changed calls.`,
+> Takeaway: Surface spend where you're already looking — the \`/usage\` bar for the deliberate check, the status-line field for the long unattended runs — so an engagement's burn is something you catch at sixty percent instead of discovering at the invoice.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `I've inherited this client's Python service, and it's still pinned to the old
-\`anthropic\` ____ line — the upgrade everyone kept deferring.
-Instead of hunting every changed call by hand, I'll run ____.
-It migrates the project up to ____, handling the breaking changes —
-like timeouts moving to ____ instead of \`httpx.Timeout\`.
-Then I'll still ____ before I call it done.`,
+    template: `This engagement is on a fixed budget and I've got a long unattended run going overnight, so I need the cost in plain sight.
+For a deliberate check I'll run ____ and read the new ____ bar.
+For an always-on read while I'm away, I'll pin the ____ field into my ____.
+And I'll stay clear-eyed that this feature ____ — it shows the burn; the call to pause or narrow scope is still mine.`,
     blanks: [
-      { id: 'old-line', suggestions: ['0.x', '0.x SDK', 'legacy 0.x'] },
-      { id: 'command', suggestions: ['`/claude-api upgrade`', 'the `/claude-api upgrade` command', '/claude-api upgrade'] },
-      { id: 'new-line', suggestions: ['1.x', 'the 1.x SDK', 'anthropic 1.x'] },
-      { id: 'new-timeout', suggestions: ['`anthropic.Timeout`', 'anthropic.Timeout', "the SDK's own Timeout"] },
-      { id: 'review-step', suggestions: ['review the diff and run the tests against 1.x', 'read the diff and run the test suite', 'confirm behavior on the paths that matter'] },
+      { id: 'usage-cmd', suggestions: ['`/usage`', 'the `/usage` command', 'usage'] },
+      { id: 'bar-name', suggestions: ['spend-limit', 'spend', 'spend-against-limit'] },
+      { id: 'field', suggestions: ['`rate_limits.spend_limit`', 'the `rate_limits.spend_limit`', 'spend-limit'] },
+      { id: 'surface', suggestions: ['status line', 'session footer', 'status-line strip'] },
+      { id: 'not-a-brake', suggestions: ['only surfaces the spend', "doesn't halt the session on its own", 'shows the number but enforces nothing'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "`/claude-api upgrade` (2.1.239): a command that migrates a *Python* project from the `anthropic` SDK's 0.x line to 1.x, handling the major-version breaking changes mechanically. It ships with the bundled `claude-api` skill's Python reference refreshed for 1.x — including that timeouts now use `anthropic.Timeout`, not `httpx.Timeout`. It is specifically that SDK migration: not a Claude Code CLI updater, not a billing/plan change, and not a general bump-every-dependency tool. For a consultant, it's the tool for an inherited integration still pinned to 0.x — it turns a deferred, error-prone hand-migration into a reviewable first-pass diff. You still review that diff and run the project's tests against 1.x; the command frees your judgment for behavior and workload questions instead of hunting mechanical swaps.",
+        "The spend-limit surfacing (2.1.251): two additions that make your spend against your limit visible. `/usage` gains a spend-limit bar for a deliberate, on-demand read; a new `rate_limits.spend_limit` field can go in the status line for an always-on read that updates as you work. The key framing: this is *visibility*, not enforcement — it doesn't hard-halt the session, downgrade your model, or email a report; it shows the number and leaves the decision to you. For a consultant, cost on an AI-heavy engagement accrues silently, and the status-line field is the move for long or unattended runs where the burn usually hides — the difference between noticing at sixty percent and finding out at the invoice. Pair it with the harder ceilings you already run; the bar is the dashboard you glance at before deciding which lever to pull.",
       beats: [
-        { kind: 'say', text: "Closing story of the issue, and it's one you'll actually reach for: a new command, `/claude-api upgrade`, added in 2.1.239. Its job is narrow and concrete — it migrates a *Python* project from the `anthropic` SDK's 0.x line up to 1.x." },
-        { kind: 'say', text: "Why a command for this at all? Because a major-version SDK jump is a minefield of breaking changes. Between 0.x and 1.x, call shapes shift, helpers get renamed, config moves around. Doing it by hand means hunting every changed call across the project and praying you caught them all. This walks the project across that gap instead." },
-        { kind: 'say', text: "And it didn't ship alone — the same release refreshed the bundled `claude-api` skill's Python reference for 1.x. That's the knowledge Claude uses when it writes or fixes Anthropic API code. A migration is only as good as the reference behind it; if that reference still described 0.x, an 'upgrade' could quietly drag old patterns back in. Now it's current." },
+        { kind: 'say', text: "Closing story of the week is small and practical: your spend against your spend limit is now something you can actually see. Two places. First, `/usage` gets a spend-limit *bar* — run it and you get a gauge of spend against the ceiling." },
+        { kind: 'say', text: "Second, there's a new field, `rate_limits.spend_limit`, that you can put in your status line — the strip along the bottom of the session. So the same number can live in the footer, on screen the whole time, updating as you go. One's on demand, the other's always on." },
+        { kind: 'say', text: "That split is the useful part. `/usage` is the deliberate check — you type it when you want the full picture. The status-line field is ambient — it's just *there*, no typing, because the status line is always showing. You pick how present you want the number to be." },
         {
           kind: 'choice',
-          prompt: "A colleague sees `/claude-api upgrade` and asks: 'Oh, is that how I update Claude Code to the latest version?' Set them straight — what does it actually upgrade?",
+          prompt: "A client asks: 'So once that bar fills up, the session stops on its own, right?' What's the honest answer?",
           options: [
-            { id: 'sdk-migration', label: "Neither the CLI nor your plan — it migrates a Python project from the `anthropic` SDK 0.x to 1.x, handling that upgrade's breaking changes", correct: true, reaction: "Exactly. It's an SDK *migration* command for your project's code, not a CLI self-update and not a billing change. Think 'move my Python integration onto anthropic 1.x,' not 'update the tool.'" },
-            { id: 'cli-update', label: "Yes — it updates the Claude Code CLI itself to the newest release", correct: false, reaction: "No — it doesn't touch the CLI. It migrates a *Python project's* use of the `anthropic` SDK from 0.x to 1.x. Different target entirely: your code, not the tool." },
-            { id: 'plan-upgrade', label: "It upgrades your Anthropic API plan to get higher rate limits", correct: false, reaction: "Not billing at all. It's a code migration — it moves a Python project off `anthropic` 0.x onto 1.x. Nothing to do with your plan or limits." },
+            { id: 'visibility', label: "No — this surfaces the spend as a bar and a status-line field; it shows you where you stand, but pausing or narrowing scope is still your call", correct: true, reaction: "Exactly. What shipped is *visibility*, not a brake. The bar tells you the number; it doesn't hard-stop the run, swap your model, or mail a report. Better information, same hand on the wheel." },
+            { id: 'hard-stop', label: "Yes — it's a hard cap that halts the session the moment spend crosses the limit", correct: false, reaction: "That's the overread. The feature makes spend *visible*; it doesn't enforce a stop. What you do when the bar runs high is still your decision — don't promise a client an automatic brake that isn't there." },
+            { id: 'downgrade', label: "Sort of — it quietly downgrades you to a cheaper model once you cross the threshold", correct: false, reaction: "No — there's no automatic downgrade in this. It's a bar in `/usage` and a status-line field, both purely for seeing the spend. The model you're on doesn't change on its own." },
           ],
         },
-        { kind: 'say', text: "The changelog even names one of the traps, and it's the perfect example of why you want a tool for this: in 1.x, timeouts use `anthropic.Timeout`, not `httpx.Timeout`. That's a one-line swap that a hand migration sails right past — the code still imports `httpx`, still builds a `Timeout`, still *looks* correct, and only bites at the edge, under load. Knowing that specific shift is the whole value." },
-        { kind: 'say', text: "Here's the engagement it's built for. You inherit a client's service — a contractor's old script, an internal tool — still pinned to `anthropic` 0.x because upgrading it never reached the top of anyone's list. It's deferred precisely because it's tedious and risky. This command turns that dreaded afternoon into one invocation, and it doesn't get bored on file forty the way a human does." },
-        { kind: 'say', text: "But own the boundary: a migration command gives you a diff, not a discharge. You still read it, run the project's tests against 1.x, and confirm behavior didn't drift where it matters. Treat it as a fast, thorough first pass so your judgment goes to the real questions — does the new timeout policy fit this workload? — not to hunting swaps. The books have the rest. The last door asks: what does `/claude-api upgrade` actually do? Answer for the final key. Then face Deprecatrix past it — a wyrm curled on a hoard of 0.x code, hissing that the old versions were always better." },
+        { kind: 'say', text: "Here's why a consultant should care. Cost on an AI-heavy engagement accrues *silently* — a long autonomous run, a fleet of sessions, a night of unattended work, none of it announces its spend. Usually the first time you see the total is when it already *is* the total." },
+        { kind: 'say', text: "The status-line field is the fix for exactly those runs. Grinding through a big refactor, or stepping away from an unattended session — pin `rate_limits.spend_limit` in the footer and the burn is in your peripheral vision the whole time. You don't have to remember to check; the number watches itself." },
+        { kind: 'say', text: "Just stay clear-eyed: the bar doesn't manage the budget for you. It hands you current numbers at the moment you'd be making the call — narrow scope, pause the run, or push on. Pair it with the harder ceilings you already set, and it's the dashboard you glance at before you pull a lever." },
+        { kind: 'say', text: "The books have the full read. The door asks one thing: what did the spend-limit additions actually bring? Answer for the key. Then face Ledgerwyrm past it — a dragon coiled on the burn-bar it guards, snarling that once the bar fills, your session is *done*." },
       ],
     },
   },
   battle: {
-    name: 'Deprecatrix, the Hoard of Zero-Point-X',
+    name: 'Ledgerwyrm, Keeper of the Burn Bar',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a vast dragon uncoils atop a glittering mound of outdated code, every scale stamped with a version long past end-of-life* …you'd take my hoard from me, operator? this beautiful 0.x, hand-tuned, load-bearing, NEVER to be touched… *smoke curls from its nostrils* …name the command that dares migrate my treasure to 1.x, if you truly mean to climb.",
+    introLine: "*a long dragon uncoils across a glowing bar of spent gold, one claw pinning the ledger shut* …you want to read the burn, little operator? then prove you know what they *gave* you this week — what, exactly, was surfaced… name it true or feed my hoard…",
     tauntLines: [
-      "*a gout of flame* the CLI? you think that spell updates the *tool*? no — it comes for my code, my precious Python, and drags it up a major version…",
-      "*claws rake the hoard* a billing rite? a plan upgrade? fool — it buys no limits… it MIGRATES, it rewrites my calls, it moves my very `httpx.Timeout` to `anthropic.Timeout` where I cannot follow…",
+      "*bares molten teeth* a hard *cap*, you cried — the session dies when my bar fills? no! I only let you SEE the gold burn… the stopping is your hand, never mine…",
+      "*coils tighter on the ledger* a quiet *downgrade* to a lesser engine, you guessed? a mailed report? no and no — a bar in `/usage`, a field in your footer, and nothing more… it shows, it does not act…",
     ],
-    victoryLine: "*Deprecatrix sinks against the emptied mound as the last key rolls free* …migrated… 0.x to 1.x, every changed call caught, even the timeout I hid best… the hoard is current now, and the issue is yours to close… go, operator…",
+    victoryLine: "*Ledgerwyrm lifts its claw from the ledger and lets you read it at last* …you knew it for what it is — a light on the hoard, not a lock… `/usage` bar, status-line field, the decision still yours… take the key, and watch your burn…",
     questions: [
       {
         prompt:
-          "What does the new `/claude-api upgrade` command do?",
+          "What did the new spend-limit additions bring to Claude Code?",
         choices: [
-          { id: 'a', label: "It migrates a Python project from the `anthropic` SDK's 0.x line to 1.x, handling that upgrade's breaking changes — and ships with the `claude-api` skill's Python reference refreshed for 1.x (e.g. timeouts now use `anthropic.Timeout`, not `httpx.Timeout`)", correct: true },
-          { id: 'b', label: "It upgrades the Claude Code CLI itself to the newest released version", correct: false },
-          { id: 'c', label: "It upgrades your Anthropic API plan or billing tier to unlock higher rate limits", correct: false },
-          { id: 'd', label: "It's a general command that bumps every outdated dependency in any Python project to its latest version", correct: false },
+          { id: 'a', label: "A spend-limit bar in `/usage` and a `rate_limits.spend_limit` field you can surface in your status line", correct: true },
+          { id: 'b', label: "A hard per-session dollar cap that halts the session the instant your spend is exceeded", correct: false },
+          { id: 'c', label: "An automatic downgrade to a cheaper model once you cross a spend threshold", correct: false },
+          { id: 'd', label: "A weekly spend report emailed to your organization's billing owner", correct: false },
         ],
-        passFeedback: "HIT! `/claude-api upgrade` is a targeted migration: it moves a Python project off the `anthropic` SDK 0.x line onto 1.x and handles the breaking changes — like timeouts shifting from `httpx.Timeout` to `anthropic.Timeout`, now documented in the refreshed `claude-api` skill reference.",
-        failFeedback: "MISS! It's not a CLI updater, not a billing/plan change, and not a bump-everything dependency tool. It specifically migrates a Python project from the `anthropic` SDK 0.x to 1.x. Re-read Book 1.",
+        passFeedback: "HIT! It's visibility, not a brake: a spend-limit bar in `/usage`, plus a `rate_limits.spend_limit` field you can drop into your status line for an always-on read of the burn.",
+        failFeedback: "MISS! It doesn't hard-halt the session, downgrade your model, or email a report — it *surfaces* spend, as a `/usage` bar and a status-line field. Re-read Book 1.",
       },
     ],
   },
