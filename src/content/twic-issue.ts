@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-08-31',
+  publishDate: '2026-09-07',
   framing:
-    "This week in Claude, the throughline is drawing hard lines around a session — what it's allowed to touch, when it may change engines, and how much it's allowed to burn. The new `--restricted` launch flag removes the built-in command and code tools along with `WebFetch`, so you can hand someone a Claude that reads and reasons over a codebase but can't run, rewrite, or reach the open web. The `PreModelSwitch` and `PostModelSwitch` hook events fire around a model change, letting you block, confirm, or annotate the swap at the lever instead of discovering it in the bill. And a new spend-limit bar in `/usage`, with a matching `rate_limits.spend_limit` status-line field, puts an engagement's dollar burn in plain sight — the on-demand check and the always-on read — so cost is something you catch at sixty percent instead of at the invoice.",
+    "This week in Claude, the throughline is controlling what fills a session and who gets to decide — the skills it carries, the raw output it swallows, and the tool servers an organization hands its whole fleet. The new `/skill-doctor` command reports which of your loaded skills have gone unused and what each one costs in context, so the dead weight quietly eating your window finally becomes visible. The `bashOutputMaxChars` and `taskOutputMaxChars` settings raise how much command and background-task output lands inline before the rest spills to a file, letting you tune how much of a firehose floods the context instead of drowning in it. And `managedMcpServers` gives an organization a managed-settings home for the MCP servers it issues centrally, while the narrowed `allowedMcpServers` now gates only what individuals add — two populations of tool servers, governed by two clean levers.",
 };

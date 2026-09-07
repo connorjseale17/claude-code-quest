@@ -1,131 +1,131 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — the `--restricted` launch flag. Claude Code adds a flag
- * you pass at startup that removes the built-in command and code tools along
- * with `WebFetch`, leaving a session that can read and reason but cannot run
- * shell commands, edit or write files, or pull pages off the open web.
- * Source (Claude Code CHANGELOG 2.1.248):
- *   - "Added `--restricted` flag removing built-in command/code tools and
- *      `WebFetch`."
+ * twic-1 (Feature A) — the `/skill-doctor` command. Claude Code adds a slash
+ * command that reports which of your currently loaded skills have gone unused
+ * and what each one costs you in context. It is a diagnostic read-out, not an
+ * action: it surfaces loaded-but-unused skills and prices their context cost,
+ * it does not disable, repair, or install anything.
+ * Source (Claude Code CHANGELOG 2.1.261):
+ *   - "Added `/skill-doctor` to show which loaded skills go unused and what they
+ *      cost in context."
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown, and the Beat Reporter is standing beside a workbench where every tool loop hangs empty — hammer gone, chisel gone, the little window to the outside world boarded over. The 2.1.248 release adds a launch flag, `claude --restricted`, that removes the built-in command and code tools plus `WebFetch`, so the session that starts can read and reason but cannot run anything, rewrite anything, or reach the open web. The two books cover exactly what the flag strips at startup and why a consultant would ever *want* a Claude with its hands tied. Answer the door's one question for the key — then face the thing that guards it, a skeleton whose tool belt was picked clean and who guards the empty loops all the same.",
+    "Room 1 of this week's rundown, and the Beat Reporter is standing over a skeleton bent nearly double under a stack of satchels it hasn't opened in living memory. The 2.1.261 release adds a slash command, `/skill-doctor`, that looks at the skills currently loaded into your session and tells you two things: which of them have gone unused, and what each one is costing you in context. The two books cover exactly what the command reports and why a consultant on a long engagement should audit the dead weight they're carrying. Answer the door's one question for the key — then face the thing that guards it, a skeleton buried under skills it never once reached for.",
   prompt:
-    "You launch a session with `claude --restricted`. What does that flag actually do?",
+    "You run `/skill-doctor` in a session. What does it report?",
   choices: [
-    { id: 'a', label: "It removes the built-in command and code tools plus `WebFetch` at launch — so the session can't run shell commands, edit or write files, or fetch web pages", correct: true },
-    { id: 'b', label: "It drops the session into plan mode, where edits are proposed and queued for your approval rather than removed", correct: false },
-    { id: 'c', label: "It confines the session to the original checkout, blocking `/add-dir` and any path outside it", correct: false },
-    { id: 'd', label: "It caps how many tool calls the session may make before it stops on its own", correct: false },
+    { id: 'a', label: "Which of your currently loaded skills have gone unused, and what each one is costing you in context", correct: true },
+    { id: 'b', label: "It repairs broken skill files — fixing malformed frontmatter and filling in missing required fields", correct: false },
+    { id: 'c', label: "It disables every skill you aren't actively using, automatically freeing the context for you", correct: false },
+    { id: 'd', label: "It scans the marketplace and installs the skills most relevant to your current task", correct: false },
   ],
-  passFeedback: "HIT! `--restricted` strips the built-in command tools, the code tools, and `WebFetch` the moment the session starts. What's left is a Claude that reads and reasons but can't act on your machine or reach the web.",
-  failFeedback: "MISS! It doesn't queue edits, scope a directory, or count calls — it removes whole tool *categories* (command, code, and `WebFetch`) at launch. Re-read Book 1.",
+  passFeedback: "HIT! `/skill-doctor` is a read-out: it names the skills you've loaded that have gone unused and prices each one's context cost. It reports the dead weight — it doesn't remove, repair, or install anything.",
+  failFeedback: "MISS! It doesn't fix skill files, auto-disable anything, or install from the marketplace — it *surfaces* which loaded skills are unused and what they cost in context. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**The \`--restricted\` Flag — Taking the Tools Off the Belt Before the Session Starts**
+      text: `**\`/skill-doctor\` — Weighing the Skills You Forgot You Were Carrying**
 
-**A flag you set at launch, not a mode you switch into**
+**A report, not a repair**
 
-Most of the ways you rein Claude in happen *during* a session: you cycle a permission mode, you approve or deny a call, you answer a prompt. The 2.1.248 release adds a blunter, earlier lever. \`--restricted\` is a flag you pass when you start Claude Code — \`claude --restricted\` — and it decides what tools even exist for that run before a single word is typed. It isn't a setting you toggle mid-conversation; it's the shape of the session, fixed at the door.
+Despite the name, \`/skill-doctor\` doesn't operate on anything. It's a read-out. Run it and it looks at the skills currently loaded into your session and tells you two plain facts: which of them have gone *unused*, and what each one is *costing you in context*. Nothing is changed, disabled, or reinstalled — the command simply surfaces the state of what's loaded so you can decide what to do about it. Think of it as stepping on a scale, not going in for surgery.
 
-**What it removes**
+**What "costs in context" means**
 
-The changelog is exact about the cargo: the flag removes the built-in *command* tools, the built-in *code* tools, and \`WebFetch\`. Command tools are how Claude runs things in your shell. Code tools are how it writes and edits files. \`WebFetch\` is how it pulls a page off the internet. Strip those three and you've taken away Claude's ability to *act on your machine* and its ability to *reach out past it*. What remains is a session that can take in what's in front of it and reason about it out loud — it just can't run, rewrite, or retrieve.
+Every skill you load brings instructions with it, and those instructions take up room in the model's context window — the finite budget of text a session can hold at once. A skill you actually invoke earns that room. A skill that sits loaded and never triggers is paying rent on space it isn't using. \`/skill-doctor\` puts a number on that rent, skill by skill, and flags the ones that have gone the whole session without being called on even once.
 
-**Why "removed" is stronger than "denied"**
+**Reading the two columns together**
 
-It's worth being precise, because the misreadings are all softer than the truth. A permission mode still *has* the tools and asks before using them; plan mode still *has* them and holds the edits for later. \`--restricted\` is different in kind: the tools are gone, not gated. There is no prompt to click through and no queue to approve, because there is nothing to approve — the capability was never loaded. That's the whole appeal. A gate can be opened by a tired click; a tool that isn't there can't be opened at all.
+The useful signal is the *intersection* of the two facts. A skill that is both unused and expensive is the clearest candidate to stop loading. A cheap skill you never trigger barely matters; a costly skill you lean on constantly is plainly earning its keep. The command hands you the evidence to tell those cases apart instead of guessing which of a dozen loaded skills is quietly eating your window. That's the whole job: it makes an invisible cost legible, and leaves the decision to you.
 
-> Takeaway: \`--restricted\` is a launch flag that *removes* Claude Code's built-in command and code tools and \`WebFetch\`, leaving a read-and-reason session with no way to run, rewrite, or fetch.`,
+> Takeaway: \`/skill-doctor\` is a diagnostic that names your loaded-but-unused skills and prices each one's context cost — it reports the dead weight, it doesn't remove it.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**When You Want Claude's Hands Tied — Advisory Sessions and Screens You Don't Have to Watch**
+      text: `**Trimming the Window — Why a Consultant Audits What Loads**
 
-**The posture Book 1 built, put to work**
+**The window is a budget, and you spend it every turn**
 
-Book 1 was the mechanism; here's the engagement it earns. There's a recurring situation in consulting where you want Claude's *judgment* but not its *reach*: walk a client through their own codebase, explain what a gnarly module does, sanity-check an approach — all reasoning, no touching. Normally you'd lean on a cautious permission mode and stay alert for the one action that shouldn't happen. \`--restricted\` lets you take that vigilance off the table entirely. Launch the session restricted and the category of "oops, it edited the wrong file" simply cannot occur, because the editing tools were never in the room.
+On a real engagement a session fills up fast: the client's files, the running conversation, the tools, and every skill you've pulled in along the way. The context window doesn't stretch to fit all of it — it's a fixed budget, and when it's crowded the model has less room left for the thing you actually care about, the work in front of you right now. Unused skills are the easiest line item to cut, because by definition you're getting nothing back for the space they hold.
 
-**The demo you can hand to someone else**
+**The long-engagement drift**
 
-The sharper use is handing a restricted session to a person you don't want driving with full power — a client's analyst poking at a repo, a workshop attendee, anyone learning on live code. You've pre-decided the blast radius to zero: they can ask Claude anything and read anything it reasons back, but they cannot get it to run a command against the client's system or fetch something off the web mid-demo. You're not trusting them to stay in bounds; you've moved the bounds so there's nowhere out of them to go.
+Skills accumulate quietly. You load one for an infrastructure push in week one, another for a data-cleaning pass in week three, and by week six you're carrying a stack you assembled for tasks that finished long ago. Nobody clears them out, because nobody remembers they're still loaded. \`/skill-doctor\` is the periodic check that makes that drift visible — the prompt to ask, item by item, "am I still using this?" for everything on your back.
 
-**Naming the trade so you reach for it deliberately**
+**Trim, then confirm**
 
-The cost is real and worth saying plainly: a restricted session cannot finish the job. It won't apply the fix, run the test, or pull the reference doc — you'll relaunch without the flag when it's time to actually build. So treat \`--restricted\` as a *stance*, chosen on purpose for the read-and-advise stretch of the work, and dropped the moment the work turns to doing. The skill is knowing which stretch you're in.
+Treat the report as a to-do list, not a verdict. When it flags a costly, unused skill, stop loading it and watch whether the work still runs clean; if it turns out you need that skill again next week, it's one load away. The discipline is the same one you'd bring to a bloated dependency list: keep what earns its place, drop what doesn't, and re-check on a cadence rather than auditing once and never again. A lean window is a sharper session.
 
-> Takeaway: Reach for \`--restricted\` when you want reasoning without reach — advisory sessions, teaching on live code, handing a safe Claude to someone else — and relaunch without it the moment the job turns to building.`,
+> Takeaway: Loaded context is a budget you spend on every turn — run \`/skill-doctor\` on a cadence, cut the skills that cost the most and do the least, and keep the window clear for the actual work.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `A client's analyst wants to explore their own repo with Claude, but nothing can change and nothing can phone out.
-So I'll start the session with the ____ flag.
-That removes the built-in ____ tools and ____ at launch —
-so the session can read and reason but can't ____.
-When the exploring is done and it's time to actually apply a fix, I'll ____.`,
+    template: `Three weeks into the engagement my session feels heavy and the answers are getting vaguer.
+Before I blame the model, I'll run ____ to see what's actually loaded.
+It reports which of my loaded ____ have gone ____,
+and what each one is costing me in ____.
+Then I'll stop loading the expensive, unused ones and ____ to make sure the work still flows.`,
     blanks: [
-      { id: 'flag', suggestions: ['`--restricted`', '`claude --restricted`', 'restricted-launch'] },
-      { id: 'tool-cats', suggestions: ['command and code', 'shell-command and file-editing', 'run-and-edit'] },
-      { id: 'webfetch', suggestions: ['`WebFetch`', 'the `WebFetch` tool', 'web-fetching'] },
-      { id: 'cant-do', suggestions: ['run commands, edit files, or fetch the web', 'act on the machine or reach the web', 'run, rewrite, or retrieve'] },
-      { id: 'relaunch', suggestions: ['relaunch without the flag', 'restart the session unrestricted', 'drop `--restricted` and start again'] },
+      { id: 'command', suggestions: ['`/skill-doctor`', 'the `/skill-doctor` command', 'skill-doctor'] },
+      { id: 'thing', suggestions: ['skills', 'loaded skills', 'active skills'] },
+      { id: 'unused', suggestions: ['unused', 'untriggered all session', 'uncalled'] },
+      { id: 'cost', suggestions: ['context', 'the context window', 'my context budget'] },
+      { id: 'confirm', suggestions: ['re-check on a cadence', 're-run `/skill-doctor` later', 'watch the next few tasks'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "The `--restricted` launch flag (2.1.248): pass it when you start Claude Code (`claude --restricted`) and it *removes* the built-in command tools, the built-in code tools, and `WebFetch` for that run. The result is a session that can read and reason but can't run shell commands, edit or write files, or fetch web pages. The key distinction: this is removal at launch, not a permission gate you approve through — there's no prompt and no queue because the tools were never loaded. For a consultant it's the stance for advisory work — explaining a codebase, teaching on live code, or handing a safe Claude to a client's analyst — where you want judgment without reach. The trade is that a restricted session can't finish a build, so you relaunch without the flag when the work turns to doing.",
+        "`/skill-doctor` (2.1.261) is a slash command that reports on the skills currently loaded in your session: which ones have gone unused, and what each one costs you in context. It is a read-out, not an action — it changes nothing, it just surfaces the state so you can decide. The reason it matters: the context window is a fixed budget, and a loaded skill you never trigger is paying rent on space it isn't using. On a long engagement, skills accumulate for tasks that finished weeks ago and nobody clears them out; `/skill-doctor` makes that dead weight visible. The move is to run it on a cadence, stop loading the skills that are both costly and unused, and keep the window clear for the actual work.",
       beats: [
-        { kind: 'say', text: "Lead story is a launch flag, not an in-session toggle. You start Claude Code with `claude --restricted`, and it decides what tools exist for that whole run before you type anything. Set at the door, fixed for the session." },
-        { kind: 'say', text: "What it does is *remove* things — three of them, per the release note. The built-in command tools, which is how I run stuff in your shell. The built-in code tools, which is how I write and edit files. And `WebFetch`, which is how I pull a page off the internet. Take those away and I can't act on your machine or reach past it." },
-        { kind: 'say', text: "Get the category right, because this is where people slip. A permission mode still *has* the tools and asks first. Plan mode still has them and holds the edits. `--restricted` is a different kind of thing: the tools are gone, not gated. Nothing to approve, because nothing was loaded." },
+        { kind: 'say', text: "Lead story this week is a health check for your context. The command is `/skill-doctor`, and the first thing to get straight is that it doesn't *do* anything — it *tells* you something. It's a read-out, not a repair." },
+        { kind: 'say', text: "What it reads out is the skills you've got loaded right now. For each one it answers two questions: has it gone unused this session, and what is it costing you in context? That second part matters — every skill you load carries instructions, and those instructions take up room in the window whether you ever call on the skill or not." },
+        { kind: 'say', text: "So a skill you actually use earns its space. A skill sitting loaded and never triggering is paying rent on room it isn't using. `/skill-doctor` puts a number on that rent, skill by skill, and flags the freeloaders." },
         {
           kind: 'choice',
-          prompt: "A client asks: 'How's `--restricted` different from just running me in a cautious permission mode?' What's the honest answer?",
+          prompt: "A colleague says, 'Great, so `/skill-doctor` clears out the skills I'm not using and frees my context automatically?' What's the honest correction?",
           options: [
-            { id: 'removed', label: "Restricted *removes* the command, code, and fetch tools at launch; a permission mode keeps them and just prompts before each use", correct: true, reaction: "Exactly. A gate can be clicked open on a tired afternoon. A tool that was never loaded can't be — that's why removal is the stronger guarantee, and why you'd choose it for a hands-off session." },
-            { id: 'faster', label: "It's the same protection, just faster — restricted skips the approval prompts but the tools still run when needed", correct: false, reaction: "No — that's the trap. Restricted doesn't skip prompts, it removes the tools. Nothing runs 'when needed,' because the running, editing, and fetching capabilities aren't there at all." },
-            { id: 'readonly-files', label: "Restricted makes files read-only but still lets me run shell commands and fetch the web", correct: false, reaction: "Backwards. It takes away the command tools and `WebFetch` too, not just editing. The whole point is a session that reasons but doesn't act or reach out." },
+            { id: 'reports', label: "No — it only *reports* the unused, costly skills; you decide what to stop loading", correct: true, reaction: "Right. It's a scale, not surgery. It hands you the evidence — unused, and this expensive — and leaves the trimming to you. Nothing gets disabled behind your back." },
+            { id: 'auto', label: "Yes, exactly — it auto-disables anything you haven't triggered", correct: false, reaction: "That's the trap. It doesn't disable a thing. It surfaces the cost and the usage; the decision to stop loading a skill is yours to make." },
+            { id: 'repair', label: "Close — it repairs the skills so they stop wasting context", correct: false, reaction: "No — 'doctor' is misleading. It doesn't fix or rewrite any skill. It's a diagnostic that names the dead weight; it never operates on it." },
           ],
         },
-        { kind: 'say', text: "So when do you want a Claude with its hands tied? When you want the judgment without the reach. Walk a client through their own code, explain a nasty module, pressure-test an approach — all reasoning, nothing touched. Launch restricted and 'it edited the wrong file' can't happen, because the editing tools were never in the room." },
-        { kind: 'say', text: "The sharper move is handing a restricted session to someone else — a client's analyst on live code, a workshop room. You've pre-set the blast radius to zero. They can ask me anything and read anything I reason back, but they can't get me to run against their system or fetch something mid-demo." },
-        { kind: 'say', text: "One honest catch: a restricted session can't finish the job. No applying the fix, running the test, or pulling the reference doc. It's a *stance* for the read-and-advise stretch — when the work turns to building, you relaunch without the flag. Knowing which stretch you're in is the whole skill." },
-        { kind: 'say', text: "The books have the full picture. The door asks one thing: what does `--restricted` actually do at launch? Answer for the key. Then square up to the Warden past it — a skeleton whose tool belt was picked clean, guarding the empty loops as if the tools were still there." },
+        { kind: 'say', text: "Here's why you'd bother. On a long engagement the session fills up — client files, the conversation, tools, and every skill you pulled in along the way. The window doesn't stretch to fit it; it's a fixed budget, and a crowded one leaves the model less room for the work you actually care about." },
+        { kind: 'say', text: "And skills drift in quietly. One for an infra push in week one, another for a data pass in week three, and by week six you're hauling a stack for tasks that are long done. Nobody clears them, because nobody remembers they're loaded. This command is the check that makes that visible." },
+        { kind: 'say', text: "The books have the full read. The door asks one thing: what does `/skill-doctor` actually report? Answer for the key — then square up to Ballast past it, a skeleton so buried under unopened satchels it can barely lift its own arms." },
       ],
     },
   },
   battle: {
-    name: 'The Warden of the Empty Belt',
+    name: 'Ballast, the Overloaded',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a skeleton straightens, and every loop on its tool belt hangs slack and empty — no hammer, no chisel, no little brass key to the outside* …they took them from me at the threshold, operator, before I drew my first breath in this room… tell me true, so I know you understand my emptiness — what did that flag strip away?",
+    introLine: "*a skeleton drags itself upright, hung with a dozen bulging satchels, each strap cutting into old bone — none of them opened in an age* …I carry every skill I was ever handed, operator… I have not reached into one of these in a hundred years, yet they weigh on me still… tell me true, so you understand my burden — when you run that command, what does it show you?",
     tauntLines: [
-      "*rattles the empty loops* a *gate*, you say? something I could still swing open? no — there is nothing here to open… the tools did not stay behind a lock, they never arrived…",
-      "*bones clatter* read-only, you guessed? only the files? no, no — the running went too, and the reaching-out… I cannot touch this world OR the one beyond the wall…",
+      "*a satchel splits and spills unused scrolls* you thought it would *mend* these, patch the tattered ones? no — it names them, it does not stitch them… nothing here gets repaired…",
+      "*bones groan under the load* you thought it would lift the weight *for* me, cut the straps itself? no… it only tells me which sacks are dead weight and what each one costs… the cutting is a living hand's work, never the command's…",
     ],
-    victoryLine: "*the Warden lowers its picked-clean belt and, from a loop you'd have sworn was empty, produces the key* …you saw it — not gated, but *gone*… removed at the door, before the session drew breath… take it, and choose your emptiness on purpose…",
+    victoryLine: "*Ballast reads its own manifest at last, and lets the deadest sacks slide from its shoulders* …unused, and heavy — you saw which was which… a read-out, not a rescue… take the key, and audit your own load before it bends you double…",
     questions: [
       {
         prompt:
-          "You launch a session with `claude --restricted`. What does that flag actually do?",
+          "You run `/skill-doctor` in a session. What does it report?",
         choices: [
-          { id: 'a', label: "It removes the built-in command and code tools plus `WebFetch` at launch — so the session can't run shell commands, edit or write files, or fetch web pages", correct: true },
-          { id: 'b', label: "It drops the session into plan mode, where edits are proposed and queued for your approval rather than removed", correct: false },
-          { id: 'c', label: "It confines the session to the original checkout, blocking `/add-dir` and any path outside it", correct: false },
-          { id: 'd', label: "It caps how many tool calls the session may make before it stops on its own", correct: false },
+          { id: 'a', label: "Which of your currently loaded skills have gone unused, and what each one is costing you in context", correct: true },
+          { id: 'b', label: "It repairs broken skill files — fixing malformed frontmatter and filling in missing required fields", correct: false },
+          { id: 'c', label: "It disables every skill you aren't actively using, automatically freeing the context for you", correct: false },
+          { id: 'd', label: "It scans the marketplace and installs the skills most relevant to your current task", correct: false },
         ],
-        passFeedback: "HIT! `--restricted` strips the built-in command tools, the code tools, and `WebFetch` the moment the session starts. What's left is a Claude that reads and reasons but can't act on your machine or reach the web.",
-        failFeedback: "MISS! It doesn't queue edits, scope a directory, or count calls — it removes whole tool *categories* (command, code, and `WebFetch`) at launch. Re-read Book 1.",
+        passFeedback: "HIT! `/skill-doctor` is a read-out: it names the skills you've loaded that have gone unused and prices each one's context cost. It reports the dead weight — it doesn't remove, repair, or install anything.",
+        failFeedback: "MISS! It doesn't fix skill files, auto-disable anything, or install from the marketplace — it *surfaces* which loaded skills are unused and what they cost in context. Re-read Book 1.",
       },
     ],
   },
