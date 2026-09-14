@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-09-07',
+  publishDate: '2026-09-14',
   framing:
-    "This week in Claude, the throughline is controlling what fills a session and who gets to decide — the skills it carries, the raw output it swallows, and the tool servers an organization hands its whole fleet. The new `/skill-doctor` command reports which of your loaded skills have gone unused and what each one costs in context, so the dead weight quietly eating your window finally becomes visible. The `bashOutputMaxChars` and `taskOutputMaxChars` settings raise how much command and background-task output lands inline before the rest spills to a file, letting you tune how much of a firehose floods the context instead of drowning in it. And `managedMcpServers` gives an organization a managed-settings home for the MCP servers it issues centrally, while the narrowed `allowedMcpServers` now gates only what individuals add — two populations of tool servers, governed by two clean levers.",
+    "This week in Claude, the throughline is proof over hope — measuring what actually works, watching it as it happens, and putting a ceiling on the burn. The new `claude plugin eval` command runs a plugin against real test cases and re-runs each one with no plugin loaded, so the Δ between the two proves whether the plugin helped or Claude was getting there anyway. The `/diff` panel opens beside the conversation in fullscreen and redraws itself with every edit, turning review into something you do in flight instead of squinting at one giant diff at the end. And `maxEffortLevel` caps the reasoning-effort tier as a ceiling across every provider, reining in the reflex to run routine work at maximum without forcing anyone up to it.",
 };
