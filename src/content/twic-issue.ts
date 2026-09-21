@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-09-14',
+  publishDate: '2026-09-21',
   framing:
-    "This week in Claude, the throughline is proof over hope — measuring what actually works, watching it as it happens, and putting a ceiling on the burn. The new `claude plugin eval` command runs a plugin against real test cases and re-runs each one with no plugin loaded, so the Δ between the two proves whether the plugin helped or Claude was getting there anyway. The `/diff` panel opens beside the conversation in fullscreen and redraws itself with every edit, turning review into something you do in flight instead of squinting at one giant diff at the end. And `maxEffortLevel` caps the reasoning-effort tier as a ceiling across every provider, reining in the reflex to run routine work at maximum without forcing anyone up to it.",
+    "This week in Claude, the throughline is where the instructions live and where the reach stops — the brief a session reads, the redirect you can still land mid-turn, and the hosts a runaway command may touch. AGENTS.md arrives as a fallback: with no CLAUDE.md in a project, Claude Code now reads the repo's `AGENTS.md` — the same cross-tool open brief a growing set of coding agents already follow — so a repo you inherit onboards your session for free. A new send-now key (`ctrl+enter`, or `ctrl+x ctrl+s`) interrupts the turn Claude is running and delivers every queued message at once, turning a correction that used to wait for the turn to end into a redirect that lands the instant you catch the drift. And per-command allowed domains let a sandboxed Bash, PowerShell, or Monitor command in auto mode name the hosts it needs on the command itself, with the classifier reviewing that reach in context and any undeclared host refused by default — least privilege at the grain of a single command.",
 };

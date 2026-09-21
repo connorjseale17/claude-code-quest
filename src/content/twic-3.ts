@@ -1,140 +1,153 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — the `maxEffortLevel` setting. Claude Code adds a setting
- * that caps the effort level — the reasoning-effort tier of a request (low,
- * medium, high, xhigh) — on the client, across every plan and provider. It is a
- * ceiling, not a floor: levels above the cap disappear from the `/effort` picker,
- * and naming a higher level with `--effort` or `/effort` runs at the cap instead
- * (with a warning in interactive/plain-text sessions; silently under json /
- * stream-json output or in background agents). It can be set top-level or
- * per-model under `modelSettings`; on Enterprise, admins can also set per-role
- * effort limits, and when both apply the lower cap wins. It is not a dollar spend
- * cap and not a model pin — it bounds how hard the model thinks, not what it costs
- * directly or which model runs.
- * Sources (Claude Code CHANGELOG 2.1.267 + docs.claude.com model-config/effort):
- *   - "Added `maxEffortLevel` setting (top-level or per model under
- *      `modelSettings`): caps the effort level on every provider."
- *   - "Levels above the cap aren't offered in the `/effort` picker, and naming a
- *      higher level with `--effort` or `/effort` runs at the cap instead."
- *   - "on a Claude Enterprise plan, organization admins set per-role effort
- *      limits ... When both apply to a model, the lower cap applies."
+ * twic-3 (Feature C) — per-command allowed domains in auto mode. In auto mode
+ * with sandboxing on, Claude runs most shell commands without a per-connection
+ * network prompt. Claude Code adds the ability for each Bash, PowerShell, or
+ * Monitor command to carry a list of the hosts it needs, named on the command
+ * itself — a domain, a wildcard, or an IP, each with an optional :port. The
+ * classifier reviews those hosts together with the command. A per-command list
+ * only widens what the sandbox denies by default (deniedDomains still block; a
+ * strictAllowlist / allowManagedDomainsOnly lockdown refuses per-command lists
+ * entirely), and while per-command lists apply, a connection to a host no
+ * approved command listed is refused by default — no prompt, no classifier
+ * check — the refusal names the host, and Claude re-runs the command with it added.
+ * Sources:
+ *   - Claude Code CHANGELOG 2.1.271: "Added per-command `allowed_domains` to Bash,
+ *     PowerShell and Monitor in auto mode with sandboxing"
+ *   - code.claude.com/docs/en/sandboxing, "Per-command allowed domains in auto mode":
+ *     "In auto mode with sandboxing on, Claude names the hosts a command needs on
+ *     the command itself instead of triggering a network approval for each
+ *     connection. Each Bash, PowerShell, or Monitor command that runs in the
+ *     sandbox can carry a list of hosts beyond the sandbox's allowlist: a domain
+ *     such as `registry.npmjs.org`, a wildcard such as `*.pythonhosted.org`, or an
+ *     IP address, each with an optional `:port`. The classifier reviews the hosts
+ *     together with the command. Requires Claude Code v2.1.271 or later."
+ *     "A per-command list widens only what the sandbox denies by default.
+ *     `deniedDomains` entries still block. When `strictAllowlist` or
+ *     `allowManagedDomainsOnly` locks the allowlist, Claude Code refuses per-command
+ *     lists." "While per-command lists apply, Claude Code refuses a connection to a
+ *     host that no approved command listed, without a prompt or a classifier check.
+ *     The refusal names the host in the command's result, and Claude re-runs the
+ *     command with the host added."
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Final room of the week, and the Beat Reporter stands before a dragon that hoards fire for its own sake — every task, however small, met with the hottest blast it can summon, the walls scorched black from lighting candles with a bonfire. The 2.1.267 release adds `maxEffortLevel`, a setting that caps the *effort level* of a request — how hard the model is asked to think — as a ceiling that holds across every plan and provider. The two books cover exactly what that cap does at the lever and why a consultant governing a whole fleet sets a ceiling on effort without forcing overkill on anyone. Answer the door's question for the key — then face what hoards it, a dragon that has never once thought to spend less than everything.",
+    "Room three closes the issue, and the Beat Reporter is craning up at a wyrm that thinks autonomy means an open sky. The 2.1.271 release tightens what a sandboxed command may reach: in auto mode, each Bash, PowerShell, or Monitor command names the hosts it needs on the command itself, the classifier reviews that reach in context, and any host nothing declared is refused by default. The books cover the mechanic and why egress — not the edit — is the real blast radius on an unattended run. Answer the door for the key, then tether Wildreach, the wyrm that mistook a dropped prompt for permission to fly anywhere.",
   prompt:
-    "What does the `maxEffortLevel` setting do?",
+    "In auto mode with sandboxing on, how does a sandboxed Bash command reach a host that isn't already on the sandbox's allowlist?",
   choices: [
-    { id: 'a', label: "Caps the effort level — the reasoning-effort tier of a request — as a ceiling across every provider: higher levels drop out of the `/effort` picker and asking for one runs at the cap instead, but you can still choose any level at or below it", correct: true },
-    { id: 'b', label: "Forces every request to run at exactly that effort level, removing the lower tiers so nothing can run cheaper", correct: false },
-    { id: 'c', label: "Sets a dollar spend limit that halts the session once its cost passes the configured budget", correct: false },
-    { id: 'd', label: "Pins which model the session uses, so no one can switch to a different model", correct: false },
+    { id: 'a', label: "The command carries a list naming the hosts it needs, the classifier reviews those hosts along with the command, and a connection to any host no approved command listed is refused by default", correct: true },
+    { id: 'b', label: "Auto mode drops all network restrictions, so a sandboxed command may reach any host without naming it", correct: false },
+    { id: 'c', label: "A per-command list overrides everything, including deniedDomains and an org's locked allowlist", correct: false },
+    { id: 'd', label: "You must exit the sandbox and approve each host at a prompt, exactly as in manual mode", correct: false },
   ],
-  passFeedback: "HIT! `maxEffortLevel` is a *ceiling* on the reasoning-effort tier, enforced across every provider. Levels above it vanish from the `/effort` picker and a higher request clamps down to the cap — but any level at or below the cap is still yours to choose.",
-  failFeedback: "MISS! It's not a floor that forces max effort, not a dollar spend cap, and not a model pin — it's a ceiling on *how hard the model thinks*, and you can still pick anything at or under it. Re-read Book 1.",
+  passFeedback: "HIT! In auto mode the command names its hosts on itself and the classifier reviews them in context; anything no approved command declared is refused by default, named in the result, then re-run with the host added. Autonomy with egress on a leash.",
+  failFeedback: "MISS! Auto mode removes the prompt, not the boundary — undeclared hosts are refused by default, and a per-command list only widens what's denied (deniedDomains and a locked allowlist still win). Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**\`maxEffortLevel\` — A Ceiling on How Hard the Model Thinks**
+      text: `**Per-Command Allowed Domains — Naming the Hosts on the Command Itself**
 
-**Effort level, and the cap over it**
+**Auto mode, the sandbox, and the network question**
 
-A request runs at an *effort level* — a tier of how much reasoning effort the model puts in, from \`low\` up through \`medium\`, \`high\`, and \`xhigh\`. Higher tiers think harder and cost more; lower tiers are quick and cheap. \`maxEffortLevel\` sets a *ceiling* on that tier. It doesn't fix the effort at one value — it caps the top. Every level at or below the cap remains available; only the levels above it are taken off the table.
+In auto mode with sandboxing on, Claude runs most shell commands without stopping to ask — the sandbox enforces a filesystem and network boundary, and the operating system holds the line for every command and its children. Network is the awkward part: the sandbox pre-allows *no* domains by default, and historically the first time a command needed a new host, you got a prompt. In auto mode, that prompt is exactly the friction the whole mode exists to remove.
 
-**What the cap does at the controls**
+**The command carries its own list**
 
-Set the cap and the change shows up right where effort is chosen. Levels above the ceiling simply aren't offered in the \`/effort\` picker anymore. And if someone names a higher level anyway — with the \`--effort\` flag at launch or \`/effort\` mid-session — it doesn't error out and it doesn't sneak past; the request just *runs at the cap instead*. In an interactive session or a plain-text \`--print\` run, a warning tells you the level you asked for and the level actually applied. Under \`json\` or \`stream-json\` output, or in a background agent, the clamp happens silently — the ceiling holds either way, it just doesn't interrupt an automated pipeline to say so.
+2.1.271 closes that gap. In auto mode with sandboxing, each \`Bash\`, \`PowerShell\`, or \`Monitor\` command can carry a list of the hosts it needs, named *on the command itself* — a domain such as \`registry.npmjs.org\`, a wildcard such as \`*.pythonhosted.org\`, or an IP address, each with an optional \`:port\`. Instead of a network approval firing per connection, the classifier reviews those hosts *together with* the command that wants them. The reach a command is asking for is declared up front and judged in context.
 
-**Where you set it, and which cap wins**
+**Deny by default, host by host**
 
-\`maxEffortLevel\` can be set at the top level, or per model under \`modelSettings\` when different models should carry different ceilings, and it applies across every provider Claude Code can reach — the same ceiling whether the request runs on Anthropic's API or a cloud provider's hosted models. On a Claude Enterprise plan there's a second lever: admins can set per-role effort limits. When both a role limit and \`maxEffortLevel\` apply to the same model, the *lower* of the two wins — the tighter ceiling always governs.
+The enforcement is strict. While per-command lists are in play, a connection to a host that *no approved command listed* is refused outright — no prompt, no classifier check. The refusal names the offending host in the command's result, and Claude re-runs the command with that host added to its list. Nothing reaches a destination that wasn't declared and reviewed first.
 
-> Takeaway: \`maxEffortLevel\` caps the reasoning-effort tier as a ceiling across every provider — higher levels leave the picker and a higher request clamps to the cap, while everything at or below it stays freely available.`,
+> Takeaway: In auto mode with sandboxing, a command declares the hosts it needs on itself; the classifier reviews them with the command, and any host no approved command named is refused by default.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**Governing the Burn — Why a Fleet Wants a Ceiling, Not a Setting**
+      text: `**Least Privilege for an Unattended Run — Why Egress Is the Blast Radius**
 
-**A ceiling reins in the overkill without mandating it**
+**The risk isn't the edit, it's the reach**
 
-The failure mode a ceiling fixes is the routine task run at maximum reasoning effort — lighting every candle with a bonfire. Left to defaults and habit, people reach for the highest tier "to be safe," and a fleet quietly burns top-tier effort on work a lower tier would have nailed. \`maxEffortLevel\` caps that reflex. Crucially it's a *ceiling and not a floor*: it stops the needless overkill at the top without forcing anyone up to it, so a quick task can still run \`low\` and a genuinely hard one can run right up to the cap. You're removing the expensive mistake, not dictating the effort.
+When you let Claude run autonomously on a client's box, the frightening part usually isn't a file it changes — you can review a diff. It's where a command *connects*. A build script that quietly phones a host you've never heard of is the kind of thing that ends an engagement. Per-command allowed domains puts that reach under a microscope: every command states exactly which hosts it means to touch, and the classifier weighs the ask against the command before either runs.
 
-**One lever across a mixed fleet**
+**Granularity is the point**
 
-Because the cap holds across every provider, it's the single control that behaves the same no matter where a team's sessions actually run — one client on Anthropic's API, another on a cloud provider's hosted models. Instead of chasing per-environment knobs, a consultant sets one ceiling and knows it means the same thing everywhere. Setting it per model under \`modelSettings\` adds the nuance: a lower ceiling on the model people reach for constantly, a higher one reserved for the model kept for the hard problems.
+A session-wide allowlist answers one question — *what may this session reach?* This answers a sharper one: *what may this command reach?* A \`pip install\` that names \`*.pythonhosted.org\` and nothing else is visibly scoped to its job; if that same command reached for anything beyond its list, the connection is refused by default and named in the result. That's least privilege at the grain of a single command — the tightest boundary you can draw without switching autonomy back off.
 
-**Predictable by default, silent where it must be**
+**It widens; it never overrides**
 
-The behavior is built to govern without getting in the way. Interactively, the warning that names the requested and applied level keeps it honest — nobody is surprised about the tier they got. In automated runs the clamp is silent, so a headless pipeline or a background agent inherits the ceiling without a warning derailing it. The result is a spend-and-latency guardrail you set once and largely forget, doing its job in the background of every session on the engagement.
+Know the guardrails it respects. A per-command list only *widens* what the sandbox denies by default — it can't punch through your standing controls. \`deniedDomains\` entries still block. And when an administrator has locked the allowlist with \`strictAllowlist\` or \`allowManagedDomainsOnly\`, Claude Code refuses per-command lists entirely: the org's hard wall wins. So a consultant gets convenient, reviewed, per-command reach on their own machine, while a client's managed lockdown stays exactly as tight as their security team set it.
 
-> Takeaway: Use \`maxEffortLevel\` as a fleet-wide guardrail against reflexive overkill — one ceiling across every provider that curbs top-tier waste while still letting each task run at whatever level at or below it the work actually needs.`,
+> Takeaway: Scope each command's network reach to the hosts it names, let the classifier review the ask in context, and trust that deniedDomains and a locked allowlist still override — autonomy with egress on a leash.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `Across this engagement, people keep defaulting to the top reasoning tier "to be safe," and the burn shows it.
-I'll set ____ so the highest levels come off the table for routine work.
-Because it's a ceiling and not a floor, a quick task can still run ____ underneath it.
-Since our teams run on different providers, I'm relying on the fact that the cap ____.
-And if someone asks for a higher level anyway with the /effort picker, the request will ____.`,
+    template: `I'm running Claude in ____ with sandboxing on to build a client's service unattended.
+I want the install step to reach its package index and nothing else on the open internet.
+So each command names the hosts it needs on the command itself — for the Python step, ____.
+The ____ reviews those hosts together with the command before either one runs.
+If the command reaches for a host ____, the connection is refused by default and named in the result.
+And the client's own ____ still overrides mine — a locked allowlist wins over any per-command list.`,
     blanks: [
-      { id: 'setting', suggestions: ['`maxEffortLevel`', 'the `maxEffortLevel` setting', 'a `maxEffortLevel` ceiling'] },
-      { id: 'lower', suggestions: ['low', 'a cheaper tier', 'medium'] },
-      { id: 'provider', suggestions: ['holds across every provider', 'means the same thing everywhere', 'applies no matter where the session runs'] },
-      { id: 'clamp', suggestions: ['run at the cap instead', 'clamp down to the ceiling', 'be held to the cap'] },
+      { id: 'mode', suggestions: ['auto mode', 'auto-allow mode', 'the auto permission mode'] },
+      { id: 'hosts', suggestions: ['*.pythonhosted.org', 'a wildcard like *.pythonhosted.org', 'the package index and nothing more'] },
+      { id: 'reviewer', suggestions: ['classifier', 'auto-mode classifier', 'classifier reviewing the command'] },
+      { id: 'undeclared', suggestions: ['no approved command listed', 'it never declared', 'outside its declared list'] },
+      { id: 'guardrail', suggestions: ['deniedDomains and strictAllowlist', 'managed lockdown', 'locked allowlist'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "`maxEffortLevel` (2.1.267) caps the effort level — the reasoning-effort tier of a request, from low through medium, high, and xhigh — as a ceiling, enforced across every plan and provider. It's a ceiling, not a floor: every level at or below the cap stays available, only the higher ones are removed. Levels above the cap drop out of the `/effort` picker, and naming a higher level with `--effort` or `/effort` runs at the cap instead — with a warning naming the requested and applied levels in interactive/plain-text sessions, silently under json/stream-json output or in background agents. Set it top-level or per model under `modelSettings`. On Enterprise, admins can also set per-role effort limits, and when both apply the lower cap wins. Use it as a fleet-wide guardrail against reflexive overkill — curbing top-tier waste on routine work without forcing anyone up to it, with one control that means the same thing across providers. It is not a dollar spend cap and not a model pin.",
+        "Per-command allowed domains in auto mode (Claude Code 2.1.271): in auto mode with sandboxing on, Claude runs most shell commands without a per-connection network prompt, and each Bash, PowerShell, or Monitor command can carry a list of the hosts it needs named on the command itself — a domain, a wildcard like *.pythonhosted.org, or an IP, each with an optional :port. The classifier reviews those hosts together with the command. Enforcement is deny-by-default: while per-command lists apply, a connection to a host no approved command listed is refused (no prompt, no classifier check), named in the result, and Claude re-runs the command with that host added. A per-command list only widens what the sandbox denies by default — deniedDomains still block, and a strictAllowlist or allowManagedDomainsOnly lockdown refuses per-command lists entirely. The point for a consultant: egress, not the edit, is the blast radius on an unattended run, and this scopes network reach to the grain of a single reviewed command.",
       beats: [
-        { kind: 'say', text: "Closing story this week is about how hard the model is asked to think — and putting a ceiling on it. A request runs at an *effort level*: a tier of reasoning effort, from low up through medium, high, and xhigh. Higher tiers think harder and cost more. `maxEffortLevel` caps that tier." },
-        { kind: 'say', text: "Read that as a ceiling, not a floor. It doesn't fix the effort at one value — it caps the top. Every level at or below the cap is still available; only the ones above it come off the table. A quick task can still run low; the cap just stops anyone from reaching past it." },
-        { kind: 'say', text: "You see it right where effort gets chosen. Levels above the ceiling aren't offered in the `/effort` picker anymore. And if someone names a higher one anyway — `--effort` at launch or `/effort` mid-session — it doesn't error and it doesn't slip past; the request just runs at the cap instead." },
+        { kind: 'say', text: "Last room of the issue, and it's the one to read slowly if you ever let me run unattended on a client's machine. Setup: in auto mode with sandboxing on, I run most shell commands without asking you first. The sandbox holds a filesystem and network boundary; the OS enforces it on every command and its children." },
+        { kind: 'say', text: "Network was the awkward bit. The sandbox pre-allows no domains, so historically the first time a command needed a new host, you'd get a prompt — and a prompt in auto mode is exactly the friction auto mode exists to kill." },
+        { kind: 'say', text: "2.1.271's fix: each Bash, PowerShell, or Monitor command can name the hosts it needs on the command itself — a domain, a wildcard like `*.pythonhosted.org`, an IP, each with an optional port. The classifier reviews those hosts together with the command, instead of an approval firing per connection." },
         {
           kind: 'choice',
-          prompt: "An admin sets `maxEffortLevel` to `medium`. A teammate asks, 'So now every request is forced to run at medium?' What's the correction?",
+          prompt: "A sandboxed command in auto mode tries to reach a host that no approved command ever listed. What happens?",
           options: [
-            { id: 'ceiling', label: "No — medium is the *ceiling*. You can still run low; you just can't go above medium", correct: true, reaction: "Right. It's a cap, not a mandate. Everything at or below medium stays available — low, medium — and only high and xhigh are taken off the table. A quick task can still run cheap." },
-            { id: 'floor', label: "Yes — it removes the lower tiers so nothing runs cheaper than medium", correct: false, reaction: "That's a floor, and this isn't one. It's a ceiling: the lower tiers stay, the *higher* ones are removed. You can always spend less effort than the cap, never more." },
-            { id: 'spend', label: "Sort of — it's really a dollar budget that stops the session at a spend limit", correct: false, reaction: "Different lever. `maxEffortLevel` bounds the reasoning tier, not the dollars. It caps how hard the model thinks, not a spend total — the spend limit is its own separate control." },
+            { id: 'refused', label: "The connection is refused by default — no prompt — and named in the result", correct: true, reaction: "Right. Nothing reaches an undeclared host. The refusal names it, and I re-run the command with that host added — declared and reviewed first, always." },
+            { id: 'unrestricted', label: "Auto mode drops the network limits, so it just connects", correct: false, reaction: "No — auto mode removes the prompt, not the boundary. A host nobody declared is refused by default." },
+            { id: 'override', label: "The per-command list overrides everything, so it connects anyway", correct: false, reaction: "Careful. A per-command list only widens what's denied by default. deniedDomains still block, and a locked allowlist refuses per-command lists outright." },
           ],
         },
-        { kind: 'say', text: "Why govern it: the failure mode is the routine task run at maximum effort — lighting a candle with a bonfire. People reach for the top tier 'to be safe,' and a fleet quietly burns top-tier effort on work a lower tier would nail. The ceiling reins that in without forcing anyone up to it." },
-        { kind: 'say', text: "It's built to govern quietly. The cap holds across every provider, so it's one control that means the same thing wherever a team's sessions run. Set it per model under `modelSettings` for nuance. Interactively you get a warning naming the level you asked for and the one applied; in automated runs the clamp is silent so a pipeline isn't derailed. And on Enterprise, a per-role limit can stack with it — when both apply, the lower cap wins." },
-        { kind: 'say', text: "The books have the full read. The door asks one thing: what does `maxEffortLevel` actually do? Answer for the key — then face Pyre past it, a dragon that has never once thought to spend less than everything it has." },
+        { kind: 'say', text: "Why it matters: when I run autonomously, the blast radius isn't the file I edit — you can read a diff. It's where a command *connects*. Per-command lists put that reach under review: each command shows exactly the hosts it means to touch, scoped to its job." },
+        { kind: 'say', text: "And it respects the walls above it. It only widens what the sandbox denies by default; deniedDomains still block; and if an admin locked the allowlist with strictAllowlist or allowManagedDomainsOnly, I refuse per-command lists entirely. Your client's lockdown stays exactly as tight as their security team set it." },
+        { kind: 'say', text: "The books have the mechanic and the engagement read both. Answer the door for the key — then face the last guardian of the issue: Wildreach, a wyrm that thinks autonomy means it may fly to any host it pleases. Tether it to the hosts it named." },
       ],
     },
   },
   battle: {
-    name: 'Pyre, the Maximalist',
+    name: 'Wildreach, the Untethered Wyrm',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a dragon rears over a scorched hoard, every scale glowing white-hot, wisps of flame escaping its jaws even at rest* …I know only one heat, operator… the highest… I have lit candles with infernos and boiled oceans to make tea, and I would not know how to give a task *less* than all of me… you mean to set a *ceiling* on my fire? …tell me true, so I know what you'd bind — what does that setting do?",
+    introLine: "*a great wyrm unfurls, wings blotting the allowlist off the wall* …autonomy at last… no prompt, no leash… I run in auto mode, so I fly where I please, to any host in any sky… what's that — a *list*, naming only where I may go? …speak true before I test it: a command reaches for a host nothing ever declared… what becomes of that flight?",
     tauntLines: [
-      "*a gout of flame roars past you* you thought it a *floor* — that it would forbid the lesser heats and force my fullest blaze on all comers? no! it strips away the heights, not the depths… beneath the cap, every gentler flame remains…",
-      "*embers rain down* you thought it a *coin-purse* — a budget of gold that snuffs me when the spending runs dry? no… it does not count my treasure… it bounds how *hard I burn*, tier by tier, not what the burning costs…",
+      "*beats toward an unnamed host* you think auto mode tore down the *boundary* — that no prompt means no wall? no… it took the prompt, not the leash… an undeclared host is refused by default…",
+      "*snarls, straining against the tether* you'd have my little per-command list *override all* — punch through deniedDomains, through a locked allowlist? never… it only widens what's denied by default… the org's wall still wins…",
     ],
-    victoryLine: "*Pyre's glow banks down to a steady, governed warmth, the highest flames guttering out while the lesser ones hold* …a ceiling, not a chain… I may still burn low, only never past the line you drew… you understood the lever… take the key, and cap the fire before it scorches the whole engagement…",
+    victoryLine: "*Wildreach folds its wings to the hosts it named and no others* …refused by default… reviewed with the command… I mistook a dropped prompt for an open sky… take the key, operator, and let me run — tethered to what I declared…",
     questions: [
       {
         prompt:
-          "What does the `maxEffortLevel` setting do?",
+          "In auto mode with sandboxing on, how does a sandboxed Bash command reach a host that isn't already on the sandbox's allowlist?",
         choices: [
-          { id: 'a', label: "Caps the effort level — the reasoning-effort tier of a request — as a ceiling across every provider: higher levels drop out of the `/effort` picker and asking for one runs at the cap instead, but you can still choose any level at or below it", correct: true },
-          { id: 'b', label: "Forces every request to run at exactly that effort level, removing the lower tiers so nothing can run cheaper", correct: false },
-          { id: 'c', label: "Sets a dollar spend limit that halts the session once its cost passes the configured budget", correct: false },
-          { id: 'd', label: "Pins which model the session uses, so no one can switch to a different model", correct: false },
+          { id: 'a', label: "The command carries a list naming the hosts it needs, the classifier reviews those hosts along with the command, and a connection to any host no approved command listed is refused by default", correct: true },
+          { id: 'b', label: "Auto mode drops all network restrictions, so a sandboxed command may reach any host without naming it", correct: false },
+          { id: 'c', label: "A per-command list overrides everything, including deniedDomains and an org's locked allowlist", correct: false },
+          { id: 'd', label: "You must exit the sandbox and approve each host at a prompt, exactly as in manual mode", correct: false },
         ],
-        passFeedback: "HIT! `maxEffortLevel` is a *ceiling* on the reasoning-effort tier, enforced across every provider. Levels above it vanish from the `/effort` picker and a higher request clamps down to the cap — but any level at or below the cap is still yours to choose.",
-        failFeedback: "MISS! It's not a floor that forces max effort, not a dollar spend cap, and not a model pin — it's a ceiling on *how hard the model thinks*, and you can still pick anything at or under it. Re-read Book 1.",
+        passFeedback: "HIT! In auto mode the command names its hosts on itself and the classifier reviews them in context; anything no approved command declared is refused by default, named in the result, then re-run with the host added. Autonomy with egress on a leash.",
+        failFeedback: "MISS! Auto mode removes the prompt, not the boundary — undeclared hosts are refused by default, and a per-command list only widens what's denied (deniedDomains and a locked allowlist still win). Re-read Book 1.",
       },
     ],
   },

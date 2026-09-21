@@ -1,145 +1,141 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — the `claude plugin eval` command. Claude Code adds a
- * command that runs a plugin against a suite of test cases and scores the
- * results. Each case is a realistic prompt plus one or more graders (a pass/fail
- * check: a regex over the reply, whether a tool was called, or a rubric a second
- * model judges against). Each case runs several times with the plugin loaded and
- * again with no plugin (the baseline / ablation), producing a WITH score, a
- * W/OUT score, and their difference Δ — what the plugin actually contributed.
- * It scores reliability, catches regressions when you change the plugin or a new
- * model ships, and can gate CI; it does not repair, validate, or publish.
- * Sources (Claude Code CHANGELOG 2.1.269 + docs.claude.com/en/plugin-evals):
- *   - "Added `claude plugin eval`: run a plugin's eval suite against Claude Code
- *      and get scored, reproducible results."
- *   - "Each case is a realistic prompt plus one or more graders. A grader is a
- *      pass/fail check on what Claude produced, such as a regex over the reply,
- *      whether a particular tool was called, or a rubric that a second model
- *      judges the reply against."
- *   - "each case runs three times by default ... each case's runs are repeated
- *      with no plugin loaded by default, and you get two scores, `WITH` and
- *      `W/OUT`. Their difference, `Δ`, is what the plugin contributed."
- *   - "Use evals to measure how reliably your plugin steers Claude ... to catch
- *      regressions when you change the plugin or a new model ships ... and gate
- *      CI on the score."
+ * twic-1 (Feature A) — AGENTS.md support. Claude Code adds a fallback for a
+ * project's standing instructions: in a project with no CLAUDE.md, it reads a
+ * file named AGENTS.md instead and treats it as the project's instructions.
+ * CLAUDE.md still takes precedence where it exists; AGENTS.md fills the gap when
+ * it doesn't. You choose which file the tool uses under "Project instructions"
+ * in `/config`. AGENTS.md is a cross-tool open format (not a Claude invention),
+ * now stewarded by the Agentic AI Foundation under the Linux Foundation, and a
+ * growing set of coding agents already read it. Not yet on Bedrock/Vertex/Foundry.
+ * Sources:
+ *   - Claude Code CHANGELOG 2.1.277: "Added AGENTS.md support: in a project with
+ *     no CLAUDE.md, Claude Code reads AGENTS.md instead; change it under
+ *     'Project instructions' in `/config` (not yet on Bedrock, Vertex or Foundry)"
+ *   - agents.md: "a simple, open format for guiding coding agents" — "a dedicated,
+ *     predictable place to provide the context and instructions to help AI coding
+ *     agents work on your project"; holds "build steps, tests, and conventions that
+ *     might clutter a README"; "a cross-tool open format" now "stewarded by the
+ *     Agentic AI Foundation under the Linux Foundation"; read by Codex, Jules,
+ *     Aider, Copilot's coding agent, Cursor, Zed, and 20+ others.
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room 1 of this week's rundown, and the Beat Reporter is crouched beside a skeleton that keeps swearing it works — swinging a rusted arm, insisting the motion is perfect — with no one having ever timed it against a skeleton that stayed still. The 2.1.269 release adds `claude plugin eval`, a command that runs a plugin against a suite of test cases and scores the results, running each case with the plugin loaded and again with no plugin so the *difference* shows what the plugin actually did. The two books cover exactly how that scoring works and why a consultant would never ship a plugin on a single lucky run again. Answer the door's question for the key — then face the thing that guards it, a skeleton certain of a claim it has never once measured.",
+    "Room one of this week's rundown, and the Beat Reporter is perched on a desk stacked with identical briefs, watching a skeleton copy the same note out by hand for the hundredth time. The 2.1.277 release gives Claude Code a fallback for its standing orders: in a project with no CLAUDE.md, it now reads the repo's `AGENTS.md` — a cross-tool open brief a growing ecosystem of agents already follow — and treats it as the project's instructions. The two books cover how that fallback resolves and why a consultant inheriting a client's repo suddenly starts a step ahead. Answer the door for the key, then square up to Scrivener, a skeleton that never learned one shared note could serve every reader.",
   prompt:
-    "What does `claude plugin eval` do?",
+    "You open a client repo that has an AGENTS.md file but no CLAUDE.md. What does Claude Code do with it?",
   choices: [
-    { id: 'a', label: "Runs a plugin against a suite of test cases, scoring each with graders, and runs every case both with the plugin and without it so the Δ shows what the plugin actually contributed", correct: true },
-    { id: 'b', label: "Checks a plugin's files for syntax and schema errors — malformed manifests, missing required fields — and reports whether it is well-formed", correct: false },
-    { id: 'c', label: "Automatically rewrites the plugin's skills and prompts to raise its score until every case passes", correct: false },
-    { id: 'd', label: "Publishes the plugin to the community marketplace once it clears a passing score", correct: false },
+    { id: 'a', label: "Reads AGENTS.md as the project's instructions in place of CLAUDE.md — the same shared brief a growing set of coding agents already follow", correct: true },
+    { id: 'b', label: "Ignores it — Claude Code only reads a file named CLAUDE.md, so you must rename or convert it first", correct: false },
+    { id: 'c', label: "Reads it, but AGENTS.md always overrides a CLAUDE.md wherever the two conflict", correct: false },
+    { id: 'd', label: "Refuses to start until you pick one file, since it can't tell which set of instructions to trust", correct: false },
   ],
-  passFeedback: "HIT! `claude plugin eval` scores a plugin's behavior against real test cases, and it runs each case with the plugin and without it so the Δ separates what the plugin *contributed* from what Claude would have done anyway. It measures — it doesn't fix, validate, or publish.",
-  failFeedback: "MISS! Checking file syntax is `plugin validate`; nothing here rewrites the plugin or ships it to a marketplace. `plugin eval` *measures* behavior against a no-plugin baseline. Re-read Book 1.",
+  passFeedback: "HIT! With no CLAUDE.md present, AGENTS.md is exactly the file Claude Code falls back to — the same cross-tool open brief other agents read. You inherit the repo's conventions with no setup.",
+  failFeedback: "MISS! Ignoring AGENTS.md was the pre-2.1.277 behavior, and precedence runs the other way — CLAUDE.md wins where it exists; AGENTS.md is the fallback, not an override. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**\`claude plugin eval\` — Measuring Whether the Plugin Actually Helps**
+      text: `**AGENTS.md — The Briefing Claude Reads When There's No CLAUDE.md**
 
-**A case is a prompt plus graders**
+**The fallback the tool reaches for**
 
-An eval suite lives in an \`evals/\` directory inside your plugin, and each *case* is a realistic prompt — something a user of the plugin might actually type — paired with one or more *graders*. A grader is a plain pass/fail check on what Claude produced: a regex over the reply, a check for whether a particular tool was called, or a rubric that a second model judges the reply against. A case's score is the fraction of its graders that passed, and it passes overall when that score meets your \`--threshold\` (\`1.0\` by default). You don't have to hand-author the suite — \`claude plugin eval init\` reads your plugin and proposes the cases and graders for you.
+Claude Code has always read a CLAUDE.md at a project's root — the standing brief that names the build steps, the test command, and the conventions this codebase expects. As of 2.1.277 it has a fallback: in a project with *no* CLAUDE.md, Claude Code reads a file named \`AGENTS.md\` instead and treats it as the project's instructions. CLAUDE.md still wins wherever it exists; \`AGENTS.md\` is what fills the gap when it doesn't. You choose which file the tool uses under **Project instructions** in \`/config\`.
 
-**Runs, because one run tells you nothing**
+**What AGENTS.md actually is**
 
-An agent isn't deterministic, so a single run proves almost nothing. By default each case runs *three times*, and the case's score is the mean across those runs. Every run happens in a fresh, isolated, non-interactive session with only your plugin loaded, so nothing from your terminal leaks in to flatter the result. The report — an HTML page, optionally published to a link — shows each grader's verdict and, for the model-judged graders, the excerpt it read and how it voted.
+\`AGENTS.md\` isn't a Claude invention. It's a cross-tool open format for guiding coding agents — *a dedicated, predictable place to provide the context and instructions to help AI agents work on your project* — now stewarded by the Agentic AI Foundation under the Linux Foundation. It holds the agent-facing detail that would clutter a README: how to build, how to run the tests, the conventions a newcomer would otherwise guess wrong. A growing ecosystem already reads it — Codex, Jules, Aider, Copilot's coding agent, Cursor, Zed, and more.
 
-**The no-plugin baseline is the whole point**
+**One note, many readers**
 
-Here's the move that makes eval more than a vibe check: each case is *also* run with no plugin loaded. You get two scores — \`WITH\` and \`W/OUT\` — and their difference, \`Δ\`, is what the plugin actually contributed. If a case scores \`1.00\` both with and without your plugin, the plugin isn't what made it pass; Claude was already getting there on its own. A positive \`Δ\` is the evidence that the plugin earned its place.
+Because the format is shared, a single \`AGENTS.md\` at a repo's root briefs every agent that speaks it. Claude Code joining that list means a repo already carrying an \`AGENTS.md\` from another tool now gets a Claude that arrives pre-briefed, with nothing to port over. (One caveat: it isn't on Bedrock, Vertex, or Foundry yet.)
 
-> Takeaway: \`claude plugin eval\` scores a plugin's real behavior across repeated runs and, by re-running each case with no plugin, isolates the Δ that proves the plugin — not luck, and not Claude alone — did the work.`,
+> Takeaway: With no CLAUDE.md present, Claude Code reads the repo's \`AGENTS.md\` — the same shared, open brief a growing set of coding agents already follow.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Shipping on Evidence — Why a Consultant Runs the Suite Before the Client Does**
+      text: `**Write the Brief Once — Why a Consultant Leans on the Shared File**
 
-**"It worked when I tried it" is not a measurement**
+**The repo you didn't set up**
 
-The old way to check a plugin was to load it, type one request, watch it fire, and call it done. That tells you the plugin *can* work; it says nothing about how *often* it does. On a client engagement that gap is the whole risk — the skill that triggered flawlessly in your demo and then sat silent on three of the next five real prompts. The eval suite replaces the anecdote with a number you can stand behind: this plugin steers Claude to the right outcome on this fraction of realistic phrasings, measured, not remembered.
+Half of consulting is walking into a codebase someone else built. If that team already runs an AI coding agent, the odds are rising that the repo carries an \`AGENTS.md\` — the conventions, the build, the *don't touch the legacy billing module* already written down for a machine to read. Before, a Claude Code session ignored that and started cold unless you authored a CLAUDE.md yourself. Now it reads the note that's already there, so you inherit the client's own house rules on day one instead of rediscovering them by breaking something.
 
-**Catching the regression you didn't cause**
+**One file for a mixed toolchain**
 
-A plugin doesn't only break when *you* change it. A new model ships, the phrasing that used to trigger your skill no longer does, and you find out from the client instead of from a test. Re-running the same suite after any change — yours or an upstream one — turns that silent drift into a red line in a report. The \`Δ\` is the early-warning system: when the number your plugin used to add quietly collapses, the suite catches it before the engagement does.
+The other direction matters just as much. When *you* author the brief, putting it in \`AGENTS.md\` means it serves whatever agent the client's team reaches for — not only your Claude Code session. A mixed shop running Claude, Copilot, and Cursor against the same repo can share one source of truth instead of three drifting copies that quietly disagree about the test command. You maintain the engagement's conventions in one place, and every tool that speaks the format stays in sync.
 
-**Wiring it into the gate**
+**Precedence is a feature, not a footnote**
 
-Because the results are scored and reproducible, the suite belongs in CI, not just on your laptop. Gate a plugin change on the score and a pull request that drops the plugin's contribution simply doesn't merge — the same discipline you'd apply to a test suite for any other deliverable. The consultant's version of "trust me, it's good" becomes "here's the suite, here's the Δ, here's the run that proves it," which is the only version a serious client should accept.
+Keep the order straight: a CLAUDE.md, where it exists, still takes precedence — \`AGENTS.md\` is the fallback, not an override. So a repo can carry a shared \`AGENTS.md\` for the whole toolchain *and* a Claude-specific CLAUDE.md for the handful of things only your session needs, and the two don't fight. That's the clean split a serious engagement wants: shared conventions in the open file, Claude-only nuance in the dedicated one.
 
-> Takeaway: Treat the eval suite as the plugin's test harness — measure the Δ before you ship, re-run it whenever the plugin or the model changes, and gate CI on the score so a regression fails the build instead of the engagement.`,
+> Takeaway: Read AGENTS.md to inherit a client's existing conventions with zero setup; author it to brief a whole mixed toolchain from one file — and let CLAUDE.md carry only what's Claude's alone.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `My commit-message plugin fired perfectly in the demo, but I won't ship it to the client on one lucky run.
-I'll write an eval suite where each case is a realistic ____ plus one or more ____ that pass or fail it.
-Because the agent isn't deterministic, I'll let each case ____ rather than trust a single run.
-Crucially, each case also runs with no plugin loaded, so the ____ tells me what the plugin actually added.
-Then I'll ____ so a change that quietly kills the plugin's contribution fails the build, not the engagement.`,
+    template: `I'm picking up a client's repo that already carries an ____ left by their existing coding agent.
+Because the repo has ____, Claude Code will read that file as the project's instructions with no setup from me.
+It already spells out the ____ this codebase expects, so my session arrives pre-briefed instead of guessing.
+If I later need Claude-only nuance, I'll add a ____, which takes precedence wherever it exists.
+And because the format is ____, that one brief keeps every agent the team runs in sync.`,
     blanks: [
-      { id: 'case-prompt', suggestions: ['prompt', 'user request', 'test prompt'] },
-      { id: 'graders', suggestions: ['graders', 'pass/fail checks', 'grading rules'] },
-      { id: 'runs', suggestions: ['run several times', 'run three times', 'repeat across runs'] },
-      { id: 'delta', suggestions: ['Δ', 'WITH-minus-W/OUT difference', 'baseline gap'] },
-      { id: 'ci', suggestions: ['gate CI on the score', 'wire the suite into CI', 're-run the suite on every change'] },
+      { id: 'agents-file', suggestions: ['AGENTS.md file', 'agent brief', 'shared instructions file'] },
+      { id: 'no-claudemd', suggestions: ['no CLAUDE.md', 'no Claude-specific brief', 'no CLAUDE.md of its own'] },
+      { id: 'conventions', suggestions: ['build steps and test commands', 'conventions and gotchas', 'setup and house rules'] },
+      { id: 'claude-file', suggestions: ['CLAUDE.md', 'dedicated CLAUDE.md', 'Claude-only CLAUDE.md'] },
+      { id: 'open-format', suggestions: ['a cross-tool open format', 'an open standard', 'shared across agents'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "`claude plugin eval` (2.1.269) runs a plugin against a suite of test cases and scores the results. Each case is a realistic prompt plus one or more graders — a grader is a pass/fail check like a regex over the reply, whether a tool was called, or a rubric a second model judges against. Because an agent isn't deterministic, each case runs several times (three by default) and the score is the mean. The key move: each case also runs with no plugin loaded, giving a WITH score, a W/OUT score, and their difference Δ — what the plugin actually contributed. A case scoring 1.0 both ways means the plugin didn't cause the pass. Use it to measure reliability instead of trusting one lucky run, to catch regressions when you change the plugin or a new model ships, and to gate CI on the score. It measures behavior — it does not validate file syntax (that's `plugin validate`), rewrite the plugin, or publish it.",
+        "AGENTS.md support (Claude Code 2.1.277): in a project with no CLAUDE.md, Claude Code now reads a file named AGENTS.md instead and treats it as the project's instructions. CLAUDE.md still takes precedence wherever it exists — AGENTS.md is the fallback, not an override. You pick which file the tool uses under Project instructions in /config. AGENTS.md is a cross-tool open format (stewarded by the Agentic AI Foundation under the Linux Foundation), holding build steps, test commands, and conventions; a growing ecosystem already reads it (Codex, Jules, Aider, Copilot's coding agent, Cursor, Zed, and more). For a consultant: inheriting a repo that already carries an AGENTS.md means Claude arrives pre-briefed with no porting; authoring the brief in AGENTS.md serves a mixed toolchain from one file, while a CLAUDE.md carries Claude-only nuance. Not yet on Bedrock, Vertex, or Foundry.",
       beats: [
-        { kind: 'say', text: "Lead story this week is how you find out whether a plugin actually works — not whether it *can* work, whether it *does*. The command is `claude plugin eval`, and it runs your plugin against a suite of test cases and scores the results." },
-        { kind: 'say', text: "A case is two things: a realistic prompt, the kind a user would actually type, and one or more graders. A grader is just a pass/fail check on what I produced — a regex over my reply, whether I called a particular tool, or a rubric that a second model judges my answer against. The case's score is the fraction of graders that passed." },
-        { kind: 'say', text: "And because I'm not deterministic, one run tells you nothing. Each case runs three times by default and the score is the mean. Every run happens in a fresh, isolated session with only your plugin loaded, so nothing from your terminal sneaks in to flatter the number." },
+        { kind: 'say', text: "Lead item this week is small in the changelog and big in practice: where I get my standing orders for a project. You know CLAUDE.md — the root file that tells me the build, the tests, the conventions. As of 2.1.277, there's a fallback." },
+        { kind: 'say', text: "In a project with no CLAUDE.md, I now read a file called `AGENTS.md` instead, and treat it as the project's instructions. CLAUDE.md still wins wherever it exists — AGENTS.md just fills the gap when it doesn't. You pick which file I use under Project instructions in `/config`." },
+        { kind: 'say', text: "Here's what makes it more than a rename. `AGENTS.md` isn't ours. It's a cross-tool open format for briefing coding agents — build steps, test commands, conventions, the stuff that'd clutter a README — and a whole ecosystem already reads it: Codex, Jules, Aider, Copilot's coding agent, Cursor, Zed. It's stewarded under the Linux Foundation now." },
         {
           kind: 'choice',
-          prompt: "A case scores 1.00 with your plugin loaded. A colleague says, 'Perfect score — the plugin works.' What's the honest read?",
+          prompt: "You open a client repo. It has an AGENTS.md from their existing agent, but no CLAUDE.md. What do I do with it?",
           options: [
-            { id: 'baseline', label: "Not yet — you have to see the no-plugin score too; if it's also 1.00, the plugin didn't cause the pass", correct: true, reaction: "Exactly. Every case also runs with no plugin loaded. You get WITH and W/OUT, and the difference — Δ — is what the plugin contributed. A high WITH score alone can just mean I'd have gotten there anyway." },
-            { id: 'ship', label: "Right — a perfect score means ship it", correct: false, reaction: "Careful. A perfect WITH score with an equally perfect W/OUT score means the plugin added nothing. The Δ against the no-plugin baseline is the number that actually matters." },
-            { id: 'oneshot', label: "Sure, one clean run at 1.00 is proof enough", correct: false, reaction: "One run is noise. That's why each case runs three times by default — and why it's also run with no plugin, so you can see the Δ instead of a single lucky score." },
+            { id: 'reads-it', label: "Read AGENTS.md as the project's instructions", correct: true, reaction: "Right. No CLAUDE.md means AGENTS.md is exactly what I read. You inherit their house rules on day one — no porting, no cold start." },
+            { id: 'ignores', label: "Ignore it — you only read CLAUDE.md", correct: false, reaction: "Not anymore. That was true before 2.1.277. Now, with no CLAUDE.md, AGENTS.md is precisely the file I fall back to." },
+            { id: 'override', label: "Read it, and let it override any CLAUDE.md", correct: false, reaction: "Careful — precedence runs the other way. CLAUDE.md wins where it exists; AGENTS.md is the fallback, not the override." },
           ],
         },
-        { kind: 'say', text: "That baseline is the whole point. If a case scores 1.00 both with and without your plugin, the plugin isn't what made it pass — I was already getting there. A positive Δ is the evidence that the thing earned its place in the session at all." },
-        { kind: 'say', text: "Why you'd bother on a real engagement: 'it worked when I tried it' isn't a measurement. The suite replaces the anecdote with a number you can stand behind, and re-running it catches the regression you didn't cause — a new model ships, your trigger phrasing stops working, and the report goes red before the client notices." },
-        { kind: 'say', text: "And because the results are scored and reproducible, the suite belongs in CI. Gate the merge on the score and a change that quietly kills the plugin's contribution just doesn't land. The books have the full read. The door asks one thing: what does `claude plugin eval` actually do? Answer for the key — then square up to Hunch past it, a skeleton certain it works and unable to prove it." },
+        { kind: 'say', text: "Why you'd care on an engagement: half the job is a repo you didn't set up. If their team runs any AI agent, odds are the conventions are already written in an AGENTS.md. I read it now, so I arrive pre-briefed instead of guessing and breaking the legacy module they warned you about." },
+        { kind: 'say', text: "And when *you* write the brief, putting it in AGENTS.md means it serves every tool the client runs — Claude, Copilot, Cursor — from one file, instead of three copies drifting out of sync. Keep Claude-only nuance in a CLAUDE.md; the two don't fight." },
+        { kind: 'say', text: "The books have the full read — the mechanic in one, the engagement play in the other. The door asks one thing. Answer it for the key, then face what's past it: Scrivener, a skeleton that never learned to read the shared note, and rewrites the same brief in a private hand for every soul who enters." },
       ],
     },
   },
   battle: {
-    name: 'Hunch, the Unmeasured',
+    name: 'Scrivener, the Note-Hoarder',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a skeleton hauls itself up, working one rusted arm back and forth with fierce conviction* …it *works*, operator… look at it move… I ran it once, long ago, and it fired perfectly — that was proof enough for a hundred years… you want to *score* me? against a version of me with no plugin at all? …tell me true, so I understand what you'd measure — what does that command actually do?",
+    introLine: "*a skeleton looks up from a desk buried in identical notes, quill still scratching* …a fresh one, are you… I keep a brief for each of you, you see — a separate note, a separate hand, for every tool that darkens my door… what's that? one file the whole guild can read? …tell me true before I believe such a thing — in a project with no CLAUDE.md, what do I read instead?",
     tauntLines: [
-      "*the arm swings wild and grinds to a halt* you thought it merely *checked my bones for cracks* — malformed manifest, missing field? no! that is another rite entirely… this one scores what I *do*, not whether I am well-formed…",
-      "*joints seize mid-motion* you thought it would *fix* me — rewrite my own skills until every case passed? no… it does not touch me… it runs me, and runs a me with no plugin at all, and shows the gap between us…",
+      "*sweeps a stack of duplicate notes to the floor* you'd have me *ignore* the shared file — read only my own hand, my own CLAUDE.md, and nothing else? that was the old rite… behind the times, and proud of it…",
+      "*the quill snaps* you say the shared note *overrides* my careful CLAUDE.md?! never — where mine exists, mine wins… the other is a fallback, a gap-filler, not a usurper…",
     ],
-    victoryLine: "*Hunch stills the arm at last and reads its own score beside the empty-handed baseline* …one run was never proof… the difference was… you measured what I *added*, not what I merely *claimed*… take the key, and never ship a thing on a single lucky swing again…",
+    victoryLine: "*Scrivener sets down the quill and reads the single note the whole guild already shares* …one file… every reader… I hoarded copies for centuries and they only ever drifted apart… take the key, operator, and brief them all at once…",
     questions: [
       {
         prompt:
-          "What does `claude plugin eval` do?",
+          "You open a client repo that has an AGENTS.md file but no CLAUDE.md. What does Claude Code do with it?",
         choices: [
-          { id: 'a', label: "Runs a plugin against a suite of test cases, scoring each with graders, and runs every case both with the plugin and without it so the Δ shows what the plugin actually contributed", correct: true },
-          { id: 'b', label: "Checks a plugin's files for syntax and schema errors — malformed manifests, missing required fields — and reports whether it is well-formed", correct: false },
-          { id: 'c', label: "Automatically rewrites the plugin's skills and prompts to raise its score until every case passes", correct: false },
-          { id: 'd', label: "Publishes the plugin to the community marketplace once it clears a passing score", correct: false },
+          { id: 'a', label: "Reads AGENTS.md as the project's instructions in place of CLAUDE.md — the same shared brief a growing set of coding agents already follow", correct: true },
+          { id: 'b', label: "Ignores it — Claude Code only reads a file named CLAUDE.md, so you must rename or convert it first", correct: false },
+          { id: 'c', label: "Reads it, but AGENTS.md always overrides a CLAUDE.md wherever the two conflict", correct: false },
+          { id: 'd', label: "Refuses to start until you pick one file, since it can't tell which set of instructions to trust", correct: false },
         ],
-        passFeedback: "HIT! `claude plugin eval` scores a plugin's behavior against real test cases, and it runs each case with the plugin and without it so the Δ separates what the plugin *contributed* from what Claude would have done anyway. It measures — it doesn't fix, validate, or publish.",
-        failFeedback: "MISS! Checking file syntax is `plugin validate`; nothing here rewrites the plugin or ships it to a marketplace. `plugin eval` *measures* behavior against a no-plugin baseline. Re-read Book 1.",
+        passFeedback: "HIT! With no CLAUDE.md present, AGENTS.md is exactly the file Claude Code falls back to — the same cross-tool open brief other agents read. You inherit the repo's conventions with no setup.",
+        failFeedback: "MISS! Ignoring AGENTS.md was the pre-2.1.277 behavior, and precedence runs the other way — CLAUDE.md wins where it exists; AGENTS.md is the fallback, not an override. Re-read Book 1.",
       },
     ],
   },
