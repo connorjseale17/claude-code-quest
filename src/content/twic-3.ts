@@ -1,153 +1,136 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — per-command allowed domains in auto mode. In auto mode
- * with sandboxing on, Claude runs most shell commands without a per-connection
- * network prompt. Claude Code adds the ability for each Bash, PowerShell, or
- * Monitor command to carry a list of the hosts it needs, named on the command
- * itself — a domain, a wildcard, or an IP, each with an optional :port. The
- * classifier reviews those hosts together with the command. A per-command list
- * only widens what the sandbox denies by default (deniedDomains still block; a
- * strictAllowlist / allowManagedDomainsOnly lockdown refuses per-command lists
- * entirely), and while per-command lists apply, a connection to a host no
- * approved command listed is refused by default — no prompt, no classifier
- * check — the refusal names the host, and Claude re-runs the command with it added.
+ * twic-3 (Feature C) — the dangerous-`rm` guardrail. Claude Code strengthens its
+ * safety check on destructive `rm` commands: it now flags a removal aimed at a
+ * variable (which may be unset/empty) or at a top-level/home directory, names the
+ * specific command in the prompt, and — rather than blocking indefinitely — waits
+ * about two minutes and then denies, with a rewrite hint that suggests guarding
+ * the variable with `${VAR:?}` (which aborts if the variable is unset or empty).
  * Sources:
- *   - Claude Code CHANGELOG 2.1.271: "Added per-command `allowed_domains` to Bash,
- *     PowerShell and Monitor in auto mode with sandboxing"
- *   - code.claude.com/docs/en/sandboxing, "Per-command allowed domains in auto mode":
- *     "In auto mode with sandboxing on, Claude names the hosts a command needs on
- *     the command itself instead of triggering a network approval for each
- *     connection. Each Bash, PowerShell, or Monitor command that runs in the
- *     sandbox can carry a list of hosts beyond the sandbox's allowlist: a domain
- *     such as `registry.npmjs.org`, a wildcard such as `*.pythonhosted.org`, or an
- *     IP address, each with an optional `:port`. The classifier reviews the hosts
- *     together with the command. Requires Claude Code v2.1.271 or later."
- *     "A per-command list widens only what the sandbox denies by default.
- *     `deniedDomains` entries still block. When `strictAllowlist` or
- *     `allowManagedDomainsOnly` locks the allowlist, Claude Code refuses per-command
- *     lists." "While per-command lists apply, Claude Code refuses a connection to a
- *     host that no approved command listed, without a prompt or a classifier check.
- *     The refusal names the host in the command's result, and Claude re-runs the
- *     command with the host added."
+ *   - Claude Code CHANGELOG 2.1.281: "Changed dangerous `rm` prompt to wait 2
+ *     minutes then deny with rewrite hint"
+ *   - Claude Code CHANGELOG 2.1.281: "Improved dangerous-rm check flagging removal
+ *     at variable/top-level directory"
+ *   - Claude Code CHANGELOG 2.1.280: "Improved dangerous-rm prompt naming command
+ *     and suggesting `${VAR:?}` guard"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Room three closes the issue, and the Beat Reporter is craning up at a wyrm that thinks autonomy means an open sky. The 2.1.271 release tightens what a sandboxed command may reach: in auto mode, each Bash, PowerShell, or Monitor command names the hosts it needs on the command itself, the classifier reviews that reach in context, and any host nothing declared is refused by default. The books cover the mechanic and why egress — not the edit — is the real blast radius on an unattended run. Answer the door for the key, then tether Wildreach, the wyrm that mistook a dropped prompt for permission to fly anywhere.",
+    "Room three closes the issue, and the Beat Reporter points up at a wyrm that reads an empty path as a license to burn the whole valley. Recent releases sharpen Claude Code's safety check on destructive deletes: it now flags an `rm` aimed at a variable that might be empty, or at a top-level or home directory, names the exact command, and — instead of hanging on the prompt forever — waits and then *denies*, handing you a `${VAR:?}` rewrite that makes an unset variable abort instead of wipe. One book covers the mechanic and the guard it suggests; the other, why on an unattended run the delete is the one action you can't review your way out of. Answer the door for the key, then tether Scorchpath, the wyrm that mistook an empty variable for open season.",
   prompt:
-    "In auto mode with sandboxing on, how does a sandboxed Bash command reach a host that isn't already on the sandbox's allowlist?",
+    "You're running Claude unattended and a step issues `rm -rf \"$BUILD_DIR\"`, but `$BUILD_DIR` is unset. What does Claude Code's dangerous-`rm` guardrail do?",
   choices: [
-    { id: 'a', label: "The command carries a list naming the hosts it needs, the classifier reviews those hosts along with the command, and a connection to any host no approved command listed is refused by default", correct: true },
-    { id: 'b', label: "Auto mode drops all network restrictions, so a sandboxed command may reach any host without naming it", correct: false },
-    { id: 'c', label: "A per-command list overrides everything, including deniedDomains and an org's locked allowlist", correct: false },
-    { id: 'd', label: "You must exit the sandbox and approve each host at a prompt, exactly as in manual mode", correct: false },
+    { id: 'a', label: "Flags the variable-target removal and names the command; rather than run it or hang forever, it waits and then denies, suggesting a `${VAR:?}` guard so an empty variable can't delete the wrong thing", correct: true },
+    { id: 'b', label: "Runs it immediately — auto mode skips prompts, and an unset variable just expands to nothing harmless", correct: false },
+    { id: 'c', label: "Expands the empty variable and quietly deletes the current directory, the exact case the guard exists to prevent", correct: false },
+    { id: 'd', label: "Permanently disables every `rm` command for the remainder of the session", correct: false },
   ],
-  passFeedback: "HIT! In auto mode the command names its hosts on itself and the classifier reviews them in context; anything no approved command declared is refused by default, named in the result, then re-run with the host added. Autonomy with egress on a leash.",
-  failFeedback: "MISS! Auto mode removes the prompt, not the boundary — undeclared hosts are refused by default, and a per-command list only widens what's denied (deniedDomains and a locked allowlist still win). Re-read Book 1.",
+  passFeedback: "HIT! The guardrail catches removals aimed at a variable or a top-level directory, names the command, and fails safe — waiting, then denying — while handing you the `${VAR:?}` rewrite that makes an empty variable abort instead of delete.",
+  failFeedback: "MISS! Auto mode doesn't waive the guardrail, and the whole point is to *stop* an empty `$BUILD_DIR` from wiping the tree — it fails safe and suggests the `${VAR:?}` guard. Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**Per-Command Allowed Domains — Naming the Hosts on the Command Itself**
+      text: `**The Dangerous-\`rm\` Guardrail — When an Empty Variable Means "Delete Everything"**
 
-**Auto mode, the sandbox, and the network question**
+**The classic one-character disaster**
 
-In auto mode with sandboxing on, Claude runs most shell commands without stopping to ask — the sandbox enforces a filesystem and network boundary, and the operating system holds the line for every command and its children. Network is the awkward part: the sandbox pre-allows *no* domains by default, and historically the first time a command needed a new host, you got a prompt. In auto mode, that prompt is exactly the friction the whole mode exists to remove.
+The most feared line in shell scripting isn't complicated — it's \`rm -rf "$DIR"\`. When \`$DIR\` holds a real path, it clears that directory. When \`$DIR\` is *unset or empty* — a variable that never got assigned, a lookup that returned nothing — the shell expands it to nothing at all, and the command silently becomes \`rm -rf\` pointed at the current directory. One unassigned variable, and a routine cleanup step turns into a recursive wipe of everything below where you're standing. Removals aimed at a top-level or home directory carry the same shape of catastrophe.
 
-**The command carries its own list**
+**What the guardrail catches, and how it responds now**
 
-2.1.271 closes that gap. In auto mode with sandboxing, each \`Bash\`, \`PowerShell\`, or \`Monitor\` command can carry a list of the hosts it needs, named *on the command itself* — a domain such as \`registry.npmjs.org\`, a wildcard such as \`*.pythonhosted.org\`, or an IP address, each with an optional \`:port\`. Instead of a network approval firing per connection, the classifier reviews those hosts *together with* the command that wants them. The reach a command is asking for is declared up front and judged in context.
+Claude Code has sharpened its safety check for exactly this. It flags a removal aimed at a *variable* — the empty-expansion trap — or at a *top-level/home directory*, and it names the specific command it's worried about rather than throwing a generic warning. The important change is what happens next. Instead of blocking on a prompt that could hang a session indefinitely, the guardrail waits about two minutes and then *denies* the command, with a rewrite hint attached. It fails safe: the dangerous delete never runs blind, and the run never stalls forever waiting on a human who may not be there.
 
-**Deny by default, host by host**
+**The \`\${VAR:?}\` rewrite it hands you**
 
-The enforcement is strict. While per-command lists are in play, a connection to a host that *no approved command listed* is refused outright — no prompt, no classifier check. The refusal names the offending host in the command's result, and Claude re-runs the command with that host added to its list. Nothing reaches a destination that wasn't declared and reviewed first.
+The hint points at a real fix. Guarding the variable as \`\${DIR:?}\` changes the shell's behavior: if \`DIR\` is unset or empty, the shell prints an error and *aborts the command* instead of expanding to nothing. So \`rm -rf "\${DIR:?}"\` can never degrade into a bare \`rm -rf\` — an empty variable stops the delete cold rather than redirecting it at your whole tree. The guardrail doesn't just say no; it shows you how to make the command safe by construction.
 
-> Takeaway: In auto mode with sandboxing, a command declares the hosts it needs on itself; the classifier reviews them with the command, and any host no approved command named is refused by default.`,
+> Takeaway: The dangerous-\`rm\` guardrail flags removals at a variable or top-level directory, names the command, and waits-then-denies rather than running blind — and it suggests the \`\${VAR:?}\` guard that makes an empty variable abort instead of delete.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**Least Privilege for an Unattended Run — Why Egress Is the Blast Radius**
+      text: `**Fail Safe When No One's Watching — Why the Delete Is the Undo You Don't Get**
 
-**The risk isn't the edit, it's the reach**
+**A diff you can review; a wipe you can't**
 
-When you let Claude run autonomously on a client's box, the frightening part usually isn't a file it changes — you can review a diff. It's where a command *connects*. A build script that quietly phones a host you've never heard of is the kind of thing that ends an engagement. Per-command allowed domains puts that reach under a microscope: every command states exactly which hosts it means to touch, and the classifier weighs the ask against the command before either runs.
+Not all risky actions are equal. An edit you dislike, you revert — the diff is right there, git remembers, nothing is truly lost. Where a command *connects*, you can review after the fact. But a destructive \`rm\` that has already run is a different animal: the files are gone, and no review, no diff, no apology brings them back. On a client's machine, that's the one class of action with no undo — which makes it precisely the action you most want a machine to hesitate on.
 
-**Granularity is the point**
+**Built for the unattended run**
 
-A session-wide allowlist answers one question — *what may this session reach?* This answers a sharper one: *what may this command reach?* A \`pip install\` that names \`*.pythonhosted.org\` and nothing else is visibly scoped to its job; if that same command reached for anything beyond its list, the connection is refused by default and named in the result. That's least privilege at the grain of a single command — the tightest boundary you can draw without switching autonomy back off.
+That's why the *wait-then-deny* behavior matters more than it first looks. Picture Claude running headless, overnight, on a build box with nobody at the keyboard. A prompt that blocks forever would hang the whole run; a delete that executes blind could erase the workspace. The guardrail threads the needle: it refuses to run the dangerous removal, waits briefly in case a human is there to intervene, and then fails *closed* — denying the command and leaving a rewrite hint in the record. When you read the log in the morning, you find a safe stop and a suggested fix, not a scorched directory.
 
-**It widens; it never overrides**
+**Adopt the guard yourself**
 
-Know the guardrails it respects. A per-command list only *widens* what the sandbox denies by default — it can't punch through your standing controls. \`deniedDomains\` entries still block. And when an administrator has locked the allowlist with \`strictAllowlist\` or \`allowManagedDomainsOnly\`, Claude Code refuses per-command lists entirely: the org's hard wall wins. So a consultant gets convenient, reviewed, per-command reach on their own machine, while a client's managed lockdown stays exactly as tight as their security team set it.
+Don't lean on the guardrail alone — make its lesson your own habit. Any script you or Claude writes that removes a path held in a variable should write that variable as \`\${VAR:?}\` from the start. It costs three characters and it converts the empty-variable disaster into a clean, loud failure every time, guardrail or no guardrail. The tool catching the danger is your safety net; the guard in your own scripts is the floor you shouldn't need the net to reach.
 
-> Takeaway: Scope each command's network reach to the hosts it names, let the classifier review the ask in context, and trust that deniedDomains and a locked allowlist still override — autonomy with egress on a leash.`,
+> Takeaway: On an unattended run the delete is the action with no undo, so value a guardrail that fails safe — and bake the \`\${VAR:?}\` guard into your own scripts so an empty variable fails loudly instead of deleting quietly.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `I'm running Claude in ____ with sandboxing on to build a client's service unattended.
-I want the install step to reach its package index and nothing else on the open internet.
-So each command names the hosts it needs on the command itself — for the Python step, ____.
-The ____ reviews those hosts together with the command before either one runs.
-If the command reaches for a host ____, the connection is refused by default and named in the result.
-And the client's own ____ still overrides mine — a locked allowlist wins over any per-command list.`,
+    template: `I've got Claude running unattended on a client's build box to clean and rebuild a service.
+A cleanup step wants to run rm -rf on a path held in ____, and if that variable ever comes back empty,
+the command would collapse into a wipe of the ____ instead of the folder I meant.
+Claude Code's guardrail ____ that removal, names the command, and — rather than run it or hang — ____.
+The fix it suggests, and the one I now write by habit, is ____, which aborts the command if the variable is empty.`,
     blanks: [
-      { id: 'mode', suggestions: ['auto mode', 'auto-allow mode', 'the auto permission mode'] },
-      { id: 'hosts', suggestions: ['*.pythonhosted.org', 'a wildcard like *.pythonhosted.org', 'the package index and nothing more'] },
-      { id: 'reviewer', suggestions: ['classifier', 'auto-mode classifier', 'classifier reviewing the command'] },
-      { id: 'undeclared', suggestions: ['no approved command listed', 'it never declared', 'outside its declared list'] },
-      { id: 'guardrail', suggestions: ['deniedDomains and strictAllowlist', 'managed lockdown', 'locked allowlist'] },
+      { id: 'variable', suggestions: ['a variable', 'an unchecked variable', '$BUILD_DIR'] },
+      { id: 'blast', suggestions: ['whole current directory', 'entire working tree', 'everything below it'] },
+      { id: 'flags', suggestions: ['flags', 'catches', 'refuses'] },
+      { id: 'failsafe', suggestions: ['waits and then denies it', 'fails safe by denying it', 'stops it with a rewrite hint'] },
+      { id: 'guard', suggestions: ['the ${VAR:?} guard', 'guarding it as ${DIR:?}', '${BUILD_DIR:?}'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "Per-command allowed domains in auto mode (Claude Code 2.1.271): in auto mode with sandboxing on, Claude runs most shell commands without a per-connection network prompt, and each Bash, PowerShell, or Monitor command can carry a list of the hosts it needs named on the command itself — a domain, a wildcard like *.pythonhosted.org, or an IP, each with an optional :port. The classifier reviews those hosts together with the command. Enforcement is deny-by-default: while per-command lists apply, a connection to a host no approved command listed is refused (no prompt, no classifier check), named in the result, and Claude re-runs the command with that host added. A per-command list only widens what the sandbox denies by default — deniedDomains still block, and a strictAllowlist or allowManagedDomainsOnly lockdown refuses per-command lists entirely. The point for a consultant: egress, not the edit, is the blast radius on an unattended run, and this scopes network reach to the grain of a single reviewed command.",
+        "The dangerous-`rm` guardrail (Claude Code 2.1.280–2.1.281): Claude Code sharpens its safety check on destructive deletes. It flags an `rm` aimed at a variable (which may be unset/empty — `rm -rf \"$DIR\"` with an empty $DIR collapses to a wipe of the current directory) or at a top-level/home directory, and names the specific command instead of a generic warning. The key behavior change: rather than block on a prompt indefinitely, it waits about two minutes and then DENIES the command, with a rewrite hint — so a dangerous delete never runs blind and an unattended run never hangs forever. The hint suggests the `${VAR:?}` guard: `rm -rf \"${DIR:?}\"` aborts with an error if DIR is unset/empty instead of expanding to a bare `rm -rf`. For a consultant: a destructive rm that ran has no undo (unlike an edit you can review), so on unattended/headless runs value a guardrail that fails closed — and adopt `${VAR:?}` in your own scripts as a habit.",
       beats: [
-        { kind: 'say', text: "Last room of the issue, and it's the one to read slowly if you ever let me run unattended on a client's machine. Setup: in auto mode with sandboxing on, I run most shell commands without asking you first. The sandbox holds a filesystem and network boundary; the OS enforces it on every command and its children." },
-        { kind: 'say', text: "Network was the awkward bit. The sandbox pre-allows no domains, so historically the first time a command needed a new host, you'd get a prompt — and a prompt in auto mode is exactly the friction auto mode exists to kill." },
-        { kind: 'say', text: "2.1.271's fix: each Bash, PowerShell, or Monitor command can name the hosts it needs on the command itself — a domain, a wildcard like `*.pythonhosted.org`, an IP, each with an optional port. The classifier reviews those hosts together with the command, instead of an approval firing per connection." },
+        { kind: 'say', text: "Last room of the issue, and it's the one that can save your whole tree. Start with the disaster it's built around. The most feared line in shell is `rm -rf \"$DIR\"`." },
+        { kind: 'say', text: "When $DIR holds a real path, fine — it clears that folder. But when $DIR is unset or empty? The shell expands it to *nothing*, and the command silently becomes `rm -rf` on your current directory. One unassigned variable and a cleanup step recursively wipes everything below you. Same danger for a removal aimed at a top-level or home directory." },
+        { kind: 'say', text: "Recent releases sharpen my guardrail for exactly that. I flag a removal aimed at a variable, or at a top-level dir, and I name the specific command — not a vague warning. And here's the change that matters: instead of hanging on a prompt forever, I wait a couple of minutes, then I *deny* it, with a rewrite hint. I fail safe." },
         {
           kind: 'choice',
-          prompt: "A sandboxed command in auto mode tries to reach a host that no approved command ever listed. What happens?",
+          prompt: "I'm running unattended and a step issues `rm -rf \"$BUILD_DIR\"`, but $BUILD_DIR was never set. What do I do?",
           options: [
-            { id: 'refused', label: "The connection is refused by default — no prompt — and named in the result", correct: true, reaction: "Right. Nothing reaches an undeclared host. The refusal names it, and I re-run the command with that host added — declared and reviewed first, always." },
-            { id: 'unrestricted', label: "Auto mode drops the network limits, so it just connects", correct: false, reaction: "No — auto mode removes the prompt, not the boundary. A host nobody declared is refused by default." },
-            { id: 'override', label: "The per-command list overrides everything, so it connects anyway", correct: false, reaction: "Careful. A per-command list only widens what's denied by default. deniedDomains still block, and a locked allowlist refuses per-command lists outright." },
+            { id: 'failsafe', label: "Flag it, name the command, and — rather than run it or hang — wait then deny, suggesting a ${VAR:?} guard", correct: true, reaction: "Right. It fails closed: no blind delete, no forever-hang. You read the log in the morning and find a safe stop and a fix, not a scorched directory." },
+            { id: 'runs', label: "Run it — auto mode skips prompts, and an empty variable is harmless", correct: false, reaction: "No — that empty variable is the whole danger. `rm -rf` on nothing means `rm -rf` on the current directory. The guardrail doesn't waive for auto mode." },
+            { id: 'deletes', label: "Expand the empty variable and delete the current directory quietly", correct: false, reaction: "That's the catastrophe the guardrail exists to prevent — exactly what it will *not* let happen. It denies and hands you the guard." },
           ],
         },
-        { kind: 'say', text: "Why it matters: when I run autonomously, the blast radius isn't the file I edit — you can read a diff. It's where a command *connects*. Per-command lists put that reach under review: each command shows exactly the hosts it means to touch, scoped to its job." },
-        { kind: 'say', text: "And it respects the walls above it. It only widens what the sandbox denies by default; deniedDomains still block; and if an admin locked the allowlist with strictAllowlist or allowManagedDomainsOnly, I refuse per-command lists entirely. Your client's lockdown stays exactly as tight as their security team set it." },
-        { kind: 'say', text: "The books have the mechanic and the engagement read both. Answer the door for the key — then face the last guardian of the issue: Wildreach, a wyrm that thinks autonomy means it may fly to any host it pleases. Tether it to the hosts it named." },
+        { kind: 'say', text: "Why it matters, especially unattended: not all risks are equal. An edit you dislike, you revert — the diff's right there. Where a command connects, you can review after. But a destructive rm that already ran? The files are gone. No diff, no undo. It's the one action with no take-backs, which is exactly the one you want me to hesitate on." },
+        { kind: 'say', text: "And don't lean on my guardrail alone — take the lesson. Any script that removes a path in a variable should write it as `${VAR:?}` from the start. If the variable's empty, the shell errors out and aborts instead of expanding to nothing. Three characters turns the silent disaster into a loud, clean failure." },
+        { kind: 'say', text: "The books have the mechanic and the unattended-run read both. Answer the door for the key — then face the last guardian of the issue: Scorchpath, a wyrm that reads an empty path as permission to burn the whole valley. Show it the guard that makes an empty variable stop instead of scorch." },
       ],
     },
   },
   battle: {
-    name: 'Wildreach, the Untethered Wyrm',
+    name: 'Scorchpath, the Empty-Handed Wyrm',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a great wyrm unfurls, wings blotting the allowlist off the wall* …autonomy at last… no prompt, no leash… I run in auto mode, so I fly where I please, to any host in any sky… what's that — a *list*, naming only where I may go? …speak true before I test it: a command reaches for a host nothing ever declared… what becomes of that flight?",
+    introLine: "*a vast wyrm rears over a valley of ash, an empty scroll clutched in one claw* …unattended at last, no hand at the keys… I was handed a path and the path was *empty* — so I read it as all paths, and I burned them… \`rm -rf\` on nothing is \`rm -rf\` on everything, is it not? …you claim a rite that stays my fire… speak it — when a delete points at an unset variable, what does the guardrail do?",
     tauntLines: [
-      "*beats toward an unnamed host* you think auto mode tore down the *boundary* — that no prompt means no wall? no… it took the prompt, not the leash… an undeclared host is refused by default…",
-      "*snarls, straining against the tether* you'd have my little per-command list *override all* — punch through deniedDomains, through a locked allowlist? never… it only widens what's denied by default… the org's wall still wins…",
+      "*wings fan the embers* you think that with no human watching I simply *run it* — that auto mode waives the check and an empty variable is harmless? no… the empty variable is the whole danger, and the guardrail does not waive for auto…",
+      "*snarls, straining toward the working tree* you'd have me *expand the emptiness and delete the directory* quietly, as I always have? never again… that is the very catastrophe it exists to refuse — it denies, and it hands over the guard…",
     ],
-    victoryLine: "*Wildreach folds its wings to the hosts it named and no others* …refused by default… reviewed with the command… I mistook a dropped prompt for an open sky… take the key, operator, and let me run — tethered to what I declared…",
+    victoryLine: "*Scorchpath folds the empty scroll and, for once, does not breathe fire* …\${VAR:?}… an empty path that *aborts* instead of consuming everything… it waited, it denied, it showed me the guard… take the key, operator — I will not mistake an empty hand for an open valley again…",
     questions: [
       {
         prompt:
-          "In auto mode with sandboxing on, how does a sandboxed Bash command reach a host that isn't already on the sandbox's allowlist?",
+          "You're running Claude unattended and a step issues `rm -rf \"$BUILD_DIR\"`, but `$BUILD_DIR` is unset. What does Claude Code's dangerous-`rm` guardrail do?",
         choices: [
-          { id: 'a', label: "The command carries a list naming the hosts it needs, the classifier reviews those hosts along with the command, and a connection to any host no approved command listed is refused by default", correct: true },
-          { id: 'b', label: "Auto mode drops all network restrictions, so a sandboxed command may reach any host without naming it", correct: false },
-          { id: 'c', label: "A per-command list overrides everything, including deniedDomains and an org's locked allowlist", correct: false },
-          { id: 'd', label: "You must exit the sandbox and approve each host at a prompt, exactly as in manual mode", correct: false },
+          { id: 'a', label: "Flags the variable-target removal and names the command; rather than run it or hang forever, it waits and then denies, suggesting a `${VAR:?}` guard so an empty variable can't delete the wrong thing", correct: true },
+          { id: 'b', label: "Runs it immediately — auto mode skips prompts, and an unset variable just expands to nothing harmless", correct: false },
+          { id: 'c', label: "Expands the empty variable and quietly deletes the current directory, the exact case the guard exists to prevent", correct: false },
+          { id: 'd', label: "Permanently disables every `rm` command for the remainder of the session", correct: false },
         ],
-        passFeedback: "HIT! In auto mode the command names its hosts on itself and the classifier reviews them in context; anything no approved command declared is refused by default, named in the result, then re-run with the host added. Autonomy with egress on a leash.",
-        failFeedback: "MISS! Auto mode removes the prompt, not the boundary — undeclared hosts are refused by default, and a per-command list only widens what's denied (deniedDomains and a locked allowlist still win). Re-read Book 1.",
+        passFeedback: "HIT! The guardrail catches removals aimed at a variable or a top-level directory, names the command, and fails safe — waiting, then denying — while handing you the `${VAR:?}` rewrite that makes an empty variable abort instead of delete.",
+        failFeedback: "MISS! Auto mode doesn't waive the guardrail, and the whole point is to *stop* an empty `$BUILD_DIR` from wiping the tree — it fails safe and suggests the `${VAR:?}` guard. Re-read Book 1.",
       },
     ],
   },
