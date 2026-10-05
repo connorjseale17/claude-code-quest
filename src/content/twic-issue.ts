@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-09-28',
+  publishDate: '2026-10-05',
   framing:
-    "This week in Claude, the throughline is keeping your own footprint honest — the brief you give, the mark you leave, and the delete you can't take back. The new `/doctor prompt-audit` reads your CLAUDE.md and flags the older-model patterns still lurking in it — stale paths and commands, leftover thinking keywords — so the standing orders every session reads don't quietly rot as the models underneath them move on. A single settings.json switch, `\"attribution\": false`, hides all of the commit and PR attribution Claude Code would otherwise stamp on your work, so a client's git history reads in the client's house style. And a sharpened dangerous-`rm` guardrail now flags a removal aimed at an empty variable or a top-level directory, names the command, and waits-then-denies rather than running blind — handing you the `${VAR:?}` guard that turns the empty-variable wipe into a clean, loud failure.",
+    "This week in Claude, the throughline is the safety net around your own work — the check that fires itself, the watcher that catches what you miss, and the draft a slip can no longer swallow. A skill named `verify` now runs itself right before every commit — except on docs-only or tests-only changes — so a client's quality bar is enforced at the commit line without you remembering to run it. The new `You should know` built-in mod puts a side agent alongside your session that watches your back and flags the things you overlooked, the colleague-over-your-shoulder you don't have on a solo engagement. And a stray `Ctrl+C` that clears a carefully composed prompt is no longer fatal: press Up on the now-empty prompt and the whole draft comes back, pasted text and images included.",
 };

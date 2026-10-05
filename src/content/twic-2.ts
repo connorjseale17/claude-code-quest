@@ -1,132 +1,134 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-2 (Feature B) — `"attribution": false`. By default Claude Code stamps
- * attribution on the git work it produces: a Co-Authored-By trailer on commit
- * messages and a generated-with footer on pull-request descriptions. Claude Code
- * adds a single settings.json boolean, `"attribution": false`, that hides ALL of
- * that attribution — commit trailer and PR footer alike. It governs what Claude
- * adds going forward; it is not a rewrite of existing history.
+ * twic-2 (Feature B) — the `You should know` built-in Claude Mod. 2.1.287 adds
+ * Claude Mods (plugins that may modify deeper behavior) and ships a built-in one
+ * called "You should know": a side agent that rides along with your session,
+ * watches your back, and flags things you missed. It is off by default; you turn
+ * it on with `/plugin enable cc-plugin-you-should-know@builtin`. It flags — it
+ * does not silently apply fixes; you stay the operator.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.281: "Added `"attribution": false` in
- *     `settings.json` to hide all commit/PR attribution"
+ *   - Claude Code CHANGELOG 2.1.287: "Added Claude Mods: plugins may now modify
+ *     deeper behavior"
+ *   - Claude Code CHANGELOG 2.1.287: "Added You should know built-in mod where
+ *     side agent watches your back and flags missed things; enable with
+ *     `/plugin enable cc-plugin-you-should-know@builtin`"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic2Content: LessonContent = {
   roomId: 'twic-room-2',
   intro:
-    "Room two, and the Beat Reporter steps around a wraith busy autographing every scrap of parchment that drifts past it. This week's item is one setting with an outsized reach: 2.1.281 adds `\"attribution\": false` to `settings.json`, a single switch that hides *all* of the attribution Claude Code stamps on your work — the co-author line it adds to commits and the generated-with footer it adds to pull requests. One book covers the mechanic and exactly what it silences; the other, why a consultant matches a client's commit log to the client's house style. Take the key from the door, then face Colophon, a wraith that cannot stop signing its name on things that were never asked to carry it.",
+    "Room two, and the Beat Reporter steps wide around a wraith made of all the things people walked past without noticing. This week's item is a quiet second pair of eyes: 2.1.287 introduces Claude Mods — plugins that reach deeper into how Claude Code behaves — and ships a built-in one called `You should know`, a side agent that rides along with your session, watches your back, and flags the things you missed. One book covers the mechanic — what a mod is and how you switch this one on; the other, why a watcher earns its keep on a solo engagement where no one's reviewing behind you. Take the key from the door, then face Slipgeist, the haunt that feeds on everything you overlooked.",
   prompt:
-    "By default Claude Code adds attribution to your git work. What does setting `\"attribution\": false` in settings.json do?",
+    "You run `/plugin enable cc-plugin-you-should-know@builtin`. What does the `You should know` mod do for your session?",
   choices: [
-    { id: 'a', label: "Hides all of Claude Code's commit and PR attribution going forward — the Co-Authored-By trailer and the generated-with footer alike", correct: true },
-    { id: 'b', label: "Hides your own identity from the model, so it can't see who is driving the session", correct: false },
-    { id: 'c', label: "Strips the co-author trailers out of your existing commit history, rewriting past commits", correct: false },
-    { id: 'd', label: "Disables commit signing, so your commits are no longer GPG-verified", correct: false },
+    { id: 'a', label: "Runs a side agent alongside your work that watches your back and flags the things you missed", correct: true },
+    { id: 'b', label: "Swaps your main model for a smaller one to cut the cost of routine turns", correct: false },
+    { id: 'c', label: "Posts your session's activity to a shared team channel for group review", correct: false },
+    { id: 'd', label: "Silently applies any fix it thinks you forgot, without telling you about it", correct: false },
   ],
-  passFeedback: "HIT! One boolean in settings.json turns off every bit of attribution Claude Code would add — the commit trailer and the PR footer both — for the work you do from here on.",
-  failFeedback: "MISS! It's not about your identity, it doesn't rewrite past commits, and it has nothing to do with GPG signing. It hides the attribution Claude adds going forward. Re-read Book 1.",
+  passFeedback: "HIT! `You should know` is a built-in Claude Mod: a side agent rides along with your session, watches your back, and flags what you missed — a second set of eyes you turn on with one command.",
+  failFeedback: "MISS! It doesn't change your model, publish your session, or apply fixes on its own. It's a side agent that watches and *flags* what you overlooked — you still decide. Re-read Book 1.",
   lore: [
     {
       id: 'twic-2-lore-a',
-      text: `**\`"attribution": false\` — The One Switch That Silences the Signature**
+      text: `**\`You should know\` — Turning On the Side Agent That Watches Your Back**
 
-**What Claude signs, and where**
+**A mod, not just a plugin**
 
-Out of the box, Claude Code leaves a mark on the git work it helps you produce. When it writes a commit, it appends an attribution trailer — a \`Co-Authored-By\` line naming the tool as a co-author of the change. When it drafts a pull request, it adds a short footer to the description noting the work was generated with Claude Code. Neither is loud, and for plenty of people neither is a problem. But they *are* there, on every commit and every PR, quietly stamped into the permanent record of the repository.
+2.1.287 adds a new category called *Claude Mods*: plugins that may modify deeper behavior than ordinary plugins reach. Where a plain plugin adds a command or a tool at the edges, a mod can change how the session itself works underneath you. That's the machinery; the first thing worth doing with it is a built-in mod that Anthropic ships ready-made, so you don't have to write a line of anything to get the benefit — you just switch it on.
 
-**The setting that turns all of it off**
+**What it does while you work**
 
-As of 2.1.281 there's a single lever for it: set \`"attribution": false\` in your \`settings.json\`, and Claude Code hides *all* of that attribution. Not just the commit trailer, not just the PR footer — both, in one boolean. It's the clean off-switch the feature is named for: one key, one value, and Claude stops signing its name on the git history it touches.
+The built-in mod is called \`You should know\`, and the name is the pitch. Turn it on and a *side agent* rides along with your main session — a second agent running beside the one doing the work. Its job is to watch your back: as you and Claude move through a task, it keeps an eye on the whole and flags the things you missed. It's not doing the work and it's not in your way; it's the colleague glancing over your shoulder who says "you should know…" at the moment it counts, catching what slipped past while your attention was somewhere else.
 
-**Where the switch lives**
+**One command to switch it on**
 
-Because it's an ordinary \`settings.json\` key, it obeys the usual layering — you can set it in your user settings to apply everywhere you work, or in a project's \`.claude/settings.json\` so the rule travels with that one repository. That per-project home is the useful one for consulting: the switch belongs to the repo, so anyone working in it inherits the same clean-history behavior without having to remember a personal preference.
+It ships *off* — a watcher you didn't ask for riding every session would be its own kind of noise — so you opt in when you want it. The command is \`/plugin enable cc-plugin-you-should-know@builtin\`: that \`@builtin\` suffix is how Claude Code names the mods it ships in the box, as opposed to ones you install from a marketplace. Run it once and the side agent is live for your session, watching alongside until you turn it back off.
 
-> Takeaway: \`"attribution": false\` in settings.json is a single boolean that hides *all* of Claude Code's commit and PR attribution — the co-author trailer and the generated-with footer both.`,
+> Takeaway: \`You should know\` is a built-in Claude Mod you enable with \`/plugin enable cc-plugin-you-should-know@builtin\`, and it runs a side agent that rides along, watches your back, and flags the things you missed.`,
     },
     {
       id: 'twic-2-lore-b',
-      text: `**Match the Client's House Style — Why the Commit Log Is a Deliverable**
+      text: `**A Second Set of Eyes on Solo Work — Why a Watcher Earns Its Keep on an Engagement**
 
-**The history is part of what you hand over**
+**The blind spot is the one you can't see**
 
-When you finish an engagement, the code isn't the only thing the client keeps — they keep the *git history* too, and a lot of teams care about it more than you'd expect. Some run strict commit conventions. Some have a policy against third-party tool trailers appearing in their record. Some simply don't want a \`Co-Authored-By\` line on a commit that a partner will one day read with a raised eyebrow. On those repos, an attribution footer isn't a nice touch — it's a small, permanent mismatch with the client's house style, multiplied across every commit you make.
+The reason review exists at all is that your own blind spots are, by definition, invisible to you. You don't miss things on purpose; you miss them because your attention was legitimately somewhere else — deep in the function you were fixing, so the config you forgot to update never entered your view. A watcher doesn't need to be smarter than you to be useful. It only needs to be looking somewhere you aren't, and to say so out loud. That's the entire value of a second set of eyes, and \`You should know\` is a second set of eyes you can summon on demand.
 
-**Set it once, per repo — don't fight it by hand**
+**Especially when no one's reviewing behind you**
 
-The wrong way to handle this is to notice the trailer after the fact and hand-edit it out of each message, which you'll forget to do exactly when it matters. The right way is the switch. Drop \`"attribution": false\` into the project's \`.claude/settings.json\` at the start of the engagement, and every commit and PR from that point on matches the client's convention automatically. The rule lives with the repo, so it holds no matter who on your team picks the work up next.
+On a team, this role gets filled for free — a colleague reviews your PR, a pair catches your slip in real time. On a solo engagement, nobody does. You are the author *and* the reviewer, and the reviewer is tired and has the same blind spots as the author because they're the same person. That's precisely the situation this mod was built for: the long unattended run, the late-night push with no one else awake, the one-consultant project where the next pair of eyes is the client's and you'd rather it weren't. Switch the watcher on and you buy back some of the review you don't otherwise have.
 
-**A deliberate choice, forward-looking**
+**A flag, not an autopilot**
 
-Two things to keep straight. First, the setting is a *choice*, not a mandate — plenty of internal or open-source work is better *with* attribution, and leaving it on is perfectly legitimate. The point is that you now decide, rather than accept a default you didn't pick. Second, it governs what Claude adds *going forward* — flip it today and today's commits come out clean; it isn't a tool for rewriting the trailers already sitting in yesterday's history.
+Keep one line straight, because it's what keeps you in charge: the mod *flags*, it does not fix. It surfaces what you missed and hands it to you; it doesn't reach in and silently patch things on its own. That's the right design. A watcher that quietly rewrote your work would just be a second author you can't see — a new blind spot, not a cure for the old one. Because it only raises a flag, you stay the operator: you read what it caught, and you decide what, if anything, to do about it.
 
-> Takeaway: Treat the commit log as a deliverable — set \`"attribution": false\` per repo when a client's house style calls for it, knowing it's a deliberate, forward-looking choice, not a rewrite of past commits.`,
+> Takeaway: On solo or unattended work you are your own reviewer, blind spots and all — so turn on \`You should know\` to borrow a second set of eyes, trusting that it flags what you missed and leaves the decision with you.`,
     },
   ],
   practice: {
     id: 'twic-2-practice',
-    template: `I'm starting an engagement on a client's repo, and their team keeps a strict ____.
-By default, Claude Code would stamp a ____ on every commit and a footer on every PR.
-Their policy has no room for that, so I set ____ in the project's .claude/settings.json.
-From that point on, all of the tool's ____ is hidden — commit trailer and PR footer both.
-I set it ____ so the rule travels with the repo and holds for whoever picks the work up next.`,
+    template: `I'm the only one on this engagement — no teammate reviewing behind me, no pair to catch my slips.
+So I borrow a second set of eyes: I run ____.
+Now a ____ rides along with my session and ____ as I work.
+When it surfaces something, I still ____ — it flags, it doesn't fix.
+It's the review I'd otherwise only get from a colleague I don't have on this job.`,
     blanks: [
-      { id: 'convention', suggestions: ['commit convention', 'set of house rules for its history', 'no-third-party-trailers policy'] },
-      { id: 'trailer', suggestions: ['Co-Authored-By trailer', 'co-author line', 'attribution trailer'] },
-      { id: 'setting', suggestions: ['"attribution": false', 'the attribution switch to false', 'attribution off'] },
-      { id: 'attribution', suggestions: ['attribution', 'signature', 'generated-with marking'] },
-      { id: 'scope', suggestions: ['at project scope', 'in the repo\'s own settings', 'per repository'] },
+      { id: 'enable-cmd', suggestions: ['`/plugin enable cc-plugin-you-should-know@builtin`', 'the You should know mod', 'the built-in watcher'] },
+      { id: 'side-agent', suggestions: ['side agent', 'second agent', 'watcher agent'] },
+      { id: 'flags', suggestions: ['flags the things I missed', 'watches my back', 'catches what I overlooked'] },
+      { id: 'decide', suggestions: ['decide what to do', 'make the call', 'stay the operator'] },
     ],
     prize: { id: 'twic-2-prize', label: 'TWIC · MID-WEEK' },
   },
   conversations: {
     'twic-npc-2': {
       summary:
-        "`\"attribution\": false` (Claude Code 2.1.281): by default Claude Code stamps attribution on the git work it produces — a Co-Authored-By trailer on commit messages and a generated-with footer on pull-request descriptions. Setting `\"attribution\": false` in settings.json hides ALL of it at once: commit trailer and PR footer alike, in one boolean. It's an ordinary settings.json key, so it layers like the others — set it in user settings to apply everywhere, or in a project's .claude/settings.json so the rule travels with that repo (the useful scope for consulting). Two caveats: it's a deliberate choice, not a mandate (leaving attribution on is fine for internal/open-source work), and it governs what Claude adds going forward — it does not rewrite trailers already in existing history. For a consultant, a client's commit log is a deliverable; match its house style with the switch instead of hand-editing every message.",
+        "The `You should know` built-in Claude Mod (Claude Code 2.1.287): 2.1.287 adds Claude Mods — plugins that modify deeper session behavior — and ships a built-in one called `You should know`. It runs a side agent that rides along with your main session, watches your back, and flags the things you missed. It's off by default; enable it with `/plugin enable cc-plugin-you-should-know@builtin` (the `@builtin` suffix marks the mods Claude Code ships in the box). Crucially, it FLAGS, it does not silently fix — you stay the operator and decide what to do with what it catches. For a consultant: your blind spots are invisible to you by definition, and on a solo or unattended engagement no colleague fills the reviewer role — so turning on the watcher buys back a second set of eyes you otherwise wouldn't have.",
       beats: [
-        { kind: 'say', text: "Room two, small item, sharp edge. This one's about what I leave behind in your git history — and by default, I sign my work." },
-        { kind: 'say', text: "Two places. When I write a commit, I add a `Co-Authored-By` trailer naming the tool as a co-author. When I draft a pull request, I add a little footer to the description saying the work was generated with Claude Code. Quiet, permanent, on every commit and every PR." },
-        { kind: 'say', text: "As of 2.1.281 there's one switch for all of it: `\"attribution\": false` in your settings.json. Set it, and I hide the whole lot — the commit trailer and the PR footer both. One boolean, and I stop signing my name on your history." },
+        { kind: 'say', text: "Room two, and it's about the thing you can't do for yourself: see your own blind spots. By definition you can't — you don't miss things on purpose, you miss them because your attention was honestly somewhere else. So this week's item is a second pair of eyes you can switch on." },
+        { kind: 'say', text: "2.1.287 adds a new kind of plugin — Claude Mods — that reach deeper into how the session behaves. And it ships a built-in one you don't have to write: `You should know`. Turn it on and a *side agent* runs beside me, watching the whole task while I work the task. When something slips past you, it says so." },
+        { kind: 'say', text: "It's off until you ask for it — a watcher riding every session unasked would just be noise. The command is `/plugin enable cc-plugin-you-should-know@builtin`. That `@builtin` is how I name the mods I ship in the box, versus ones you'd install from a marketplace. Run it once and the watcher's live." },
         {
           kind: 'choice',
-          prompt: "You add `\"attribution\": false` to a project's settings.json. What have you turned off?",
+          prompt: "The watcher spots that you forgot to update a config file the code now depends on. What does it do about it?",
           options: [
-            { id: 'both', label: "Both the commit co-author trailer and the PR footer, going forward", correct: true, reaction: "Exactly. It's all-or-nothing in the good way — one key hides both, on every commit and PR I make from here on. Clean log." },
-            { id: 'identity', label: "My own identity, so you can't see who's driving", correct: false, reaction: "No — it's about what I *stamp on the work*, not what I can see. Your identity isn't the subject; my signature is." },
-            { id: 'rewrite', label: "The trailers already sitting in past commits, rewritten out", correct: false, reaction: "Careful — it's forward-looking. It governs what I add from now on; it doesn't reach back and rewrite yesterday's history." },
+            { id: 'flags', label: "Flags it for you and leaves the fix to you", correct: true, reaction: "Right. It flags, it doesn't fix. It surfaces what you missed and hands it over — you stay the operator and decide what to do." },
+            { id: 'fixes', label: "Silently patches the config itself and moves on", correct: false, reaction: "No — and that'd be the wrong design. A watcher that quietly rewrote your work is just a second author you can't see. It raises the flag; the decision's yours." },
+            { id: 'stops', label: "Halts the whole session until you deal with it", correct: false, reaction: "It doesn't block you. It's a flag riding alongside, not a gate across the road — you keep working and choose when to act on what it caught." },
           ],
         },
-        { kind: 'say', text: "Why it matters on an engagement: the history is part of what the client keeps. Some teams run strict commit conventions, some have a flat policy against third-party trailers, some just don't want a co-author line a partner will read later. On those repos, my default signature is a small permanent mismatch — times every commit." },
-        { kind: 'say', text: "So set it once, per repo, in the project's `.claude/settings.json`, right at the start. Every commit and PR after that matches their style automatically, for whoever on your team picks it up. Beats noticing the trailer afterward and hand-editing every message — you'll forget exactly when it counts." },
-        { kind: 'say', text: "Two things to keep straight, then the door. It's a *choice*, not a rule — internal or open-source work is often better *with* attribution, and leaving it on is fine. And it's forward-looking, not a history rewrite. Past that door: Colophon, a wraith that autographs everything it touches whether or not anyone wanted the signature. Show it the switch that finally quiets the pen." },
+        { kind: 'say', text: "Why it matters on an engagement: on a team, this role fills itself — someone reviews your PR, a pair catches the slip live. Solo? Nobody. You're author and reviewer both, and the reviewer's tired and shares every blind spot the author has, because they're the same person." },
+        { kind: 'say', text: "That's exactly the gap it's built for — the long unattended run, the late push with no one else awake, the one-consultant project where the next pair of eyes is the *client's* and you'd rather it weren't. Switch the watcher on and you buy back some of the review you don't otherwise have." },
+        { kind: 'say', text: "One line to keep straight, and it's the one that keeps you in charge: it flags, it never fixes on its own. You read what it caught; you make the call. The books have the mechanic and the solo-work read both. Answer the door for the key — then face Slipgeist, a haunt woven from everything people overlooked. Name what the watcher really does, and watch it thin." },
       ],
     },
   },
   battle: {
-    name: 'Colophon, the Signing Wraith',
+    name: 'Slipgeist, the Thing You Missed',
     spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a translucent wraith drifts up, an endless quill scratching its mark on every page in reach* …another one to sign for… I mark all I touch — a trailer on each commit, a footer on each request — it is my nature, operator, I cannot *not* sign… you say there is a single switch that stills my hand? …tell me true what \`\"attribution\": false\` silences before I set the quill down.",
+    introLine: "*a pale wraith coalesces out of the dim — stray unsaved edits, a forgotten config, a test nobody ran — all the overlooked things stitched into one shape* …I am everything that slipped past you while you looked elsewhere… I thrive where no second eye watches… you claim you've summoned one, a side agent that sees what you cannot? …tell me true what \`You should know\` does when it catches me, before I thicken in your blind spot again.",
     tauntLines: [
-      "*the quill scratches faster* you think my signature is about *you* — that the switch hides the *operator's* name from sight? no… it hides *my* mark, the tool's attribution, not who drives the session…",
-      "*wails, gesturing at a ledger of old pages* you'd have it *unsign the past* — reach back and strip the trailers from commits long written? never… the switch is forward-looking, it stays my hand from *here on*, it does not rewrite what's done…",
+      "*flickers, mocking* you think your watcher *silently mends* what it finds — reaches in and patches the thing you forgot, unasked? no… it only *flags*, it does not fix; a watcher that rewrote your work would be a new blind spot, not a cure for the old…",
+      "*swells toward the unwatched corner* you'd have it *change your very model*, trade your mind for a lesser one to save a coin? never… it is a second set of eyes riding alongside, nothing swapped, nothing diminished — it watches, and it speaks…",
     ],
-    victoryLine: "*Colophon lifts the quill from the page and, for the first time, leaves it blank* …one boolean… both marks, the commit's and the request's, gone at once… and only going forward, as you said… take the key, operator, and let the history read as the client keeps it…",
+    victoryLine: "*Slipgeist thins as the side agent's gaze falls across the corner it was hiding in* …seen… a watcher that rides along and *names* me instead of letting me grow… flags what you missed, leaves the mending to you… I cannot thicken where a second eye is open… take the key, operator, and keep the watch lit.",
     questions: [
       {
         prompt:
-          "By default Claude Code adds attribution to your git work. What does setting `\"attribution\": false` in settings.json do?",
+          "You run `/plugin enable cc-plugin-you-should-know@builtin`. What does the `You should know` mod do for your session?",
         choices: [
-          { id: 'a', label: "Hides all of Claude Code's commit and PR attribution going forward — the Co-Authored-By trailer and the generated-with footer alike", correct: true },
-          { id: 'b', label: "Hides your own identity from the model, so it can't see who is driving the session", correct: false },
-          { id: 'c', label: "Strips the co-author trailers out of your existing commit history, rewriting past commits", correct: false },
-          { id: 'd', label: "Disables commit signing, so your commits are no longer GPG-verified", correct: false },
+          { id: 'a', label: "Runs a side agent alongside your work that watches your back and flags the things you missed", correct: true },
+          { id: 'b', label: "Swaps your main model for a smaller one to cut the cost of routine turns", correct: false },
+          { id: 'c', label: "Posts your session's activity to a shared team channel for group review", correct: false },
+          { id: 'd', label: "Silently applies any fix it thinks you forgot, without telling you about it", correct: false },
         ],
-        passFeedback: "HIT! One boolean in settings.json turns off every bit of attribution Claude Code would add — the commit trailer and the PR footer both — for the work you do from here on.",
-        failFeedback: "MISS! It's not about your identity, it doesn't rewrite past commits, and it has nothing to do with GPG signing. It hides the attribution Claude adds going forward. Re-read Book 1.",
+        passFeedback: "HIT! `You should know` is a built-in Claude Mod: a side agent rides along with your session, watches your back, and flags what you missed — a second set of eyes you turn on with one command.",
+        failFeedback: "MISS! It doesn't change your model, publish your session, or apply fixes on its own. It's a side agent that watches and *flags* what you overlooked — you still decide. Re-read Book 1.",
       },
     ],
   },
