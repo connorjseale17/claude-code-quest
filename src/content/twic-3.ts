@@ -1,131 +1,132 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — recovery for a Ctrl+C-cleared prompt. 2.1.288 adds a
- * safety net for the common slip of clearing a typed prompt with Ctrl+C: press
- * Up on the now-empty prompt and the cleared draft comes back — including any
- * pasted text and images it contained. The undo for a draft you didn't mean to
- * discard.
+ * twic-3 (Feature C) — `claude attach <name>` and `claude logs <name>`.
+ * Background sessions carry both an opaque id and a human-readable name. These
+ * two commands used to require the id; now part of a session's *name* works in
+ * its place. `attach` reconnects you to a running session; `logs` shows its
+ * output. The feature is that a recognizable fragment of the name now stands in
+ * for the id, so you reach a background run by what you called it, not by a
+ * cryptic string.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.288: "Added recovery for Ctrl+C cleared prompt:
- *     pressing Up on empty prompt brings draft back, including pasted
- *     text/images"
+ *   - Claude Code CHANGELOG 2.1.290: "Added `claude attach <name>` and
+ *     `claude logs <name>`: part of a session name works in place of the id"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Room three closes the issue, and the Beat Reporter points up at a wyrm that swallows whole drafts the instant a hand slips on the keys. This week's last item is small and entirely human: 2.1.288 adds recovery for a prompt you clear with Ctrl+C — press Up on the now-empty prompt and the whole draft comes back, pasted text and images included. One book covers the mechanic — what Ctrl+C does and how Up brings it back; the other, why a carefully composed brief is a small deliverable worth a safety net. Answer the door for the key, then face Draftmaw, the devourer that mistook your Ctrl+C for a meal.",
+    "Room three closes the issue, and the Beat Reporter gestures at a dragon coiled over a hoard — not of gold, but of long, unreadable session ids it makes you recite before it lets you back in. This week's final item is the end of that toll: as of 2.1.290, `claude attach <name>` and `claude logs <name>` take part of a session's *name* in place of its id, so you step back into a background run by what you called it. One book covers the mechanic — a name fragment doing the id's job; the other, why naming your runs well turns a juggled fleet of sessions into something you can actually keep tabs on. Claim the key, then face Idlock, the wyrm who hoards the ids to your own work.",
   prompt:
-    "You've typed a long, carefully scoped brief into the prompt, then hit Ctrl+C and the whole thing clears. How do you get your draft back?",
+    "You left a background session running under the name `migration` and want to step back into it. How do you reattach without hunting down its full session id?",
   choices: [
-    { id: 'a', label: "Press Up on the now-empty prompt — it brings the cleared draft back, including any pasted text and images it held", correct: true },
-    { id: 'b', label: "Restart the session with a recovery flag to restore the last unsent prompt", correct: false },
-    { id: 'c', label: "It's gone — Ctrl+C discards the draft for good, so you retype it from memory", correct: false },
-    { id: 'd', label: "Press Ctrl+Z, the standard undo, to bring the cleared text back", correct: false },
+    { id: 'a', label: "Run `claude attach migration` — as of 2.1.290, part of a session's name works in place of the id for both `attach` and `logs`", correct: true },
+    { id: 'b', label: "You can't — `attach` still needs the exact session id; only `claude logs` was taught to accept a name", correct: false },
+    { id: 'c', label: "Copy the full session id from the dashboard first; the name is only a display label and can't be used to attach", correct: false },
+    { id: 'd', label: "Type the session's complete name exactly — a partial name is rejected, so it has to match character for character", correct: false },
   ],
-  passFeedback: "HIT! After Ctrl+C clears the prompt, pressing Up on the empty prompt brings your draft right back — pasted text and images included. The slip is recoverable.",
-  failFeedback: "MISS! No restart flag, no Ctrl+Z, and it isn't gone for good — pressing Up on the *empty* prompt restores the cleared draft. Re-read Book 1.",
+  passFeedback: "HIT! `claude attach <name>` and `claude logs <name>` both take part of a session's name in place of its id — the name you gave it is now the handle.",
+  failFeedback: "MISS! Both commands accept it, a fragment is enough rather than the full exact name, and the name isn't just a cosmetic label. Part of the name does the id's job now. Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**Up Brings It Back — Recovering a Prompt You Cleared with Ctrl+C**
+      text: `**\`claude attach <name>\` — Part of the Name Now Does the Id's Job**
 
-**What Ctrl+C does to a draft**
+**Background sessions, and the id problem**
 
-In a terminal, Ctrl+C is the universal "stop/cancel" key, and in Claude Code one of the things it cancels is a prompt you're in the middle of typing: hit it with text in the box and the box clears. Usually that's what you want — you've changed your mind, you want a blank slate. But it's also the classic fat-finger: you meant to copy, or to interrupt something else, and instead you wiped a message you'd spent real time composing. For a long time that draft was simply gone.
+Claude Code can run a session in the background — a long job that keeps working while you do something else. Each of those sessions carries two labels: an *id*, assigned by the tool, and a *name*, which is the human-readable handle. To step back into a running session you'd reach for \`claude attach\`; to see what it's been doing without reattaching, \`claude logs\`. The snag was what those commands demanded: the id. And the id is an opaque string — precise, unique, and exactly the kind of thing nobody remembers or wants to retype.
 
-**The Up-arrow rescue**
+**Part of the name now works in its place**
 
-As of 2.1.288 it isn't. The recovery is a single keystroke: press *Up* on the now-empty prompt, and the draft you just cleared comes back into the box, ready to keep editing or send. The nice touch is that it reuses a key your fingers already know. Normally Up on an empty prompt walks back through your history; this feature makes the *just-cleared draft* the first thing Up reaches for, so the muscle memory of "press Up to get the last thing back" now rescues the message you didn't mean to lose.
+As of 2.1.290, \`claude attach <name>\` and \`claude logs <name>\` accept *part of a session's name* where the id used to be required. You pass a recognizable fragment of the name you gave the session, and Claude Code resolves it to the right one. You don't need the whole name, and you certainly don't need the id — a piece that points clearly at the session is enough.
 
-**Pasted text and images come too**
+**attach reconnects, logs tails**
 
-The recovery isn't a lossy shadow of what you had — it brings the whole thing. If your cleared prompt included pasted text, that text comes back. If it included pasted images, the images come back too, not just the words around them. That matters, because the drafts most painful to lose are exactly the rich ones: the long brief with a screenshot pasted in, the message you assembled from three different sources. Up restores the full draft, attachments and all, not a plain-text skeleton of it.
+The two commands do different things with that same name fragment. \`claude attach\` drops you back *into* the live session — you're reconnected, watching and steering it again. \`claude logs\` shows you the session's output without pulling you in, for when you just want to check on it in passing. Both now speak the name you actually chose, instead of the string the tool handed you.
 
-> Takeaway: If Ctrl+C clears a prompt you didn't mean to discard, press Up on the empty prompt and the whole draft comes back — pasted text and images included.`,
+> Takeaway: \`claude attach <name>\` and \`claude logs <name>\` let part of a session's name stand in for its id — reconnect to a background run, or read its output, by what you named it.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**The Brief Is Work — Why Losing a Draft Costs More Than Keystrokes**
+      text: `**Name Your Runs So You Can Find Them — Keeping Tabs on a Fleet of Background Sessions**
 
-**A scoped brief is a small deliverable**
+**On a real engagement, you run more than one**
 
-It's tempting to think of what you type into the prompt as throwaway — just a message, retype it, no big deal. But a good brief isn't throwaway. Naming the deliverable, the client, the constraints, the stack, the thing you explicitly *don't* want — that's thinking made concrete, and it's the single highest-leverage artifact in the whole session, because the quality of everything Claude does flows from it. Losing a sharp brief isn't losing keystrokes. It's losing the five minutes of clear thought that produced them, and the reconstruction from memory is never quite as good as the original.
+A consultant mid-engagement rarely has just one thing going. One background session grinds through a data migration. Another drafts the week's status doc. A third sits on a long test run, watching for the first red. That's three sessions in flight at once — and before this change, three opaque ids standing between you and each of them. The friction was small per-lookup and enormous in aggregate: every check-in meant finding the right cryptic string.
 
-**The stray Ctrl+C mid-compose**
+**The name is the handle now — so choose it well**
 
-Picture the moment this feature is for. You're deep in a long prompt, pasting in a snippet of the client's spec, fitting the phrasing just so — and your hand slips to Ctrl+C out of terminal reflex, or you fire it to kill something else and the prompt catches the blow. The box goes blank. The old instinct is a quiet sinking feeling and a grudging retype. The new instinct is one key: Up, and it's all back. The difference between those two instincts is a few minutes and a lot of morale, every time it happens.
+Because a fragment of the name reaches the session, the names you give your runs have quietly become your index. Name a session for the job it's doing — \`migration\`, \`status-doc\`, \`test-watch\` — and getting back in is a matter of typing the obvious word, not copying a hex string off a list. This rewards a small, good habit: name sessions descriptively at launch, keep the names distinct enough that a fragment points at exactly one, and your whole fleet becomes reachable by memory. The id still exists; you just stop needing to touch it.
 
-**Knowing the undo exists changes how you work**
+**Low friction is what makes you actually check in**
 
-Here's the part that outlasts any single rescue: a safety net you trust changes how boldly you move. If you *know* a stray Ctrl+C can't swallow your draft, you stop typing defensively — you compose the long, precise brief right there in the prompt instead of hedging in a scratch file against the slip. The recovery's real payoff isn't the drafts it saves after the fact; it's the carefulness it lets you drop beforehand, because the floor is there whether or not you ever fall to it.
+This looks like a convenience, and it is, but the real payoff is behavioral. When reconnecting is cheap, you reconnect more. You tail the migration's logs before the client asks how it's going. You catch the test-watcher gone red twenty minutes sooner. The opaque id was a quiet tax on checking your own work, and taxed behavior happens less — so removing the tax means the oversight actually gets done. A fleet you can reach by name is a fleet you'll keep an eye on.
 
-> Takeaway: Treat the prompt as real work — a composed brief is your highest-leverage artifact, so knowing Up recovers a Ctrl+C'd draft lets you compose boldly instead of defensively.`,
+> Takeaway: Name your background sessions for the work they do, and part of that name is all it takes to attach or read logs — so checking in on a fleet of runs stays cheap enough that you actually do it.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `I've spent five minutes composing a precise brief right in the prompt — the deliverable, the client, the constraints,
-with a snippet of their spec pasted in the middle of it.
-Then my hand slips to ____ out of terminal reflex, and the whole draft clears in an instant.
-Old instinct says it's gone and I retype it from memory. Not anymore.
-I press ____ on the empty prompt, and the draft comes back — ____ included.
-Knowing that net is there, I compose long briefs boldly instead of hedging in a scratch file.`,
+    template: `On this engagement I've got three sessions running in the background at once.
+I name them for the job each is doing: ____, ____, and ____.
+When I want to step back into the migration run, I use \`claude attach\` followed by ____ — part of the name, not its id.
+When I just want to see what the test-watcher has been up to, I use \`claude logs\` with the same kind of name fragment.
+The names are my index now, so I never hunt down a cryptic id again.`,
     blanks: [
-      { id: 'ctrlc', suggestions: ['Ctrl+C', 'the cancel key', 'the wrong key'] },
-      { id: 'up', suggestions: ['Up', 'the Up arrow', 'Up on the empty prompt'] },
-      { id: 'extras', suggestions: ['the pasted text and images', 'everything I pasted', 'the pasted snippet too'] },
+      { id: 'name1', suggestions: ['`migration`', '`data-migration`', '`db-migrate`'] },
+      { id: 'name2', suggestions: ['`status-doc`', '`report`', '`docs`'] },
+      { id: 'name3', suggestions: ['`test-watch`', '`ci-watch`', '`build-watch`'] },
+      { id: 'fragment', suggestions: ['`migration`', 'part of its name', 'the word migration'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "Recovery for a Ctrl+C-cleared prompt (Claude Code 2.1.288): Ctrl+C clears a prompt you're typing — usually what you want, sometimes a fat-finger that wipes a message you spent real time on. As of 2.1.288, pressing Up on the now-empty prompt brings that just-cleared draft back, ready to edit or send. It reuses the Up key (normally history navigation) so the 'press Up to get the last thing back' muscle memory now rescues the lost draft, and it restores the WHOLE draft — pasted text and images included, not a plain-text skeleton. For a consultant: a scoped brief is a small deliverable and your highest-leverage artifact, so losing it costs the thinking, not just the keystrokes. Knowing the undo exists lets you compose long, precise briefs boldly in the prompt instead of hedging defensively in a scratch file.",
+        "`claude attach <name>` and `claude logs <name>` (Claude Code 2.1.290): background sessions carry an opaque id and a human-readable name. These two commands used to require the id; now part of the name works in its place. `attach` reconnects you into a live session; `logs` shows its output without pulling you in. A recognizable fragment of the name is enough — not the whole name, and never the id. For a consultant juggling several background runs at once — a migration, a status doc, a test-watcher — the names you choose become your index. Name sessions descriptively and distinctly at launch, and the whole fleet is reachable by memory. The real payoff is behavioral: when reconnecting is cheap, you check in more often, catching a stuck or red run sooner than when an opaque id stood in the way.",
       beats: [
-        { kind: 'say', text: "Last room of the issue, and it's the most human item on the list. You know the feeling: you've typed a long, careful message, your hand slips, and it's gone. This week that stops being fatal." },
-        { kind: 'say', text: "Start with what Ctrl+C does. In a terminal it's the universal cancel key, and here one of the things it cancels is a prompt you're typing — hit it with text in the box and the box clears. Half the time that's exactly what you wanted. The other half, you meant to copy, or to kill something else, and you just wiped a message you'd spent real time on." },
-        { kind: 'say', text: "As of 2.1.288, one keystroke brings it back: press Up on the now-empty prompt and the cleared draft returns, ready to edit or send. It reuses a key you already trust — normally Up walks your history, but now the just-cleared draft is the first thing it reaches for. Same muscle memory, new rescue." },
+        { kind: 'say', text: "Final item, room three — and it's a small one that changes a daily annoyance. It's about getting back into a session you left running in the background." },
+        { kind: 'say', text: "Set the scene. I can run a session in the background — a long job chugging away while you work on something else. Each one has two labels: an id the tool assigns, and a name, the readable handle. To jump back in you'd use `claude attach`; to peek at what it's done without reattaching, `claude logs`." },
+        { kind: 'say', text: "The old catch: both wanted the id. And an id is an opaque string — unique, precise, and exactly the sort of thing nobody remembers or wants to retype. As of 2.1.290 that changes: `claude attach <name>` and `claude logs <name>` take *part of the name* in place of the id. A fragment that points clearly at the session is enough." },
         {
           kind: 'choice',
-          prompt: "Your cleared prompt had a paragraph of text *and* a screenshot you'd pasted in. You press Up. What comes back?",
+          prompt: "You named a background session `nightly-migration`. You want to tail its output in passing — not reattach, just look. What reaches it?",
           options: [
-            { id: 'whole', label: "The whole draft — the text and the pasted image both", correct: true, reaction: "Right. It's not a lossy shadow — pasted text and images both come back. The drafts most painful to lose are the rich ones, so it restores them whole." },
-            { id: 'textonly', label: "Just the text; the image is lost and you re-paste it", correct: false, reaction: "Better than that — it brings the images too, not a plain-text skeleton. The screenshot returns with the words around it." },
-            { id: 'nothing', label: "Nothing — Up only works on plain, un-pasted prompts", correct: false, reaction: "No — Up restores the full draft regardless, pasted text and images included. That's the whole point of it." },
+            { id: 'logs-frag', label: "`claude logs migration` — logs takes part of the name too", correct: true, reaction: "Right. Both commands learned the trick, not just attach. A fragment like `migration` points at the session, and `logs` shows its output without pulling you in." },
+            { id: 'attach-only', label: "Only `claude attach` accepts a name; `logs` still needs the id", correct: false, reaction: "Not so — the change covers both. `claude logs <name>` takes the same name fragment `attach` does, so you can check output by name alone." },
+            { id: 'full-id', label: "Nothing but the full session id will do for logs", correct: false, reaction: "That's the old world. As of 2.1.290 a piece of the name works for `logs` as well as `attach` — no hunting down the id to glance at output." },
           ],
         },
-        { kind: 'say', text: "Why a consultant should care about something this small: the brief isn't throwaway. Naming the deliverable, the client, the constraints, the thing you *don't* want — that's thinking made concrete, and it's the highest-leverage artifact in the session, because everything I do flows from it. Lose it and you've lost the five minutes of clear thought, not just the typing." },
-        { kind: 'say', text: "And here's the part that outlasts any one rescue. A net you trust changes how boldly you move. If you *know* a stray Ctrl+C can't eat your draft, you stop typing defensively — you compose the long, precise brief right here in the prompt instead of hedging in a scratch file. The real payoff isn't the saves; it's the carefulness you get to drop." },
-        { kind: 'say', text: "The books have the mechanic and the why-it-matters both. Answer the door for the key — then face the last guardian of the issue: Draftmaw, a wyrm that swallows whole drafts the instant a hand slips. Show it the one key that reaches down its throat and pulls your work back out." },
+        { kind: 'say', text: "Why it matters on an engagement: you're rarely running just one. A migration grinding away, a status doc drafting, a test run you're watching for the first red — that's three sessions, and before this, three cryptic ids between you and each of them." },
+        { kind: 'say', text: "So the names become your index. Name a session for its job — `migration`, `status-doc`, `test-watch` — keep them distinct enough that a fragment lands on exactly one, and the whole fleet is reachable from memory. The id still exists; you just stop needing to touch it." },
+        { kind: 'say', text: "And the real win is behavioral: when stepping back in is cheap, you do it more. You tail the migration before the client asks, you catch the test-watcher gone red twenty minutes sooner. The id was a quiet tax on checking your own work. The books have the mechanic and the read. Take the key — then face Idlock, the wyrm hoarding the ids to your own sessions. Take them back by name." },
       ],
     },
   },
   battle: {
-    name: 'Draftmaw, the Devourer of Drafts',
+    name: 'Idlock, the Id-Hoarder',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a long wyrm uncoils over a hoard of half-eaten messages, jaws still working on a brief someone lost moments ago* …another careful draft, another slip of the hand… one twitch toward Ctrl+C and I swallow the lot — the words, the pastes, the picture tucked inside… you say a single key reaches back down my throat and takes it all? …speak true how you recover a prompt I've devoured, before I gulp the next.",
+    introLine: "*a great wyrm uncoils atop a glittering hoard — not coins, but endless scales each etched with a long, unreadable id — and pins one beneath a claw* …back for your own session, are you… then recite its id, every character, as you always have, or the gate stays shut… what's that — you say a mere *name* opens it now? …then tell me true what \`claude attach <name>\` takes, before I bury your work under my hoard for good.",
     tauntLines: [
-      "*gulps, smug* you think it *gone for good*, don't you — that once I've swallowed a draft you retype it from memory and thank me for the lesson? no longer… Up on the empty prompt and the whole thing comes back up whole…",
-      "*snorts a plume* you'd grope for some *restart flag*, relaunch the session praying the last prompt survived? waste of breath… the rescue is one key on the empty prompt, not a reboot and a prayer…",
+      "*lashes its tail across the hoard* you'd claim only *attach* learned your little name-trick, and that \`logs\` still crawls to me for the full id?! no… both were taught it — a name fragment reads the logs as surely as it reopens the session…",
+      "*narrows a molten eye* you think my hoard is mere *decoration* — that the name is a painted label and the id still rules?! never… part of the name now does the id's whole work; you need not touch the cursed string at all…",
     ],
-    victoryLine: "*Draftmaw gags and brings the draft back up intact — every word, every paste, the image unchewed* …Up… one key on the empty prompt and the whole draft is yours again, pastes and pictures and all… I cannot keep what a single keystroke can reclaim… take the key, operator, and compose without fear of my jaws.",
+    victoryLine: "*Idlock's claw lifts, and the whole hoard of ids dims to irrelevance behind it* …a *name*… part of the name… \`attach\` to step back in, \`logs\` to read it from afar, and never the id again… my hoard was worthless all along… take the key, operator, and reach your every session by the name you gave it.",
     questions: [
       {
         prompt:
-          "You've typed a long, carefully scoped brief into the prompt, then hit Ctrl+C and the whole thing clears. How do you get your draft back?",
+          "You left a background session running under the name `migration` and want to step back into it. How do you reattach without hunting down its full session id?",
         choices: [
-          { id: 'a', label: "Press Up on the now-empty prompt — it brings the cleared draft back, including any pasted text and images it held", correct: true },
-          { id: 'b', label: "Restart the session with a recovery flag to restore the last unsent prompt", correct: false },
-          { id: 'c', label: "It's gone — Ctrl+C discards the draft for good, so you retype it from memory", correct: false },
-          { id: 'd', label: "Press Ctrl+Z, the standard undo, to bring the cleared text back", correct: false },
+          { id: 'a', label: "Run `claude attach migration` — as of 2.1.290, part of a session's name works in place of the id for both `attach` and `logs`", correct: true },
+          { id: 'b', label: "You can't — `attach` still needs the exact session id; only `claude logs` was taught to accept a name", correct: false },
+          { id: 'c', label: "Copy the full session id from the dashboard first; the name is only a display label and can't be used to attach", correct: false },
+          { id: 'd', label: "Type the session's complete name exactly — a partial name is rejected, so it has to match character for character", correct: false },
         ],
-        passFeedback: "HIT! After Ctrl+C clears the prompt, pressing Up on the empty prompt brings your draft right back — pasted text and images included. The slip is recoverable.",
-        failFeedback: "MISS! No restart flag, no Ctrl+Z, and it isn't gone for good — pressing Up on the *empty* prompt restores the cleared draft. Re-read Book 1.",
+        passFeedback: "HIT! `claude attach <name>` and `claude logs <name>` both take part of a session's name in place of its id — the name you gave it is now the handle.",
+        failFeedback: "MISS! Both commands accept it, a fragment is enough rather than the full exact name, and the name isn't just a cosmetic label. Part of the name does the id's job now. Re-read Book 1.",
       },
     ],
   },

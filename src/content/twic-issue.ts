@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-10-05',
+  publishDate: '2026-10-12',
   framing:
-    "This week in Claude, the throughline is the safety net around your own work — the check that fires itself, the watcher that catches what you miss, and the draft a slip can no longer swallow. A skill named `verify` now runs itself right before every commit — except on docs-only or tests-only changes — so a client's quality bar is enforced at the commit line without you remembering to run it. The new `You should know` built-in mod puts a side agent alongside your session that watches your back and flags the things you overlooked, the colleague-over-your-shoulder you don't have on a solo engagement. And a stray `Ctrl+C` that clears a carefully composed prompt is no longer fatal: press Up on the now-empty prompt and the whole draft comes back, pasted text and images included.",
+    "This week in Claude, the throughline is the controls around the work rather than the work itself — a guard that fails shut instead of open, a delegate whose horsepower you dial to the task, and a running session you can step back into by name. `onFailure: \"block\"` lets a command or HTTP hook that can't start, times out, or exits with an unexpected code stop the action it guards instead of waving it through, turning a crashed safety check from a silent gap into a hard stop. The Agent tool's new `effort` parameter runs a dispatched sub-agent at the reasoning level you ask for — low for a mechanical sweep, high for a thorny design call — so compute matches the task instead of one speed fitting all. And `claude attach <name>` and `claude logs <name>` now take part of a session's name in place of its id, so stepping back into a background run or reading its output no longer means hunting down a cryptic identifier.",
 };
