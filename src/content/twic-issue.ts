@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-10-12',
+  publishDate: '2026-10-19',
   framing:
-    "This week in Claude, the throughline is the controls around the work rather than the work itself — a guard that fails shut instead of open, a delegate whose horsepower you dial to the task, and a running session you can step back into by name. `onFailure: \"block\"` lets a command or HTTP hook that can't start, times out, or exits with an unexpected code stop the action it guards instead of waving it through, turning a crashed safety check from a silent gap into a hard stop. The Agent tool's new `effort` parameter runs a dispatched sub-agent at the reasoning level you ask for — low for a mechanical sweep, high for a thorny design call — so compute matches the task instead of one speed fitting all. And `claude attach <name>` and `claude logs <name>` now take part of a session's name in place of its id, so stepping back into a background run or reading its output no longer means hunting down a cryptic identifier.",
+    "This week in Claude, the throughline is the quiet economics of a long session — what your context costs, and seeing the bill before it lands. Idle compaction now condenses a big, idle conversation (200K+ tokens) just before its one-hour prompt cache expires, so coming back after an hour no longer means reprocessing the whole pile from scratch. The `CLAUDE_CODE_DISABLE_FILE_MENTIONS` environment variable turns an `@` file mention into a path Claude reads on demand instead of a full-contents paste, keeping context lean on a repo full of heavy files. And `/usage` now names the four levers that most inflate a session — max effort, workflows, always-on context, and large tool results — so you can see what's driving the spend instead of just watching the number climb.",
 };

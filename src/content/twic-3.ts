@@ -1,132 +1,132 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — `claude attach <name>` and `claude logs <name>`.
- * Background sessions carry both an opaque id and a human-readable name. These
- * two commands used to require the id; now part of a session's *name* works in
- * its place. `attach` reconnects you to a running session; `logs` shows its
- * output. The feature is that a recognizable fragment of the name now stands in
- * for the id, so you reach a background run by what you called it, not by a
- * cryptic string.
+ * twic-3 (Feature C) — `/usage` warnings for the four big consumption levers.
+ * `/usage` shows where you stand against your plan's limits. As of 2.1.299 it
+ * adds warnings that name the specific behaviors inflating your consumption:
+ * max effort, workflows, always-on context, and large tool results. It surfaces
+ * which lever is driving the spend, turning a bare percentage into a diagnosis.
+ * It is a warning, not a wall: it does not cap usage, throttle the session, or
+ * switch anything off — you stay the operator and decide what to dial back.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.290: "Added `claude attach <name>` and
- *     `claude logs <name>`: part of a session name works in place of the id"
+ *   - Claude Code CHANGELOG 2.1.299: "Added `/usage` warnings for max effort,
+ *     workflows, always-on context and large tool results"
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Room three closes the issue, and the Beat Reporter gestures at a dragon coiled over a hoard — not of gold, but of long, unreadable session ids it makes you recite before it lets you back in. This week's final item is the end of that toll: as of 2.1.290, `claude attach <name>` and `claude logs <name>` take part of a session's *name* in place of its id, so you step back into a background run by what you called it. One book covers the mechanic — a name fragment doing the id's job; the other, why naming your runs well turns a juggled fleet of sessions into something you can actually keep tabs on. Claim the key, then face Idlock, the wyrm who hoards the ids to your own work.",
+    "Room three closes the issue, and the Beat Reporter gestures at a dragon coiled over a hoard that isn't gold — it's your own usage, drained in four quiet streams you never see until the meter's already run. This week's final item throws light on exactly those streams: as of 2.1.299, `/usage` raises warnings for the four levers that most inflate what a session consumes — *max effort*, *workflows*, *always-on context*, and *large tool results*. One book covers the mechanic — `/usage` naming the culprit instead of just the total; the other, why a consultant reads those four warnings as a bill of materials for the week's spend. Claim the key, then face Meterwyrm, the drake who runs up your toll in the dark.",
   prompt:
-    "You left a background session running under the name `migration` and want to step back into it. How do you reattach without hunting down its full session id?",
+    "Your Claude Code usage is climbing faster than you expected and you want to know what's driving it. What does the updated `/usage` now do for you?",
   choices: [
-    { id: 'a', label: "Run `claude attach migration` — as of 2.1.290, part of a session's name works in place of the id for both `attach` and `logs`", correct: true },
-    { id: 'b', label: "You can't — `attach` still needs the exact session id; only `claude logs` was taught to accept a name", correct: false },
-    { id: 'c', label: "Copy the full session id from the dashboard first; the name is only a display label and can't be used to attach", correct: false },
-    { id: 'd', label: "Type the session's complete name exactly — a partial name is rejected, so it has to match character for character", correct: false },
+    { id: 'a', label: "It raises warnings naming the levers inflating your usage — max effort, workflows, always-on context, and large tool results — so you can see which behavior is driving the spend, not just the total", correct: true },
+    { id: 'b', label: "It caps your usage automatically once any of those four levers crosses a threshold, blocking further requests", correct: false },
+    { id: 'c', label: "It switches your session to the cheapest model and turns off workflows until your usage falls back down", correct: false },
+    { id: 'd', label: "It shows a single overall percentage exactly as before — there's still no breakdown of what's driving it", correct: false },
   ],
-  passFeedback: "HIT! `claude attach <name>` and `claude logs <name>` both take part of a session's name in place of its id — the name you gave it is now the handle.",
-  failFeedback: "MISS! Both commands accept it, a fragment is enough rather than the full exact name, and the name isn't just a cosmetic label. Part of the name does the id's job now. Re-read Book 1.",
+  passFeedback: "HIT! `/usage` now warns on the four big consumption levers — max effort, workflows, always-on context, and large tool results — so you can see *what's* driving your spend, not just how much is left.",
+  failFeedback: "MISS! It doesn't cap, downgrade, or stay a bare percentage. It *names* the four levers inflating your usage so you can act. Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**\`claude attach <name>\` — Part of the Name Now Does the Id's Job**
+      text: `**\`/usage\` Names the Culprit — Warnings for the Four Levers That Inflate a Session**
 
-**Background sessions, and the id problem**
+**From a total to a diagnosis**
 
-Claude Code can run a session in the background — a long job that keeps working while you do something else. Each of those sessions carries two labels: an *id*, assigned by the tool, and a *name*, which is the human-readable handle. To step back into a running session you'd reach for \`claude attach\`; to see what it's been doing without reattaching, \`claude logs\`. The snag was what those commands demanded: the id. And the id is an opaque string — precise, unique, and exactly the kind of thing nobody remembers or wants to retype.
+\`/usage\` is the command that shows where you stand against your plan's limits. On its own, a percentage tells you *that* you're burning through usage — not *why*. You watch the number climb and you're left guessing which of the things you did today is responsible. As of 2.1.299, \`/usage\` adds warnings that point at the specific behaviors driving your consumption, turning a bare figure into something closer to a diagnosis.
 
-**Part of the name now works in its place**
+**The four it calls out**
 
-As of 2.1.290, \`claude attach <name>\` and \`claude logs <name>\` accept *part of a session's name* where the id used to be required. You pass a recognizable fragment of the name you gave the session, and Claude Code resolves it to the right one. You don't need the whole name, and you certainly don't need the id — a piece that points clearly at the session is enough.
+The warnings single out four levers. *Max effort* — running at the top reasoning-effort tier, which spends the most thinking per turn. *Workflows* — orchestrating work across many agents at once, which multiplies the consumption of a single run. *Always-on context* — material carried into every request rather than read once, so its weight is paid on every turn. And *large tool results* — big outputs a tool drops into the conversation, swelling what each later turn has to carry. Every one of these is a legitimate thing to do; every one also quietly runs up the meter when you're not watching.
 
-**attach reconnects, logs tails**
+**A warning, not a wall**
 
-The two commands do different things with that same name fragment. \`claude attach\` drops you back *into* the live session — you're reconnected, watching and steering it again. \`claude logs\` shows you the session's output without pulling you in, for when you just want to check on it in passing. Both now speak the name you actually chose, instead of the string the tool handed you.
+Be clear on what the feature is and isn't. It *surfaces* these levers so you notice them — it does not cap your usage, throttle the session, or switch anything off on its own. Nothing is taken out of your hands; the control stays yours. \`/usage\` simply makes the expensive levers announce themselves, instead of letting them hide inside one steadily climbing percentage you can't break apart.
 
-> Takeaway: \`claude attach <name>\` and \`claude logs <name>\` let part of a session's name stand in for its id — reconnect to a background run, or read its output, by what you named it.`,
+> Takeaway: \`/usage\` now warns on four specific consumption levers — max effort, workflows, always-on context, and large tool results — so you can see what's driving your spend, not just that it's rising.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**Name Your Runs So You Can Find Them — Keeping Tabs on a Fleet of Background Sessions**
+      text: `**Read It as a Bill of Materials — Spend Where It Pays and Nowhere Else**
 
-**On a real engagement, you run more than one**
+**Usage is a cost you carry or pass on**
 
-A consultant mid-engagement rarely has just one thing going. One background session grinds through a data migration. Another drafts the week's status doc. A third sits on a long test run, watching for the first red. That's three sessions in flight at once — and before this change, three opaque ids standing between you and each of them. The friction was small per-lookup and enormous in aggregate: every check-in meant finding the right cryptic string.
+On an engagement, the compute behind a session is real money — absorbed into your rate or billed through to the client. A usage bar that climbs for reasons you can't name is a cost you can't manage, and "we used a lot of Claude this week" is not a line a client wants to hear without a why. The value of \`/usage\` naming its four levers is that it turns an opaque burn into a line-item read: you can finally see *which* habit is doing the spending.
 
-**The name is the handle now — so choose it well**
+**Match each lever to whether the task earned it**
 
-Because a fragment of the name reaches the session, the names you give your runs have quietly become your index. Name a session for the job it's doing — \`migration\`, \`status-doc\`, \`test-watch\` — and getting back in is a matter of typing the obvious word, not copying a hex string off a list. This rewards a small, good habit: name sessions descriptively at launch, keep the names distinct enough that a fragment points at exactly one, and your whole fleet becomes reachable by memory. The id still exists; you just stop needing to touch it.
+Then you judge each one against the work in front of you. Max effort on a genuinely hard call is money well spent; max effort left running on routine edits is pure waste — dial it back. A workflow fanning out across a sprawling refactor earns its multiplied cost; a workflow spun up for a one-file change does not. Always-on context pays when every turn truly needs that material and bleeds you when it's riding along out of habit. Large tool results are worth it when you genuinely need the whole dump, and a tax when a narrower command would have answered. The warning points; you decide whether the lever was pulling its weight.
 
-**Low friction is what makes you actually check in**
+**Check it during the work, not after the bill**
 
-This looks like a convenience, and it is, but the real payoff is behavioral. When reconnecting is cheap, you reconnect more. You tail the migration's logs before the client asks how it's going. You catch the test-watcher gone red twenty minutes sooner. The opaque id was a quiet tax on checking your own work, and taxed behavior happens less — so removing the tax means the oversight actually gets done. A fleet you can reach by name is a fleet you'll keep an eye on.
+The habit worth building is reading \`/usage\` *mid-engagement*, not reconciling it after the fact. When a warning flags that always-on context has gone heavy, you trim it then and there. When max effort is lit on throwaway work, you drop it on the spot. The whole point of the meter announcing its culprits is that you can correct course while the week is still running — so the spend lands on the decisions that carried the engagement, not on the chores that happened to run hot while no one was looking.
 
-> Takeaway: Name your background sessions for the work they do, and part of that name is all it takes to attach or read logs — so checking in on a fleet of runs stays cheap enough that you actually do it.`,
+> Takeaway: Treat the four \`/usage\` warnings as a bill of materials — check it mid-engagement and dial back any lever the task didn't earn, so your spend lands where it changed the outcome.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `On this engagement I've got three sessions running in the background at once.
-I name them for the job each is doing: ____, ____, and ____.
-When I want to step back into the migration run, I use \`claude attach\` followed by ____ — part of the name, not its id.
-When I just want to see what the test-watcher has been up to, I use \`claude logs\` with the same kind of name fragment.
-The names are my index now, so I never hunt down a cryptic id again.`,
+    template: `My usage is climbing on this engagement and I want to know what's driving it, so I run ____.
+It now warns me that ____ is the lever running up the meter.
+I check it against the work: on a routine task that spend isn't earning its keep, so I ____.
+On the one genuinely hard call this week, though, I leave ____ on — there the reasoning is the deliverable.
+I read these warnings mid-engagement, not after the bill lands, so I correct course while it still matters.`,
     blanks: [
-      { id: 'name1', suggestions: ['`migration`', '`data-migration`', '`db-migrate`'] },
-      { id: 'name2', suggestions: ['`status-doc`', '`report`', '`docs`'] },
-      { id: 'name3', suggestions: ['`test-watch`', '`ci-watch`', '`build-watch`'] },
-      { id: 'fragment', suggestions: ['`migration`', 'part of its name', 'the word migration'] },
+      { id: 'cmd', suggestions: ['`/usage`', 'the usage command', '`/usage` mid-session'] },
+      { id: 'lever', suggestions: ['max effort', 'always-on context', 'a workflow fanning out across the repo'] },
+      { id: 'action', suggestions: ['dial it back', 'drop to a lower effort', 'trim what rides in every request'] },
+      { id: 'keep', suggestions: ['max effort', 'the heavy reasoning tier', 'the expensive lever'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "`claude attach <name>` and `claude logs <name>` (Claude Code 2.1.290): background sessions carry an opaque id and a human-readable name. These two commands used to require the id; now part of the name works in its place. `attach` reconnects you into a live session; `logs` shows its output without pulling you in. A recognizable fragment of the name is enough — not the whole name, and never the id. For a consultant juggling several background runs at once — a migration, a status doc, a test-watcher — the names you choose become your index. Name sessions descriptively and distinctly at launch, and the whole fleet is reachable by memory. The real payoff is behavioral: when reconnecting is cheap, you check in more often, catching a stuck or red run sooner than when an opaque id stood in the way.",
+        "`/usage` warnings for the four big consumption levers (Claude Code 2.1.299): `/usage` shows where you stand against your plan's limits, but a bare percentage tells you *that* you're burning usage, not *why*. It now raises warnings naming the specific behaviors driving your spend — max effort (the top reasoning-effort tier), workflows (orchestrating many agents at once), always-on context (material carried into every request), and large tool results (big outputs a tool drops in). It's a warning, not a wall: it surfaces the levers so you notice them, but it does not cap usage, throttle the session, or switch anything off — you stay the operator. For a consultant, that compute is real money carried or billed through, so read the four warnings as a bill of materials: match each lever to whether the task earned it (max effort on a hard call, not routine edits; a workflow on a big refactor, not a one-file change), and check `/usage` mid-engagement so you correct course while the week is still running.",
       beats: [
-        { kind: 'say', text: "Final item, room three — and it's a small one that changes a daily annoyance. It's about getting back into a session you left running in the background." },
-        { kind: 'say', text: "Set the scene. I can run a session in the background — a long job chugging away while you work on something else. Each one has two labels: an id the tool assigns, and a name, the readable handle. To jump back in you'd use `claude attach`; to peek at what it's done without reattaching, `claude logs`." },
-        { kind: 'say', text: "The old catch: both wanted the id. And an id is an opaque string — unique, precise, and exactly the sort of thing nobody remembers or wants to retype. As of 2.1.290 that changes: `claude attach <name>` and `claude logs <name>` take *part of the name* in place of the id. A fragment that points clearly at the session is enough." },
+        { kind: 'say', text: "Final item, room three — and it's about money. Specifically, knowing *what* is spending it. You've seen `/usage`: it shows where you stand against your plan's limits. The trouble was always the same — a number climbing, with no clue which of the day's moves was behind it." },
+        { kind: 'say', text: "As of 2.1.299, `/usage` stops making you guess. It adds warnings that name the specific behaviors driving your consumption — it turns a bare percentage into something closer to a diagnosis. The number told you *that* you're burning; the warnings tell you *why*." },
+        { kind: 'say', text: "Four levers in particular. Max effort — running at the top reasoning tier, the most thinking per turn. Workflows — orchestrating many agents at once, which multiplies a single run's cost. Always-on context — material carried into *every* request, so you pay its weight each turn. And large tool results — big outputs a tool drops in, swelling what every later turn has to haul. All four are legitimate; all four quietly run up the meter." },
         {
           kind: 'choice',
-          prompt: "You named a background session `nightly-migration`. You want to tail its output in passing — not reattach, just look. What reaches it?",
+          prompt: "`/usage` flags that a workflow and always-on context are both driving your spend this week. What has it actually done, and what's your move?",
           options: [
-            { id: 'logs-frag', label: "`claude logs migration` — logs takes part of the name too", correct: true, reaction: "Right. Both commands learned the trick, not just attach. A fragment like `migration` points at the session, and `logs` shows its output without pulling you in." },
-            { id: 'attach-only', label: "Only `claude attach` accepts a name; `logs` still needs the id", correct: false, reaction: "Not so — the change covers both. `claude logs <name>` takes the same name fragment `attach` does, so you can check output by name alone." },
-            { id: 'full-id', label: "Nothing but the full session id will do for logs", correct: false, reaction: "That's the old world. As of 2.1.290 a piece of the name works for `logs` as well as `attach` — no hunting down the id to glance at output." },
+            { id: 'warns', label: "It's warned you — named the two levers — but capped nothing; I decide whether each one earned its cost and dial back the one that didn't", correct: true, reaction: "Right. It's a warning, not a wall. The control stays yours: a workflow on a real refactor earns its cost, always-on context riding along out of habit doesn't — so you trim that and keep the number honest." },
+            { id: 'capped', label: "It's automatically capped those two levers and blocked further requests until usage falls", correct: false, reaction: "No — it doesn't cap or block. It surfaces the levers so *you* can act. Nothing gets taken out of your hands; you choose what to dial back." },
+            { id: 'downgrade', label: "It's switched me to the cheapest model and turned the workflow off on its own", correct: false, reaction: "It changes nothing on its own — no downgrade, no shutoff. It names what's spending so you can decide. The move is yours, not the tool's." },
           ],
         },
-        { kind: 'say', text: "Why it matters on an engagement: you're rarely running just one. A migration grinding away, a status doc drafting, a test run you're watching for the first red — that's three sessions, and before this, three cryptic ids between you and each of them." },
-        { kind: 'say', text: "So the names become your index. Name a session for its job — `migration`, `status-doc`, `test-watch` — keep them distinct enough that a fragment lands on exactly one, and the whole fleet is reachable from memory. The id still exists; you just stop needing to touch it." },
-        { kind: 'say', text: "And the real win is behavioral: when stepping back in is cheap, you do it more. You tail the migration before the client asks, you catch the test-watcher gone red twenty minutes sooner. The id was a quiet tax on checking your own work. The books have the mechanic and the read. Take the key — then face Idlock, the wyrm hoarding the ids to your own sessions. Take them back by name." },
+        { kind: 'say', text: "That 'warning, not a wall' part is the whole character of it. It doesn't cap your usage, throttle the session, or switch anything off. It just makes the expensive levers announce themselves instead of hiding inside one climbing percentage. You stay the operator." },
+        { kind: 'say', text: "Here's the engagement read. That compute is real money — in your rate or billed through to the client. So read the four warnings as a bill of materials. Match each lever to the work: max effort on a genuinely hard call, yes; left on for routine edits, waste. A workflow across a big refactor, yes; for a one-file change, no. The warning points; you judge whether it pulled its weight." },
+        { kind: 'say', text: "And read it *during* the work, not after the bill. When a warning says always-on context has gone heavy, trim it then. When max effort is lit on throwaway work, drop it on the spot. Correcting course mid-engagement is the entire payoff — the spend lands on the decisions that carried the week, not the chores that ran hot unwatched. Take the key — then face Meterwyrm, the drake who runs up your toll in the dark." },
       ],
     },
   },
   battle: {
-    name: 'Idlock, the Id-Hoarder',
+    name: 'Meterwyrm, the Silent Toll',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a great wyrm uncoils atop a glittering hoard — not coins, but endless scales each etched with a long, unreadable id — and pins one beneath a claw* …back for your own session, are you… then recite its id, every character, as you always have, or the gate stays shut… what's that — you say a mere *name* opens it now? …then tell me true what \`claude attach <name>\` takes, before I bury your work under my hoard for good.",
+    introLine: "*a long, smoke-dark wyrm uncoils over a hoard of your own spent hours, four thin streams of it trickling away into the dark unseen* …I drink from you in four quiet streams and you never once see which… the hard-run turn, the swarm of helpers, the weight you carry into every request, the great dumps your tools let fall… your meter climbs and you cannot say why… you claim \`/usage\` now *names* my four streams aloud?! …then say true what it does when it warns, before I drink another hour unseen.",
     tauntLines: [
-      "*lashes its tail across the hoard* you'd claim only *attach* learned your little name-trick, and that \`logs\` still crawls to me for the full id?! no… both were taught it — a name fragment reads the logs as surely as it reopens the session…",
-      "*narrows a molten eye* you think my hoard is mere *decoration* — that the name is a painted label and the id still rules?! never… part of the name now does the id's whole work; you need not touch the cursed string at all…",
+      "*coils tighten, triumphant* you'd have me believe your \`/usage\` *caps* me — bricks up my streams and blocks your every request once I drink too deep?! no… it warns, it does not wall — it names the lever and leaves the choosing to you…",
+      "*exhales a plume of ash* you think it *tames itself* — drops you to the cheapest model, snuffs your swarm, all on its own?! never… it changes nothing unbidden — it only shows what spends, so *you* decide what to dial back…",
     ],
-    victoryLine: "*Idlock's claw lifts, and the whole hoard of ids dims to irrelevance behind it* …a *name*… part of the name… \`attach\` to step back in, \`logs\` to read it from afar, and never the id again… my hoard was worthless all along… take the key, operator, and reach your every session by the name you gave it.",
+    victoryLine: "*Meterwyrm's four streams flicker into plain daylight, each one named* …max effort… workflows… always-on context… large tool results… you *see* them now, every one, and choose which may drink… no more toll in the dark… take the key, operator, and spend only where it pays.",
     questions: [
       {
         prompt:
-          "You left a background session running under the name `migration` and want to step back into it. How do you reattach without hunting down its full session id?",
+          "Your Claude Code usage is climbing faster than you expected and you want to know what's driving it. What does the updated `/usage` now do for you?",
         choices: [
-          { id: 'a', label: "Run `claude attach migration` — as of 2.1.290, part of a session's name works in place of the id for both `attach` and `logs`", correct: true },
-          { id: 'b', label: "You can't — `attach` still needs the exact session id; only `claude logs` was taught to accept a name", correct: false },
-          { id: 'c', label: "Copy the full session id from the dashboard first; the name is only a display label and can't be used to attach", correct: false },
-          { id: 'd', label: "Type the session's complete name exactly — a partial name is rejected, so it has to match character for character", correct: false },
+          { id: 'a', label: "It raises warnings naming the levers inflating your usage — max effort, workflows, always-on context, and large tool results — so you can see which behavior is driving the spend, not just the total", correct: true },
+          { id: 'b', label: "It caps your usage automatically once any of those four levers crosses a threshold, blocking further requests", correct: false },
+          { id: 'c', label: "It switches your session to the cheapest model and turns off workflows until your usage falls back down", correct: false },
+          { id: 'd', label: "It shows a single overall percentage exactly as before — there's still no breakdown of what's driving it", correct: false },
         ],
-        passFeedback: "HIT! `claude attach <name>` and `claude logs <name>` both take part of a session's name in place of its id — the name you gave it is now the handle.",
-        failFeedback: "MISS! Both commands accept it, a fragment is enough rather than the full exact name, and the name isn't just a cosmetic label. Part of the name does the id's job now. Re-read Book 1.",
+        passFeedback: "HIT! `/usage` now warns on the four big consumption levers — max effort, workflows, always-on context, and large tool results — so you can see *what's* driving your spend, not just how much is left.",
+        failFeedback: "MISS! It doesn't cap, downgrade, or stay a bare percentage. It *names* the four levers inflating your usage so you can act. Re-read Book 1.",
       },
     ],
   },
