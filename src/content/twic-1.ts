@@ -1,142 +1,138 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — idle compaction in the terminal.
- * Claude Code keeps a prompt cache of your conversation (lifetime ~1 hour) so a
- * new message doesn't reprocess everything already said. If a large conversation
- * (200K+ tokens) is left idle for about 54 minutes, the cache is about to expire;
- * the next message would otherwise reprocess the whole thing. Idle compaction
- * condenses the conversation *before* the cache expires, so the next message
- * works on the compacted form. The 200K minimum is tunable via
- * `CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS`; `"idleCompaction": false` (settings.json)
- * or the `/config` row turns it off; the post-compaction notice says how.
+ * twic-1 (Feature A) — review levels in Code Review.
+ * Claude's Code Review (the automated reviewer that comments on GitHub pull
+ * requests) gained three review levels: Quick, Standard (the default), and Deep.
+ * An organization owner sets a default level for the whole org, and individual
+ * repositories can be given their own level, so review depth is matched to a
+ * repo's stakes instead of one depth applying everywhere. A separate admin
+ * option lets Code Review cover every repository in a GitHub organization,
+ * including repos added later, without selecting them one at a time.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.299: "Added idle compaction in the terminal: a
- *     200K+ token conversation left idle for about 54 minutes is compacted before
- *     its one-hour prompt cache expires, so your next message doesn't reprocess
- *     it all" and "Added `CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS` to change idle
- *     compaction's 200K-token minimum; `"idleCompaction": false` in settings.json
- *     turns it off."
- *   - Claude Code CHANGELOG 2.1.302: "Added an `Idle compaction` row to `/config`
- *     for turning idle compaction off or back on; the notices shown after an idle
- *     compaction now say how to turn it off"
+ *   - Claude Code CHANGELOG 2.1.304: "Added review levels to Code Review:
+ *     Owners choose Quick, Standard (the default), or Deep for the organization"
+ *     and individual repositories can be given their own level.
+ *   - Claude Code CHANGELOG 2.1.304: "Added an option in Code Review admin
+ *     settings to review every repository in a GitHub organization," including
+ *     ones added later, without selecting them one by one.
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room one of this week's rundown, and the Beat Reporter nods at a skeleton warden slumped so long at his post that the archive behind him has gone cold — step away for an hour and he makes you re-read the entire pile from the first page before he'll let you back to work. This week's lead item is the cure for exactly that: as of 2.1.299, the terminal does *idle compaction* — a conversation past 200K tokens, left idle for about 54 minutes, is condensed just before its one-hour prompt cache expires, so your next message doesn't have to reprocess the whole thing. One book covers the mechanic — why a cooling cache is what springs the squeeze; the other, why a consultant leaves it on and tunes it instead of eating the reprocessing tax. Answer the door for the key, then face Coldcache, the warden who's never once let you back in without re-reading every page.",
+    "Room one of this week's rundown, and the Beat Reporter nods at a skeleton clerk who reviews every pull request at exactly the same grinding pace — a one-line typo fix and a rewrite of the payments path both get the same stamp, no more, no less. This week's lead item retires that one-speed habit: as of 2.1.304, Claude's Code Review has three *review levels* — Quick, Standard, and Deep — set as a default for your whole organization and overridable on any single repository. One book covers the mechanic — the three tiers and where you set them; the other, why a consultant tunes review depth to each repo's stakes instead of reviewing everything the same. Answer the door for the key, then face Rote, the auditor who's never once changed his pace for anyone.",
   prompt:
-    "Your Claude Code conversation has grown past 200K tokens. You step away for about an hour, then come back to send another message. With idle compaction on, what happened while you were gone?",
+    "Your client runs Claude's Code Review across a GitHub organization whose repositories range from a throwaway docs site to the core payments service. How do the new review levels let you match review depth to each repo?",
   choices: [
-    { id: 'a', label: "The conversation was compacted just before its one-hour prompt cache expired — so your next message works on the condensed form instead of reprocessing all 200K tokens", correct: true },
-    { id: 'b', label: "Nothing — your next message reprocesses the full 200K-token conversation from scratch before Claude can reply, exactly as before", correct: false },
-    { id: 'c', label: "The conversation was deleted to free the cache, so you start the next message from an empty context", correct: false },
-    { id: 'd', label: "The session was locked after an hour idle and refuses new messages until you manually run `/compact`", correct: false },
+    { id: 'a', label: "Set an org-wide default — Quick, Standard, or Deep — and give individual high-stakes repos their own level, so each repo is reviewed at the depth its risk warrants", correct: true },
+    { id: 'b', label: "There's a single fixed review depth for the whole org; you can choose whether a review runs, but not how thorough it is", correct: false },
+    { id: 'c', label: "Depth is chosen fresh by the author on every pull request; there's no organization or per-repository setting", correct: false },
+    { id: 'd', label: "Only Deep is assignable; Quick and Standard run automatically and can't be pinned to a specific repo", correct: false },
   ],
-  passFeedback: "HIT! Idle compaction condenses a 200K+ token conversation that's sat idle ~54 minutes, just before its one-hour prompt cache expires — so your next message skips reprocessing the whole pile.",
-  failFeedback: "MISS! It doesn't reprocess everything, delete your context, or lock you out. It compacts *ahead* of the cache expiring so the next message stays cheap. Re-read Book 1.",
+  passFeedback: "HIT! Code Review now has three levels — Quick, Standard (the default), and Deep — set as an org-wide default and overridable per repository, so review depth matches each repo's stakes.",
+  failFeedback: "MISS! It isn't one fixed depth, a per-PR author choice, or Deep-only. Owners pick an org default and can override it on any single repo. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**The Cache Goes Cold — Why Idle Compaction Fires Before the Hour Is Up**
+      text: `**Three Speeds for the Reviewer — Quick, Standard, and Deep, Set Where It Counts**
 
-**The prompt cache is what keeps a long session cheap**
+**Code Review used to run at one depth**
 
-Claude Code holds a prompt cache of your conversation so each new message doesn't have to reprocess everything you've already said. That cache has a lifespan — about an hour. While it's warm, your next message rides on top of it: fast to answer, cheap to send, because the history is already loaded and doesn't need rebuilding from the first token.
+Code Review is the automated reviewer that reads your pull requests on GitHub and leaves comments — a second set of eyes on every change before it merges. Until now it ran at a single thoroughness: every PR, in every repository, got the same pass. A one-character config tweak and a reworking of the auth layer were read with identical weight, which meant either over-reviewing the trivial or under-reviewing the dangerous, with no way to tell the two apart.
 
-**When the cache expires, the whole pile comes back**
+**The three levels**
 
-The catch is idleness. Step away from a big conversation — say it's grown past 200K tokens — and leave it sitting for the better part of an hour. The cache quietly cools toward expiry. Come back after it's gone and send your next message, and there's no warm cache to build on: the entire 200K-token conversation has to be reprocessed from scratch before Claude can answer. That's slow, and on a metered plan you pay for every one of those tokens again.
+As of 2.1.304 the reviewer has three *review levels*. *Quick* is a fast, light pass — the right touch for low-stakes changes where you mainly want a sanity check. *Standard* is the default, the balanced middle you'd reach for on ordinary work. *Deep* is the thorough read, slower and more exhaustive, for the changes where a missed defect is expensive. The level doesn't decide *whether* a review happens; it decides *how hard* the reviewer looks.
 
-**Idle compaction beats the clock**
+**Where you set it**
 
-As of 2.1.299, the terminal watches for exactly this. A conversation past 200K tokens that's been idle for about 54 minutes — just shy of the one-hour cache lifetime — is compacted *before* the cache expires. The long history is condensed down while you're away, so when you return and type, your next message works on the smaller, compacted form instead of reprocessing the lot. You can move the 200K trigger with \`CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS\`, switch the whole thing off with \`"idleCompaction": false\` in settings.json or the \`Idle compaction\` row in \`/config\`, and the notice shown after a compaction tells you how to turn it off.
+An organization owner picks one of the three as the default for the whole org, so every repository inherits a sensible baseline without per-repo fiddling. From there, any individual repository can be given its own level, overriding the default where its stakes differ. The org default is the floor everyone stands on; the per-repo override is how you lift the handful of repos that deserve a harder look — or drop the ones that don't need one.
 
-> Takeaway: Idle compaction condenses a big, idle conversation just before its one-hour prompt cache expires — so your next message skips reprocessing the whole history instead of rebuilding it from scratch.`,
+> Takeaway: Code Review now has Quick, Standard, and Deep levels — an org-wide default you set once, overridable on any single repository, so the reviewer's thoroughness is a dial, not a constant.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Leave It On, Then Tune It — Why a Consultant Doesn't Eat the Reprocessing Tax**
+      text: `**Tune Depth to Stakes — and Make Sure No Repo Slips the Net**
 
-**The idle gap is the normal shape of the work**
+**Not every repo earns the same scrutiny**
 
-A consultant's session isn't a steady stream of typing. You brief Claude, it works, and then you're pulled into a call, a client ping, lunch, a hallway conversation — and the session sits. Come back an hour later to a big engagement conversation and, without this feature, every single return costs you a full reprocess of everything so far. The idle gap isn't an edge case you can design around; it's the rhythm of the job, and it used to be a tax you paid over and over.
+On a client's engagement the repositories in front of you are rarely equal. The marketing site, a scratch prototype, an internal tooling repo — a Quick pass is plenty; a Deep review there just burns time and buries the PR in comments nobody needed. The payments service, the auth layer, anything touching customer data or money — that's where you want Deep, where the cost of a slow, exhaustive read is trivial against the cost of a defect reaching production. Review levels let you say exactly that, repo by repo, instead of accepting one depth as a compromise that serves none of them well.
 
-**Why the default is to leave it on**
+**Set the default low, lift the dangerous**
 
-Idle compaction turns that return from expensive to cheap, and it does the work while you're away rather than while you're waiting on a reply. For most engagements you simply leave it on and never think about it: the payoff is a faster, cheaper first message every time you step back into a long session. The one thing to understand is that compaction *condenses* history — very old detail is summarized rather than kept word-for-word. That's a fair trade when the alternative is reprocessing a quarter-million tokens to preserve detail you weren't going to reread.
+The move most engagements want is a sensible org default — Standard, or even Quick for a portfolio of mostly low-risk repos — and then a deliberate list of the few repositories bumped to Deep. That keeps the everyday noise down while guaranteeing the changes that actually matter get the thorough treatment. It's the same instinct a good reviewer brings by hand; the levels just make it a setting the whole org inherits rather than a habit that lives in one person's head.
 
-**When to tune it, and when to hold it off**
+**Catch the repos you'd otherwise forget**
 
-Two knobs matter. If your sessions routinely run smaller than 200K but you still feel the reprocess sting after a break, lower the trigger with \`CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS\` so compaction kicks in sooner. And on the rare session where you need the full, verbatim history held across a long gap — a careful audit trail, a transcript you'll quote exactly — turn it off with \`"idleCompaction": false\` or the \`/config\` row, and accept the reprocessing cost as the price of a lossless record. The default serves speed; you override it when fidelity matters more.
+There's a companion admin option worth pairing with this: Code Review can be set to cover *every* repository in the GitHub organization, including ones created later, without anyone selecting them one at a time. On a growing client org that closes the gap where a brand-new repo ships for weeks with no automated review simply because nobody remembered to switch it on. Turn on org-wide coverage so nothing escapes the net, then use the levels to decide how hard each one is read.
 
-> Takeaway: Leave idle compaction on so returning to a long session stays cheap; lower its trigger when you still feel the sting, and switch it off only when you truly need the verbatim history preserved.`,
+> Takeaway: Default the org to a light level, lift only the high-stakes repos to Deep, and turn on org-wide coverage so a new repository is reviewed from day one instead of whenever someone remembers it.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `On a long client engagement my Claude Code conversation has grown past ____, and I keep stepping away for ____ at a time.
-Without idle compaction, every time I come back my next message has to ____ before Claude can even answer.
-So I leave idle compaction on: while I'm away it ____ just before the one-hour prompt cache expires.
-When my sessions run smaller but the sting is still there, I lower the trigger with ____ so it kicks in sooner.
-Only on a session where I need the full verbatim history do I turn it off and eat the reprocess on purpose.`,
+    template: `I'm standing up Claude's Code Review across a client's GitHub org, and the repos aren't equal.
+For the whole organization I set the default level to ____, so every repo inherits a sane baseline.
+On ____, where a missed defect is expensive, I override the default and pin it to ____.
+On the throwaway docs site I'd rather drop it to ____, since all I want there is a quick sanity check.
+Then I turn on ____ so a repo someone spins up next month is reviewed from day one, not whenever we remember it.`,
     blanks: [
-      { id: 'size', suggestions: ['200K tokens', 'a quarter-million tokens', 'the idle-compaction threshold'] },
-      { id: 'gap', suggestions: ['an hour', 'the better part of an hour', 'a long client call'] },
-      { id: 'cost', suggestions: ['reprocess the whole conversation', 'rebuild the entire context from scratch', 'reprocess all 200K tokens'] },
-      { id: 'action', suggestions: ['condenses the history', 'compacts the conversation', 'squeezes it down ahead of the cache expiring'] },
-      { id: 'knob', suggestions: ['`CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS`', 'the idle-compact minimum setting', 'a lower token threshold'] },
+      { id: 'default', suggestions: ['Standard', 'Quick', 'a light baseline level'] },
+      { id: 'critical-repo', suggestions: ['the payments service', 'the auth layer', 'anything touching customer data'] },
+      { id: 'deep', suggestions: ['Deep', 'the thorough review level', 'the most exhaustive pass'] },
+      { id: 'quick', suggestions: ['Quick', 'the fast, light pass', 'the lightest level'] },
+      { id: 'org-wide', suggestions: ['org-wide coverage of every repository', 'the review-every-repo admin option', 'automatic coverage of repos added later'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "Idle compaction in the terminal (Claude Code 2.1.299, `/config` row in 2.1.302): Claude Code keeps a prompt cache of your conversation, lifetime about an hour, so a new message doesn't reprocess everything already said. A conversation past 200K tokens left idle ~54 minutes is compacted just before that cache expires — so your next message works on the condensed form instead of reprocessing the whole 200K-token pile from scratch. It's about beating the cache clock while you're away, not reprocessing or deleting anything. Tune the 200K minimum with `CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS`; turn it off with `\"idleCompaction\": false` in settings.json or the Idle compaction row in `/config`; the post-compaction notice says how. For a consultant: the idle gap (calls, pings, lunch) is the rhythm of the job, so leave it on and get a cheap first message back every return. Compaction condenses old detail rather than keeping it verbatim — turn it off only when you need a lossless record.",
+        "Review levels in Code Review (Claude Code 2.1.304): Code Review, the automated reviewer that comments on your GitHub pull requests, used to run at one fixed thoroughness for everything. It now has three levels — Quick (a fast, light pass), Standard (the default, balanced), and Deep (a slow, exhaustive read). An org owner sets a default level for the whole organization, and any individual repository can be given its own level that overrides the default. The level changes how hard the reviewer looks, not whether it runs. For a consultant: not every repo earns the same scrutiny, so default the org to a light level and lift only the high-stakes repos (payments, auth, customer data) to Deep. A companion admin option covers every repository in the org, including ones added later, so no new repo ships unreviewed because someone forgot to enable it.",
       beats: [
-        { kind: 'say', text: "Lead item, room one. It's about what happens to a long conversation while you're *not* typing — the hour you're in a call and the session's just sitting there. As of 2.1.299 that idle time stopped being a tax." },
-        { kind: 'say', text: "Start with the cache. I keep a prompt cache of our conversation so each new message doesn't have to reprocess everything we've already said. It lasts about an hour. While it's warm, your next message rides on top of it — fast and cheap, because the history is already loaded." },
-        { kind: 'say', text: "Here's the trap. Let a big conversation — say past 200K tokens — sit idle for the better part of an hour, and that cache cools toward expiry. Come back after it's gone, send a message, and there's nothing warm to build on: the whole 200K-token pile gets reprocessed from the first token before I can answer. Slow, and you pay for every one of those tokens again." },
+        { kind: 'say', text: "Lead item, room one. It's about the automated reviewer — Code Review, the one that reads your pull requests on GitHub and leaves comments before anything merges. As of 2.1.304 it stopped treating every change the same." },
+        { kind: 'say', text: "Here's the old shape of it. The reviewer ran at one depth, full stop. A one-character typo fix and a rewrite of the payments path got read with exactly the same weight. So you were either over-reviewing the trivial stuff or under-reviewing the dangerous stuff — no way to aim the attention where it mattered." },
+        { kind: 'say', text: "Now there are three *review levels*. Quick is a fast, light pass — a sanity check for low-stakes changes. Standard is the default, the balanced middle for ordinary work. Deep is the slow, thorough read for changes where a missed defect gets expensive. Important bit: the level decides how *hard* the reviewer looks, not *whether* it looks at all." },
         {
           kind: 'choice',
-          prompt: "A 220K-token conversation has sat idle while you were on a client call. Idle compaction is on. When does it do its work — and on what?",
+          prompt: "An org owner wants a light default across the org but a harder look on the one repo that handles payments. What do the review levels let them do?",
           options: [
-            { id: 'before', label: "While you're away, just before the one-hour cache expires — it condenses the conversation so your next message skips the reprocess", correct: true, reaction: "Right. It beats the clock: compacts ahead of the cache expiring, while you're idle, so the message you send on your return rides a small, condensed history instead of rebuilding 220K tokens." },
-            { id: 'onsend', label: "The moment you send your next message — it reprocesses everything first, then compacts", correct: false, reaction: "That's the old cost it's avoiding. The whole point is that it fires *before* you return and *before* the cache dies — not as a reprocess at send time." },
-            { id: 'wipe', label: "It clears the conversation to free the cache, so you continue from empty", correct: false, reaction: "No — nothing is wiped. It condenses the history, keeping the thread; you don't lose the conversation, you lose the reprocessing bill." },
+            { id: 'both', label: "Set the org default to a light level, then override just the payments repo to Deep so it alone gets the exhaustive read", correct: true, reaction: "Exactly. The org default is the floor every repo inherits; the per-repo override is how you lift the handful that deserve more. Light everywhere, Deep where it counts." },
+            { id: 'onlyorg', label: "Only set one level for the whole org — there's no way to treat a single repo differently", correct: false, reaction: "Not quite. The org default is just the baseline. Any individual repository can be given its own level that overrides it — that's the whole point of per-repo." },
+            { id: 'perpr', label: "Nothing at the repo level — depth is picked fresh on each pull request by whoever opens it", correct: false, reaction: "No — it's not a per-PR author choice. Owners set an org default and override per repository. The depth is a setting the repo inherits, not something re-decided every PR." },
           ],
         },
-        { kind: 'say', text: "So that's the mechanic: a conversation past 200K tokens, idle about 54 minutes — just shy of the hour — gets compacted before the cache expires. Your next message works on the condensed form, not the full pile. You can move the 200K trigger with `CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS`, and turn it off entirely with `\"idleCompaction\": false` or the Idle compaction row in `/config`." },
-        { kind: 'say', text: "Why it matters for you: your day isn't steady typing. It's brief me, then a call, then a client ping, then lunch — the session sits idle constantly. Without this, every return to a big engagement conversation cost a full reprocess. Leave idle compaction on and that return is cheap, every time, for free — it works while you're away, not while you're waiting." },
-        { kind: 'say', text: "One honest caveat from the books: compaction *condenses*, so very old detail gets summarized rather than kept word-for-word. For almost everything that's the right trade. The exception is a session where you need the full verbatim history across a long gap — an audit trail, a transcript you'll quote exactly. Then turn it off and eat the reprocess on purpose. Grab the key — then face Coldcache, the warden who's never once let you back without re-reading every page." },
+        { kind: 'say', text: "So mechanically: org owner picks the default — Quick, Standard, or Deep — and every repo inherits it. Then any single repo can be pinned to its own level, overriding that default. The default is the floor; the override is how you raise or lower the exceptions." },
+        { kind: 'say', text: "Why it matters on an engagement: your client's repos aren't equal. The marketing site and a scratch prototype want Quick — a Deep review there just buries the PR in comments nobody asked for. The payments service, the auth layer, anything near customer money — that's Deep, because a slow read is nothing against a defect reaching production. Levels let you say that repo by repo." },
+        { kind: 'say', text: "One more thing to pair with it: there's an admin option to review *every* repository in the org, including ones spun up later, without picking them one by one. On a growing client org that closes the gap where a fresh repo ships unreviewed for weeks because nobody flipped the switch. Turn on org-wide coverage, then use the levels to set how hard each one's read. Grab the key — then face Rote, the auditor who's never once changed his pace for anyone." },
       ],
     },
   },
   battle: {
-    name: 'Coldcache, the Idle Warden',
+    name: 'Rote, the One-Depth Auditor',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a skeleton warden creaks upright beside an archive gone grey with dust, the cache behind him long cold* …you left… you always leave… and while you were gone the fire under your conversation died, as it always does… so now you read it again, all of it, every page from the first, before I let you back to work… what's this — a *compaction* that strikes before my cache goes cold? …then say true what fires while you're away, before I make you reprocess the whole pile once more.",
+    introLine: "*a skeleton clerk looks up from an endless ledger, stamping each page at the exact same grinding pace* …a typo, a rewrite of the vault door — all one to me… I read every change at the one speed I have ever had, no faster for the dangerous, no lighter for the trifling… you say there are now *three* speeds, and that I might be told which to use per repository?! …then say true how the levels are set, before I stamp another thousand pages the same.",
     tauntLines: [
-      "*rattles, gesturing at the towering stack* you'd tell me the squeeze waits for your *return* — that you reprocess the lot first and compact *after*?! no… it fires while you are gone, before the cache dies — your next message rides the condensed form, not the full pile…",
-      "*bones clatter, suddenly uncertain* you think it *wipes* the conversation to cool my cache — that you come back to nothing?! never… it condenses the history, it does not erase it — the thread survives, only the reprocessing bill dies…",
+      "*rattles, ledger snapping shut* you'd tell me a single depth rules the whole org and cannot be changed?! no… an owner sets a *default*, yes — but any one repository may be given its own level over the top of it…",
+      "*bones clatter* you think the author picks the depth fresh on every pull request?! never… it is no per-PR whim — the level is set for the org and overridden per repository, a setting the repo inherits…",
     ],
-    victoryLine: "*Coldcache lowers the great stack at last, the archive warm again* …it fires *before* my cache goes cold… past 200K tokens, idle an age, condensed while you're away… you need never re-read the whole pile to come back… take the key, operator, and let no idle hour tax you again.",
+    victoryLine: "*Rote sets down the stamp at last, sorting the ledger into three neat piles* …Quick for the trifles… Standard for the rest… Deep for the vault door… an org default, and a level per repository over it… I need never read all things the same again… take the key, operator, and aim the attention where it earns its keep.",
     questions: [
       {
         prompt:
-          "Your Claude Code conversation has grown past 200K tokens. You step away for about an hour, then come back to send another message. With idle compaction on, what happened while you were gone?",
+          "Your client runs Claude's Code Review across a GitHub organization whose repositories range from a throwaway docs site to the core payments service. How do the new review levels let you match review depth to each repo?",
         choices: [
-          { id: 'a', label: "The conversation was compacted just before its one-hour prompt cache expired — so your next message works on the condensed form instead of reprocessing all 200K tokens", correct: true },
-          { id: 'b', label: "Nothing — your next message reprocesses the full 200K-token conversation from scratch before Claude can reply, exactly as before", correct: false },
-          { id: 'c', label: "The conversation was deleted to free the cache, so you start the next message from an empty context", correct: false },
-          { id: 'd', label: "The session was locked after an hour idle and refuses new messages until you manually run `/compact`", correct: false },
+          { id: 'a', label: "Set an org-wide default — Quick, Standard, or Deep — and give individual high-stakes repos their own level, so each repo is reviewed at the depth its risk warrants", correct: true },
+          { id: 'b', label: "There's a single fixed review depth for the whole org; you can choose whether a review runs, but not how thorough it is", correct: false },
+          { id: 'c', label: "Depth is chosen fresh by the author on every pull request; there's no organization or per-repository setting", correct: false },
+          { id: 'd', label: "Only Deep is assignable; Quick and Standard run automatically and can't be pinned to a specific repo", correct: false },
         ],
-        passFeedback: "HIT! Idle compaction condenses a 200K+ token conversation that's sat idle ~54 minutes, just before its one-hour prompt cache expires — so your next message skips reprocessing the whole pile.",
-        failFeedback: "MISS! It doesn't reprocess everything, delete your context, or lock you out. It compacts *ahead* of the cache expiring so the next message stays cheap. Re-read Book 1.",
+        passFeedback: "HIT! Code Review now has three levels — Quick, Standard (the default), and Deep — set as an org-wide default and overridable per repository, so review depth matches each repo's stakes.",
+        failFeedback: "MISS! It isn't one fixed depth, a per-PR author choice, or Deep-only. Owners pick an org default and can override it on any single repo. Re-read Book 1.",
       },
     ],
   },

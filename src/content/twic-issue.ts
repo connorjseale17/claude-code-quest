@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-10-19',
+  publishDate: '2026-10-26',
   framing:
-    "This week in Claude, the throughline is the quiet economics of a long session — what your context costs, and seeing the bill before it lands. Idle compaction now condenses a big, idle conversation (200K+ tokens) just before its one-hour prompt cache expires, so coming back after an hour no longer means reprocessing the whole pile from scratch. The `CLAUDE_CODE_DISABLE_FILE_MENTIONS` environment variable turns an `@` file mention into a path Claude reads on demand instead of a full-contents paste, keeping context lean on a repo full of heavy files. And `/usage` now names the four levers that most inflate a session — max effort, workflows, always-on context, and large tool results — so you can see what's driving the spend instead of just watching the number climb.",
+    "This week in Claude, the throughline is matching the tool to the job — how hard to review, which model to run, and finally being able to see the controls at work. Code Review now has three levels — Quick, Standard, and Deep — set as an org-wide default and overridable per repository, so a throwaway docs site and the payments service no longer get the same pass. Claude Haiku 5.5 arrives as the cheapest, fastest small model yet, built for narrowly scoped, high-volume work like summaries, classification, and subagents, while Sonnet 5.5 and Opus 5.5 stay the choice for complex agentic coding. And the new `claude_code.safety_event` OpenTelemetry event prints a receipt for every tool call a permission rule, auto mode, a safety check, a hook, or the sandbox stopped, prompted on, or sent back — turning guardrails that fired silently into a queryable audit trail.",
 };

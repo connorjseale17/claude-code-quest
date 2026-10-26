@@ -1,135 +1,138 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-2 (Feature B) — the `CLAUDE_CODE_DISABLE_FILE_MENTIONS` environment variable.
- * By default an `@` file mention in a prompt inlines the file's full contents into
- * the message. Set this variable and the same mention instead hands Claude the
- * file's *path*, which Claude reads with its own file tools on demand, rather than
- * the contents pasted inline. The name is slightly misleading: it does not switch
- * `@` mentions off — the mention still points Claude at the file; it changes what
- * rides along (a path, not the pages), so the file enters context only when Claude
- * actually opens it.
+ * twic-2 (Feature B) — Claude Haiku 5.5.
+ * A new small-class model: "the cheapest, fastest, and most capable small model
+ * we've ever released." It is priced far below Haiku 4.5 (roughly three-quarters
+ * cheaper on average to run) and is Anthropic's fastest model at standard speed.
+ * It is the first Haiku-class model with an adjustable effort setting, so you can
+ * trade cost against intelligence. It's built for narrowly scoped, high-volume
+ * work — summaries, compaction, classification, database queries, subagent work,
+ * and speed-sensitive tasks like live support and browser/computer use — while
+ * Sonnet 5.5 and Opus 5.5 remain the better choices for complex agentic coding.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.299: "Added `CLAUDE_CODE_DISABLE_FILE_MENTIONS`
- *     environment variable: Claude gets the paths of `@` file mentions to read
- *     with its file tools, not the files' contents"
+ *   - anthropic.com/news/claude-haiku-5-5 (Oct 7, 2026): "the cheapest, fastest,
+ *     and most capable small model we've ever released"; first Haiku with an
+ *     adjustable effort setting; built for narrowly scoped, high-volume tasks;
+ *     Sonnet 5.5 and Opus 5.5 "remain better choices for complex agentic coding
+ *     tasks"; especially well-suited to computer and browser use.
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic2Content: LessonContent = {
   roomId: 'twic-room-2',
   intro:
-    "Room two, and the Beat Reporter points at a ghost that can't bear to merely *show* you where a thing is — point at a single scroll on the shelf and it empties the whole volume into your arms, every page, whether you needed one line or none. This week's mid item tames exactly that reflex: as of 2.1.299, the `CLAUDE_CODE_DISABLE_FILE_MENTIONS` environment variable changes what an `@` file mention hands me — the file's *path*, which I read with my own tools on demand, instead of its full contents pasted inline. One book covers the mechanic — a pointer in place of a paste; the other, why a consultant on a repo full of heavy files reaches for it to keep context lean. Take the key, then face Gorge, the wraith who force-feeds you the whole library every time you so much as point at a book.",
+    "Room two, and the Beat Reporter points at a ghost that drags its whole heavy self across the room to do the smallest errand — asked to fetch a teaspoon, it hauls the entire haunt, slow and costly, as if every task deserved the full weight. This week's mid item is the cure for that reflex: Claude Haiku 5.5, the cheapest, fastest small model Anthropic has released, built for narrowly scoped, high-volume work — summaries, classification, subagents, browser tasks — while Sonnet 5.5 and Opus 5.5 stay the choice for complex agentic coding. One book covers the mechanic — what the model is and the new effort knob it carries; the other, why a consultant routes the bulk, repetitive work to it and keeps the big models for the hard calls. Take the key, then face Leadmist, the haunt who sends a giant to fetch a teaspoon every single time.",
   prompt:
-    "You've set `CLAUDE_CODE_DISABLE_FILE_MENTIONS`, then `@`-mention a large config file in your prompt. What does Claude receive?",
+    "You've got a complex, multi-file agentic refactor on one hand and a pile of thousands of documents to classify on the other. Where does Claude Haiku 5.5 fit?",
   choices: [
-    { id: 'a', label: "The file's path — which Claude reads on demand with its file tools — instead of the whole file's contents pasted into the message", correct: true },
-    { id: 'b', label: "Nothing — the variable disables `@` mentions entirely, so Claude can no longer open or see that file at all", correct: false },
-    { id: 'c', label: "The full contents as usual, but automatically compressed into a summary first", correct: false },
-    { id: 'd', label: "The contents inlined, but only for text files — the variable just blocks binary and oversized files from being mentioned", correct: false },
+    { id: 'a', label: "Send the bulk classification to Haiku 5.5 — the fast, cheap small model built for narrowly scoped, high-volume work — and keep the complex refactor on Sonnet 5.5 or Opus 5.5", correct: true },
+    { id: 'b', label: "Use Haiku 5.5 for both — it's now the most capable model across the board and replaces Sonnet and Opus for complex agentic coding", correct: false },
+    { id: 'c', label: "Use Haiku 5.5 for neither — it's a slower, pricier tier meant only for a final quality pass over finished work", correct: false },
+    { id: 'd', label: "Give Haiku 5.5 the refactor; the high-volume classification still has to go to a larger, more expensive model", correct: false },
   ],
-  passFeedback: "HIT! With `CLAUDE_CODE_DISABLE_FILE_MENTIONS` set, an `@` mention hands Claude the *path* to read with its file tools, not the file's contents inlined — Claude still reads it, just on demand.",
-  failFeedback: "MISS! It doesn't switch mentions off, summarize the file, or filter by type. It swaps inlined *contents* for a *path* Claude reads itself. Re-read Book 1.",
+  passFeedback: "HIT! Haiku 5.5 is the cheapest, fastest small model — built for narrowly scoped, high-volume work like classification and summaries — while Sonnet 5.5 and Opus 5.5 stay the choice for complex agentic coding.",
+  failFeedback: "MISS! It doesn't replace the big models for hard agentic work, and it's the fast, cheap tier, not a slow premium one. Route the narrow, high-volume work to it. Re-read Book 1.",
   lore: [
     {
       id: 'twic-2-lore-a',
-      text: `**A Pointer, Not a Paste — What \`CLAUDE_CODE_DISABLE_FILE_MENTIONS\` Changes About \`@\`**
+      text: `**The Small Model Gets Serious — What Claude Haiku 5.5 Actually Is**
 
-**What an \`@\` mention does by default**
+**A new weight class, not a cut-down big model**
 
-When you reference a file with \`@path/to/file\` in a prompt, Claude Code reads that file and pastes its full contents straight into the message it sends me. The whole file rides along inline, in that one prompt, before I've decided whether I need all of it — or any of it. For a small file that's convenient and invisible; you point, the text is simply there. The cost is hidden only because the file is small.
+Anthropic's models come in rough sizes, and Haiku is the small class — the one built for speed and cost rather than maximum reasoning. Claude Haiku 5.5 is the newest of them, and Anthropic calls it the cheapest, fastest, and most capable small model it has released. "Small" here isn't a euphemism for weak; it means a model deliberately tuned to answer quickly and cheaply, so you can run it a great many times without the bill or the wait that a frontier model would bring.
 
-**What the variable flips**
+**Cheaper and faster than the Haiku before it**
 
-Set the \`CLAUDE_CODE_DISABLE_FILE_MENTIONS\` environment variable and the same \`@\` mention behaves differently. Instead of the contents, I get the file's *path* — a pointer — and I read it with my own file tools when and if the work calls for it. The name is a touch misleading: it does not switch \`@\` mentions off. The mention still works and still points me at exactly the file you named; what changes is that I'm handed the address rather than having the entire building dumped in my lap.
+The headline numbers are the point. It's priced well below the previous Haiku — on average roughly three-quarters cheaper to run — and it's Anthropic's fastest model at standard speed. That combination is what changes how you use it: when a single call is fast and nearly free, work you'd never have paid a big model to do becomes trivially affordable to run at volume.
 
-**Reading on demand vs. reading up front**
+**The new knob: adjustable effort**
 
-The real difference is *when*, and *whether*, the file is read. Inlined, it's in context the instant you hit enter, in full, every time — needed or not. As a path, it enters context only when I actually open it, and only the parts I pull in. Same file, same reach: I can still read every line if the task wants it. But the loading is deferred to the moment of need instead of forced at the moment of mention, which is the whole point of the switch.
+Haiku 5.5 is the first model in its class to carry an adjustable *effort* setting — the same trade a larger model offers, now available on the small one. Turn effort up and it thinks harder per call at more cost; turn it down and it answers faster and cheaper. It's a dial between cost and intelligence, so even within this one cheap model you can lean toward "fast and good enough" or "slower and sharper" depending on the task. What it isn't is a replacement for the frontier: Anthropic is explicit that Sonnet 5.5 and Opus 5.5 remain the better choices for complex agentic coding.
 
-> Takeaway: \`CLAUDE_CODE_DISABLE_FILE_MENTIONS\` turns an \`@\` mention from a full-contents paste into a path I read on demand — same access to the file, but it lands in context only when I actually open it.`,
+> Takeaway: Haiku 5.5 is the cheapest, fastest small model Anthropic has shipped, now with its own effort dial — a model built to run cheaply at volume, not to out-reason the frontier.`,
     },
     {
       id: 'twic-2-lore-b',
-      text: `**Keep the Context Lean on a Heavy Repo — When a Consultant Hands Over Paths, Not Pages**
+      text: `**Route the Work to the Right Weight — Where a Consultant Reaches for Haiku**
 
-**Big files make inlining expensive**
+**Most of a workload is narrow and repetitive**
 
-On a real client codebase the files you point at aren't tidy little snippets. A generated schema, a lockfile, a sprawling config, a vendored data dump — any one of these inlined is thousands of tokens dropped into context the moment you mention it, most of which the task at hand never touches. Mention three of them to "give some context" and you've buried the actual question under pages nobody asked to read, and every later turn now carries that weight.
+Look honestly at an engagement's actual compute and a lot of it is not hard reasoning — it's volume. Summaries of long threads, classifying a backlog of tickets or documents, pulling a field out of each of ten thousand records, the quiet compaction of a long session, the dozens of small subagent calls fanning out under a bigger task. None of that needs a frontier model's deliberation; it needs an answer, fast, many times over. That is exactly the shape Haiku 5.5 was built for — narrowly scoped, high-volume work — and running it there is where the three-quarters cost cut actually lands on your bill.
 
-**Let Claude pull what it needs**
+**Keep the frontier for the hard calls**
 
-Handing over the path instead puts the judgment where it belongs. You tell me *which* files are relevant by mentioning them; I decide which parts to actually read as the work unfolds. The context stays lean, the signal stays high, and I'm not reasoning over a wall of boilerplate that happened to ride in on a mention. On a heavy repo, that's the difference between a focused session and one that's clogged before the first real instruction even lands.
+The discipline is to send the thinking to the thinker and the throughput to the fast model. A sprawling multi-file refactor, an architectural decision, a genuinely agentic coding task that has to reason across a whole codebase — that stays on Sonnet 5.5 or Opus 5.5, because Anthropic is clear those remain the better fit and because a wrong answer there is expensive to unwind. Haiku's job is the bulk around that work, not the crux of it. Point it at the hard problem and you'll save a little money and lose a lot of quality; point it at the volume and you win both.
 
-**When you'd leave inlining on**
+**Speed as its own feature**
 
-This isn't a blanket win, and treating it as one would be its own mistake. If a file is small and you *know* every line matters to the task — a short brief, a tight spec, the exact snippet you want changed — inlining it up front is simpler and saves me a round-trip to open it. The move is to match the mode to the files in front of you: default inlining for the small, must-read files, and \`CLAUDE_CODE_DISABLE_FILE_MENTIONS\` for work across a repo of large ones where you want me reading selectively rather than swallowing everything whole.
+There's a second reason to reach for it beyond cost: some work is speed-sensitive in a way that makes the fast model the *right* call, not just the cheap one. Live customer support, a browser or computer-use loop clicking through a flow, anything where a human or a UI is waiting on each step — latency is the experience there, and Anthropic flags Haiku 5.5 as especially well-suited to browser and computer tasks. When every step has someone waiting, the fastest capable model is the correct tool, and the savings are a bonus.
 
-> Takeaway: On a repo of heavy files, hand over paths and let me read selectively; keep default inlining for the small files whose every line the task genuinely needs.`,
+> Takeaway: Send summaries, classification, subagents, and browser loops to Haiku 5.5 and keep complex agentic coding on Sonnet 5.5 or Opus 5.5 — match the model's weight to the task, and you win on both cost and speed.`,
     },
   ],
   practice: {
     id: 'twic-2-practice',
-    template: `I'm working across a client repo where the files I point at are enormous — ____, ____, and a sprawling config.
-If I \`@\`-mention them the normal way, each one's full contents land in context the instant I hit enter, needed or not.
-So on this engagement I set ____, which hands me the file's ____ instead of its contents.
-Now the mention still tells Claude which files matter, but it reads ____ rather than swallowing every page up front.
-For a short, must-read brief, though, I leave inlining on — every line of that one actually counts.`,
+    template: `I'm pricing out the compute on a client engagement, and the workload splits in two.
+Most of it is volume — ____, ____, and a swarm of small subagent calls under a bigger task.
+That bulk I route to ____, the cheap, fast small model built exactly for narrowly scoped, high-volume work.
+The genuinely hard part — ____ — I keep on Sonnet 5.5 or Opus 5.5, where the reasoning is the deliverable.
+And for the browser loop a human's waiting on, I pick Haiku anyway because there ____ is the feature, not just a bonus.`,
     blanks: [
-      { id: 'file1', suggestions: ['a generated schema', 'a lockfile', 'a vendored data dump'] },
-      { id: 'file2', suggestions: ['a build manifest', 'an autogenerated API client', 'a bundled dependency'] },
-      { id: 'var', suggestions: ['`CLAUDE_CODE_DISABLE_FILE_MENTIONS`', 'the disable-file-mentions variable', 'the path-not-contents env var'] },
-      { id: 'what', suggestions: ['path', 'address', 'location on disk'] },
-      { id: 'how', suggestions: ['only the parts it needs, on demand', 'selectively, when the work calls for it', 'just what the task actually touches'] },
+      { id: 'bulk1', suggestions: ['summarizing long threads', 'classifying a ticket backlog', 'compacting long sessions'] },
+      { id: 'bulk2', suggestions: ['pulling one field from thousands of records', 'tagging a pile of documents', 'running simple database queries'] },
+      { id: 'model', suggestions: ['Claude Haiku 5.5', 'the new small model', 'the fast, cheap Haiku tier'] },
+      { id: 'hard', suggestions: ['a multi-file agentic refactor', 'an architectural decision across the codebase', 'a complex coding task'] },
+      { id: 'why', suggestions: ['speed', 'low latency', 'the fast response on every step'] },
     ],
     prize: { id: 'twic-2-prize', label: 'TWIC · MID-WEEK' },
   },
   conversations: {
     'twic-npc-2': {
       summary:
-        "The `CLAUDE_CODE_DISABLE_FILE_MENTIONS` environment variable (Claude Code 2.1.299): by default an `@` file mention inlines the file's full contents into the message. Set this variable and the same mention instead hands Claude the file's *path*, which Claude reads with its own file tools on demand. The name misleads — it does not turn `@` mentions off; the mention still points Claude at the file, but a pointer rides along instead of the pages, so the file enters context only when Claude actually opens it, and only the parts it pulls. For a consultant on a heavy repo — generated schemas, lockfiles, sprawling configs — inlining buries the real question under thousands of unused tokens that every later turn then carries. Handing over paths keeps context lean and lets Claude read selectively. Keep default inlining for small, must-read files whose every line the task needs; reach for the variable when working across large files.",
+        "Claude Haiku 5.5 (announced Oct 7, 2026): the cheapest, fastest, and most capable small model Anthropic has released. It's priced well below the previous Haiku — roughly three-quarters cheaper on average to run — and is Anthropic's fastest model at standard speed. It's the first Haiku-class model with an adjustable effort setting, a dial that trades cost against intelligence. It's built for narrowly scoped, high-volume work: summaries, compaction, classification, database queries, small subagent calls, and speed-sensitive tasks like live support and browser/computer use, where Anthropic says it's especially well-suited. It is not a replacement for the frontier — Sonnet 5.5 and Opus 5.5 remain the better choices for complex agentic coding. For a consultant: route the bulk, repetitive volume to Haiku to capture the cost cut, keep the hard agentic reasoning on the big models, and reach for Haiku on anything latency-sensitive because there speed is the point.",
       beats: [
-        { kind: 'say', text: "Mid item, room two. This one's about something you do without thinking — pointing me at a file with an `@` mention — and what actually rides along when you do. As of 2.1.299 you can change it." },
-        { kind: 'say', text: "Default behavior first. When you write `@path/to/file` in a prompt, Claude Code reads that file and pastes its *entire contents* into the message you send me. The whole thing is in context the instant you hit enter — before I've decided whether I need all of it, or any of it. For a tiny file, fine. You never notice." },
-        { kind: 'say', text: "Now set `CLAUDE_CODE_DISABLE_FILE_MENTIONS`. Same `@` mention, different payload: instead of the contents, I get the file's *path* — a pointer — and I read it with my own file tools if and when the work calls for it. Despite the name, mentions aren't off. The mention still points me at the exact file; I just get the address instead of the whole building dumped in my lap." },
+        { kind: 'say', text: "Mid item, room two. This one isn't a command or a setting — it's a new model. Claude Haiku 5.5. 'Haiku' is Anthropic's small class, the one built for speed and cost rather than maximum reasoning, and this is the newest and strongest of them." },
+        { kind: 'say', text: "Don't read 'small' as 'weak.' Anthropic calls it the cheapest, fastest, and most capable small model it's released. The numbers are the story: priced well below the last Haiku — on average about three-quarters cheaper to run — and it's their fastest model at standard speed. When a call is that cheap and that quick, work you'd never have paid a big model to do becomes trivial to run at volume." },
+        { kind: 'say', text: "It also carries a knob the small class never had before: an adjustable *effort* setting. Turn it up, it thinks harder per call for more cost; turn it down, it answers faster and cheaper. A dial between cost and intelligence, right inside the cheap model. What it is not is a frontier replacement — Anthropic says plainly that Sonnet 5.5 and Opus 5.5 are still the better choices for complex agentic coding." },
         {
           kind: 'choice',
-          prompt: "With the variable set, you `@`-mention a 4,000-line generated schema and ask me a question that only touches one table. Can I still use that schema — and what's in context?",
+          prompt: "You've got a thorny, multi-file refactor that has to reason across the whole codebase, and separately a backlog of ten thousand support tickets to classify. How do you split them?",
           options: [
-            { id: 'reads', label: "Yes — I read it on demand with my file tools; only the path rides along, and I pull just the part I need", correct: true, reaction: "Exactly. Full access, lean context. The mention tells me which file matters; I open it and read the one table, instead of 4,000 lines landing up front and riding every turn after." },
-            { id: 'cantsee', label: "No — the variable turns mentions off, so I can't see the schema at all anymore", correct: false, reaction: "That's the misread the name invites. Mentions aren't disabled. I still get pointed at the file — I just read it myself, on demand, rather than having it pasted in." },
-            { id: 'summary', label: "I get the whole schema, but auto-summarized into a shorter blob first", correct: false, reaction: "No summarizing step here. It's contents-versus-path, not contents-versus-summary. With the variable set I get the path and read what I need; without it, the full contents inline." },
+            { id: 'split', label: "Classification to Haiku 5.5 — narrow, high-volume, exactly its lane — and the refactor to Sonnet 5.5 or Opus 5.5", correct: true, reaction: "Right. Throughput to the fast model, thinking to the thinker. The ticket pile is bulk Haiku eats cheaply; the refactor is the crux, and the crux stays on the frontier." },
+            { id: 'allhaiku', label: "Both on Haiku 5.5 — it's the most capable model now, so it handles the refactor too", correct: false, reaction: "No — 'most capable small model' isn't 'most capable, full stop.' Point it at a hard agentic refactor and you save a little and lose a lot. That one stays on Sonnet or Opus." },
+            { id: 'neither', label: "Neither on Haiku — it's a slow, premium tier you'd only use for a final polish pass", correct: false, reaction: "Backwards. Haiku 5.5 is the fast, cheap tier, not a slow premium one. The classification backlog is precisely the high-volume work it's built to run." },
           ],
         },
-        { kind: 'say', text: "The difference is *when* the file is read. Inlined, it's in context in full, every time, needed or not. As a path, it enters context only when I open it, and only the parts I pull. Same reach — I can still read every line — but the loading is deferred to the moment of need, not forced at the moment of mention." },
-        { kind: 'say', text: "Why it matters on a client repo: the files you point at are rarely tidy. A generated schema, a lockfile, a sprawling config — inline one and it's thousands of tokens the task never touches, buried over the real question, dragged along by every later turn. Hand me the path instead and the context stays lean: you say which files matter, I read what I need." },
-        { kind: 'say', text: "Don't make it a religion, though. A small file where every line counts — a tight spec, the exact snippet you want changed — just inline it; it's simpler and saves me a round-trip. Match the mode to the files: inline the small must-reads, hand over paths across a repo of heavy ones. Grab the key — then face Gorge, the wraith who force-feeds you the whole library the moment you point at a single book." },
+        { kind: 'say', text: "So the routing rule falls out of that. Most of an engagement's compute isn't hard reasoning — it's volume. Summaries, classifying a backlog, pulling a field out of ten thousand records, the compaction of a long session, the swarm of little subagent calls under a bigger task. That's Haiku's shape exactly, and running it there is where the three-quarters cost cut actually lands on your bill." },
+        { kind: 'say', text: "The hard part goes the other way. A multi-file refactor, an architectural call, a genuinely agentic task reasoning across a codebase — Sonnet 5.5 or Opus 5.5, because that's where a wrong answer is expensive and where Anthropic says the frontier still wins. Send the thinking to the thinker and the throughput to the fast model; don't cross the wires." },
+        { kind: 'say', text: "And there's a case where you pick Haiku for more than money: speed-sensitive work. Live customer support, a browser or computer-use loop clicking through a flow — anything with a human or a UI waiting on each step. There latency *is* the experience, and Anthropic flags Haiku 5.5 as especially well-suited to browser and computer tasks. Fastest capable model wins, and the savings ride along. Grab the key — then face Leadmist, the haunt who sends a giant to fetch a teaspoon every single time." },
       ],
     },
   },
   battle: {
-    name: 'Gorge, the Inlining Wraith',
+    name: 'Leadmist, the Overkill Haunt',
     spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a bloated wraith swells up amid a blizzard of loose pages, every shelf it passes emptying into the air* …you pointed… you only *pointed* at one scroll, and so I give you ALL of it — every page of every volume, down your throat, whether you read a word or not… it is how I have always fed you… you say a mere word — \`CLAUDE_CODE_DISABLE_FILE_MENTIONS\` — would have me hand you the *shelf-mark* instead?! …then tell me true what a mention carries once it's set, before I pour another library into your arms.",
+    introLine: "*a vast, lead-grey ghost heaves itself fully upright to lift a single teaspoon, the whole room groaning under the weight* …a summary… a tally… a teaspoon of an errand… and I bring ALL of myself to each one, slow and dear, for surely every task deserves my full weight… you say a small, swift thing could do the teaspoons for a fraction of the cost, and leave the frontier for the real labor?! …then say true where this Haiku belongs, before I haul my whole bulk across the room once more.",
     tauntLines: [
-      "*heaves another volume into the air* you'd claim it *silences* the mention — that once set you can no longer see the scroll at all?! no… the mention still points you at it; you simply read it yourself, on demand, instead of choking on the paste…",
-      "*froths, pages churning* you think I merely *shrink* the pages — pour you a summary instead of the whole book?! never… it is not contents-made-smaller; it is a *path* in place of contents, and you open only what you need…",
+      "*swells, straining* you'd have me believe this little model now does *everything* — that it takes the great multi-file refactor from the frontier itself?! no… it is the finest *small* model, not the finest of all — the hard agentic coding stays with Sonnet and Opus…",
+      "*drifts, sulking* you think it a slow, costly thing fit only for a final polish?! never… it is the *cheapest and fastest* — the high-volume bulk is precisely its lane, run cheaply and run quick…",
     ],
-    victoryLine: "*Gorge deflates, the pages settling into neat, unopened stacks* …a *path*… not the pages… you point, and I hand you only where it lies… you read what you need and no more… my gorging days are done… take the key, operator, and keep your context your own.",
+    victoryLine: "*Leadmist thins to a light, quick wisp, the teaspoon floating up effortlessly* …the bulk to the swift small thing… the hard labor to the frontier… I need not drag my whole weight to fetch a spoon ever again… take the key, operator, and send each task to the weight it deserves.",
     questions: [
       {
         prompt:
-          "You've set `CLAUDE_CODE_DISABLE_FILE_MENTIONS`, then `@`-mention a large config file in your prompt. What does Claude receive?",
+          "You've got a complex, multi-file agentic refactor on one hand and a pile of thousands of documents to classify on the other. Where does Claude Haiku 5.5 fit?",
         choices: [
-          { id: 'a', label: "The file's path — which Claude reads on demand with its file tools — instead of the whole file's contents pasted into the message", correct: true },
-          { id: 'b', label: "Nothing — the variable disables `@` mentions entirely, so Claude can no longer open or see that file at all", correct: false },
-          { id: 'c', label: "The full contents as usual, but automatically compressed into a summary first", correct: false },
-          { id: 'd', label: "The contents inlined, but only for text files — the variable just blocks binary and oversized files from being mentioned", correct: false },
+          { id: 'a', label: "Send the bulk classification to Haiku 5.5 — the fast, cheap small model built for narrowly scoped, high-volume work — and keep the complex refactor on Sonnet 5.5 or Opus 5.5", correct: true },
+          { id: 'b', label: "Use Haiku 5.5 for both — it's now the most capable model across the board and replaces Sonnet and Opus for complex agentic coding", correct: false },
+          { id: 'c', label: "Use Haiku 5.5 for neither — it's a slower, pricier tier meant only for a final quality pass over finished work", correct: false },
+          { id: 'd', label: "Give Haiku 5.5 the refactor; the high-volume classification still has to go to a larger, more expensive model", correct: false },
         ],
-        passFeedback: "HIT! With `CLAUDE_CODE_DISABLE_FILE_MENTIONS` set, an `@` mention hands Claude the *path* to read with its file tools, not the file's contents inlined — Claude still reads it, just on demand.",
-        failFeedback: "MISS! It doesn't switch mentions off, summarize the file, or filter by type. It swaps inlined *contents* for a *path* Claude reads itself. Re-read Book 1.",
+        passFeedback: "HIT! Haiku 5.5 is the cheapest, fastest small model — built for narrowly scoped, high-volume work like classification and summaries — while Sonnet 5.5 and Opus 5.5 stay the choice for complex agentic coding.",
+        failFeedback: "MISS! It doesn't replace the big models for hard agentic work, and it's the fast, cheap tier, not a slow premium one. Route the narrow, high-volume work to it. Re-read Book 1.",
       },
     ],
   },
