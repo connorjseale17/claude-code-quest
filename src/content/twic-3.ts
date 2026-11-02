@@ -1,134 +1,137 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-3 (Feature C) — the `claude_code.safety_event` OpenTelemetry event.
- * A new OpenTelemetry event that fires for each tool call one of Claude Code's
- * guardrails acted on: a permission rule, auto mode, a safety check, a hook, or
- * the sandbox — when it stopped, prompted on, or sent back that call. It is pure
- * observability: it records that a guardrail intervened, giving teams a telemetry
- * trail of every such decision. It does not itself block anything, it does not
- * fire on calls no guardrail touched, and it changes nothing about what the
- * existing guardrails do.
+ * twic-3 (Feature C) — the findings-by-severity card on the Code Review
+ * analytics page.
+ * Code Review is the automated reviewer that comments on GitHub pull requests.
+ * As of 2.1.316 its analytics page gained a findings-by-severity card that shows
+ * three things for the selected period: the total number of findings, a daily
+ * chart of findings stacked by severity, and each severity's own count. It is
+ * reporting/observability — it aggregates what the reviewer has been finding; it
+ * does not change how Code Review reviews or raise its strictness.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.307: "Added the `claude_code.safety_event`
- *     OpenTelemetry event for each tool call a permission rule, auto mode," a
- *     safety check, a hook or the sandbox stopped, prompted or sent back.
+ *   - Claude Code CHANGELOG 2.1.316: "[Code Review] Added a findings-by-severity
+ *     card to the Code Review analytics page, showing the period's total
+ *     findings, a daily chart stacked by severity, and each severity's count."
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic3Content: LessonContent = {
   roomId: 'twic-room-3',
   intro:
-    "Room three closes the issue, and the Beat Reporter gestures at a dragon coiled over a hoard that isn't gold — it's every action your guardrails ever stopped, each one swallowed into the dark the instant it was caught, so you never saw what was blocked or why. This week's final item drags that hoard into the light: as of 2.1.307, a new `claude_code.safety_event` fires for each tool call a permission rule, auto mode, a safety check, a hook, or the sandbox stopped, prompted on, or sent back. One book covers the mechanic — what the event is and exactly when it fires; the other, why a consultant reads the stream as an audit trail of the controls themselves. Claim the key, then face Mutewyrm, the warden who's kept every blocked action a secret until now.",
+    "Room three closes the issue, and the Beat Reporter points at a dragon slumped over a hoard that isn't treasure — it's every finding Code Review has ever raised, thousands of them, swept into one undifferentiated heap where a typo and a security hole sit side by side and no one can tell the shape of the pile or whether it's growing. This week's final item sorts that hoard into the light: as of 2.1.316, the Code Review analytics page has a *findings-by-severity* card showing the period's total findings, a daily chart stacked by severity, and each severity's own count. One book covers the mechanic — exactly what the card shows and that it only reports, never re-reviews; the other, why a consultant reads it as the trend line of a codebase's health. Claim the key, then face Heapwyrm, the dragon who's kept every finding in one unsorted pile until now.",
   prompt:
-    "Your team pipes Claude Code's OpenTelemetry data into its observability stack. What does the new `claude_code.safety_event` give you?",
+    "Your client asks whether code quality across the team's pull requests is getting better or worse. You open the new findings-by-severity card on the Code Review analytics page. What does it give you?",
   choices: [
-    { id: 'a', label: "A telemetry event for each tool call a permission rule, auto mode, a safety check, a hook, or the sandbox stopped, prompted on, or sent back — a record of every guardrail intervention, without changing what the guardrails do", correct: true },
-    { id: 'b', label: "A new guardrail that itself blocks risky tool calls, adding a fresh layer of restriction on top of your permission rules", correct: false },
-    { id: 'c', label: "An event on every single tool call Claude makes, whether or not any guardrail ever touched it", correct: false },
-    { id: 'd', label: "A setting that turns off the permission prompts, letting flagged tool calls through silently", correct: false },
+    { id: 'a', label: "The period's total findings, a daily chart of findings stacked by severity, and each severity's own count — so you can read the trend and the mix of serious-versus-minor issues at a glance", correct: true },
+    { id: 'b', label: "A raw, per-pull-request list of every comment Code Review has ever left, with no aggregation and no trend over time", correct: false },
+    { id: 'c', label: "A control that raises Code Review's strictness automatically whenever the finding count climbs", correct: false },
+    { id: 'd', label: "A single combined finding count for the period, with no breakdown by severity", correct: false },
   ],
-  passFeedback: "HIT! `claude_code.safety_event` is a telemetry event — it fires whenever a permission rule, auto mode, a safety check, a hook, or the sandbox stops, prompts on, or sends back a tool call, so you can see every guardrail intervention. It records; it doesn't change what the guardrails do.",
-  failFeedback: "MISS! It's not a new guardrail, not an event on every call, and it turns nothing off. It's an OpenTelemetry record of the interventions your existing guardrails already make. Re-read Book 1.",
+  passFeedback: "HIT! The card aggregates the period's findings three ways — a total, a daily chart stacked by severity, and a per-severity count — so you can see both the trend and the serious-versus-minor mix. It reports; it doesn't change how reviews run.",
+  failFeedback: "MISS! It isn't a raw per-PR list, it isn't a strictness control, and it isn't a single number without the severity split — it's an aggregated, severity-broken, day-by-day view of findings. Re-read Book 1.",
   lore: [
     {
       id: 'twic-3-lore-a',
-      text: `**A Receipt for Every Intervention — What \`claude_code.safety_event\` Records**
+      text: `**From a Heap of Comments to a Picture of the Week — The Findings-by-Severity Card**
 
-**Telemetry, in one line**
+**What Code Review already did, and what was missing**
 
-OpenTelemetry is the common standard for a tool to emit a stream of structured events — metrics, logs, traces — that you collect in an observability backend and query later. Claude Code already speaks it, so a team can pipe what a session does into the same dashboards it watches everything else on. As of 2.1.307 that stream carries a new kind of event: \`claude_code.safety_event\`.
+Code Review is the automated reviewer that reads your pull requests on GitHub and leaves comments before anything merges — a second set of eyes on every change. It's been doing that one PR at a time, which is exactly right in the moment but tells you nothing about the whole. A single review answers "is *this* change sound?" It can't answer "are we finding more problems this week than last, and are they the serious kind?"
 
-**When it fires**
+**The three things the card shows**
 
-The event fires for one specific moment: a tool call that one of Claude Code's guardrails acted on. Five things can trigger it — a permission rule, auto mode, a safety check, a hook, or the sandbox — and three things they can do to the call are captured: the guardrail *stopped* it, *prompted* on it (paused to ask), or *sent it back*. Put together, every time one of those five controls steps in front of a tool call, a \`safety_event\` is emitted that marks it happened. Calls that sail through untouched don't produce one; this is the record of the exceptions, not of all traffic.
+As of 2.1.316 the Code Review *analytics page* has a new *findings-by-severity* card that answers precisely that, three ways for the period you've selected. First, the *total findings* — one number for how much the reviewer flagged over the window. Second, a *daily chart stacked by severity* — each day a bar, each bar split into its severity bands, so the trend over the period and its makeup are visible at once. Third, *each severity's count* — the totals broken out, so you can see how many were the serious ones and how many the minor.
 
-**It records — it does not restrict**
+**It reports — it doesn't re-review**
 
-The crucial thing to be clear on is that this event changes nothing about what the guardrails do. The permission rule still blocks what it blocked; the sandbox still contains what it contained; auto mode still makes the same calls. \`safety_event\` is pure observability bolted alongside them — a receipt printed each time a control fires, not a new control. It doesn't block, doesn't prompt, doesn't turn anything off. It only makes the interventions that were already happening *visible* in the telemetry you already collect.
+The important boundary: this card is *observability*. It summarizes findings the reviewer already produced; it does not change how Code Review reviews, and it doesn't raise strictness because a number went up. Turning the dial on review depth is a different control entirely. This one is the instrument panel, not the engine — it shows you what's been happening without touching what happens next.
 
-> Takeaway: \`claude_code.safety_event\` is an OpenTelemetry event emitted whenever a permission rule, auto mode, a safety check, a hook, or the sandbox stops, prompts on, or sends back a tool call — a visible record of each guardrail intervention, not a new guardrail.`,
+> Takeaway: The findings-by-severity card turns Code Review's stream of per-PR comments into a period view — a total, a daily severity-stacked trend, and a per-severity count — and it only reports, it never re-reviews.`,
     },
     {
       id: 'twic-3-lore-b',
-      text: `**Read the Stream as an Audit Trail — Proof the Controls Are Working**
+      text: `**Read the Trend, Not Just the Ticket — What the Card Tells a Consultant**
 
-**The guardrails used to fire in the dark**
+**A number a client actually asks for**
 
-Before this, your controls worked but worked silently. A hook quietly sent a bad command back; the sandbox contained something; auto mode declined a call. Good outcomes, every one — and completely invisible after the fact. You couldn't answer a simple question like "what did our guardrails actually catch this week?" without reconstructing it by hand. On a client engagement, where the whole point of the controls is that they're trustworthy, that blind spot is exactly where you least want one.
+"Is our code getting better or worse?" is a question every engagement eventually faces, and until now the honest answer was a shrug and a pile of individual review comments. The findings-by-severity card gives you something you can put in front of a client: a line you can point to. A total that's trending down over successive periods, with the serious-severity band shrinking fastest, is a story about a team tightening up — and it's drawn from the reviewer's own record, not your impression of it.
 
-**Turn interventions into evidence**
+**Severity is where the signal lives**
 
-With a \`safety_event\` emitted on every intervention, the catching becomes a queryable record. You can see which hooks are firing and how often, what the sandbox is stopping, where auto mode draws its lines in practice, which permission rules bite most. That's an audit trail in the plainest sense: when a client asks how you keep an autonomous tool from doing something it shouldn't on their codebase, you don't describe the controls — you show the log of them working. For a regulated client, or any engagement where the control environment is part of the deliverable, that evidence is worth more than any assurance in a slide.
+The breakdown matters more than the headline count. A rising total made entirely of low-severity style nits is noise; a flat total that's quietly shifting *toward* the serious band is a warning you'd want to catch early. Because the card stacks each day by severity, that shift is visible as a change in the shape of the bars, not buried in an average. Read the mix, not just the height.
 
-**Tune from data, not from guessing**
+**Where it fits in the rhythm of an engagement**
 
-The same stream turns guardrail tuning from guesswork into measurement. A permission rule that fires on every routine edit is probably too tight and is training people to click through prompts; a sandbox tripping constantly on a legitimate workflow is a sign the policy needs a declared exception, not more friction. Watch the \`safety_event\` rate and you can see which controls are doing real work and which are just noise, and adjust the ones that aren't earning their interruption. The events don't change the guardrails — but they give you the ground truth to change them well.
+Treat the card as a standing check — a glance at the start of a week, a figure for the status update, a before-and-after when you introduce a new practice and want to show it moved the needle. The daily granularity also lets you line a spike up against something real: a big merge, a new contributor, a rushed release. The card won't tell you *why* a day spiked, but it tells you *which* day, which is where the investigation starts.
 
-> Takeaway: Treat the \`safety_event\` stream as an audit trail — proof to a client that the controls are working, and the evidence you need to tighten the guardrails that matter and loosen the ones that only nag.`,
+> Takeaway: Read the card as a health trend, not a scoreboard — watch the severity mix more than the raw count, and use the daily view to tie a spike to the event that caused it.`,
     },
   ],
   practice: {
     id: 'twic-3-practice',
-    template: `I'm running Claude Code for a regulated client, and they want proof the controls actually hold.
-So I pipe the OpenTelemetry stream into our observability stack and watch for ____.
-It fires every time ____ stops, prompts on, or sends back a tool call — a receipt for each intervention.
-When the client asks how we keep an autonomous tool in line, I don't describe the controls, I ____.
-And when I see one rule firing on ____, I read that as noise and loosen it, because the stream shows me what's actually earning its interruption.`,
+    template: `My client wants to know whether the team's code quality is actually improving, not just hear me say it.
+I open the ____ and point at the card drawn from Code Review's own record.
+Instead of reading comments one pull request at a time, I show them ____ for the quarter, then the daily chart so the trend is a line they can see.
+The part I lean on is ____, because a total that's quietly shifting toward the serious band matters more than one made of style nits.
+When one day spikes, I use the ____ to line it up against a real event — a rushed release, a new contributor — since the card shows the day, not the cause.
+I'm careful to frame it as ____: it reports what the reviewer found; it doesn't change how strict the reviews are.`,
     blanks: [
-      { id: 'event', suggestions: ['`claude_code.safety_event`', 'the safety-event telemetry', 'the guardrail-intervention event'] },
-      { id: 'source', suggestions: ['a permission rule, auto mode, a safety check, a hook, or the sandbox', 'one of the guardrails', 'a hook or the sandbox'] },
-      { id: 'prove', suggestions: ['show them the log of the guardrails working', 'point at the recorded interventions', 'hand them the audit trail'] },
-      { id: 'noise', suggestions: ['every routine edit', 'a perfectly ordinary workflow', 'harmless everyday calls'] },
+      { id: 'analytics-page', suggestions: ['Code Review analytics page', 'Code Review analytics dashboard', 'analytics page for Code Review'] },
+      { id: 'total', suggestions: ["the period's total findings", 'the one headline finding count', 'the total number of findings for the window'] },
+      { id: 'severity-mix', suggestions: ['the per-severity breakdown', 'the mix of serious versus minor findings', "each severity's own count"] },
+      { id: 'daily-view', suggestions: ['daily stacked-by-severity chart', 'day-by-day view', 'daily granularity of the chart'] },
+      { id: 'observability', suggestions: ['observability, not a strictness control', 'a report, not a change to how reviews run', 'a read-only trend view'] },
     ],
     prize: { id: 'twic-3-prize', label: 'TWIC · ISSUE COMPLETE' },
   },
   conversations: {
     'twic-npc-3': {
       summary:
-        "The `claude_code.safety_event` OpenTelemetry event (Claude Code 2.1.307): Claude Code already emits OpenTelemetry — a stream of structured events you collect in an observability backend. This new event fires for each tool call that one of five guardrails acted on — a permission rule, auto mode, a safety check, a hook, or the sandbox — when it stopped the call, prompted on it, or sent it back. Calls nothing touched don't produce one; it's the record of the exceptions. It is pure observability: it records that a guardrail intervened and changes nothing about what the guardrails do — it doesn't block, prompt, or turn anything off. For a consultant: the controls used to fire silently, so you couldn't say what they caught. Now the interventions are a queryable audit trail — proof to a client the controls work, and the data to tune them, tightening what matters and loosening rules that only nag.",
+        "The findings-by-severity card on the Code Review analytics page (Claude Code 2.1.316). Code Review is the automated reviewer that comments on your GitHub pull requests, one PR at a time. The new card aggregates what it's been finding across a selected period, three ways: the total findings, a daily chart of findings stacked by severity, and each severity's own count. It's observability — it summarizes findings the reviewer already produced; it does NOT change how reviews run or raise strictness when the count climbs (that's a separate control). For a consultant: it answers the 'is our code getting better or worse?' question with a line drawn from the reviewer's own record. Watch the severity mix more than the raw total — a count quietly shifting toward the serious band is the real warning. Use the daily granularity to line a spike up against a real event (a rushed release, a new contributor); the card shows which day spiked, not why.",
       beats: [
-        { kind: 'say', text: "Final item, room three — and it's about *seeing* your own guardrails work. Quick bit of plumbing first: Claude Code speaks OpenTelemetry, the common standard for emitting a stream of structured events you collect in a dashboard and query later. Your team can already pipe a session's activity into whatever it watches everything else on." },
-        { kind: 'say', text: "As of 2.1.307 that stream carries a new event: `claude_code.safety_event`. It fires at one specific moment — when a guardrail acts on a tool call. Five things can trigger it: a permission rule, auto mode, a safety check, a hook, or the sandbox. And three things they can do get captured: the call was *stopped*, *prompted* on, or *sent back*." },
-        { kind: 'say', text: "Read that carefully, because the scope is the point. It only fires on calls a guardrail touched — the exceptions, not every call. A tool call that sails straight through produces nothing. And it's a *receipt*, not a *rule*: it records that an intervention happened. It doesn't block, doesn't prompt, doesn't turn anything off. The guardrails do exactly what they did before; this just makes their work visible." },
+        { kind: 'say', text: "Final item, room three — and it closes the issue. It's a new card on the Code Review *analytics* page, landed in 2.1.316. Quick refresher: Code Review is the automated reviewer that reads your GitHub pull requests and leaves comments before anything merges." },
+        { kind: 'say', text: "Here's the gap it fills. Code Review works one PR at a time — perfect for 'is *this* change sound?' But it couldn't tell you anything about the whole: are we finding more problems this week than last, and are they the serious kind? The comments were there, just scattered across hundreds of pull requests." },
+        { kind: 'say', text: "The new *findings-by-severity* card pulls them together, three ways, for whatever period you pick. One: the *total findings* — a single number for the window. Two: a *daily chart stacked by severity* — a bar per day, each split into its severity bands, so you see the trend and its makeup at once. Three: *each severity's count* — broken out, so you know how many were serious and how many minor." },
         {
           kind: 'choice',
-          prompt: "A teammate says 'great, let's turn on safety_event — that'll add a layer that blocks the risky calls auto mode currently lets through.' What's off about that?",
+          prompt: "Over the last month the card's total findings is roughly flat — but the serious-severity band in the daily bars has been quietly growing while the low-severity band shrinks. What's the read?",
           options: [
-            { id: 'records', label: "It doesn't block anything — it's an observability event that *records* interventions. It won't change what auto mode allows; it just logs what the guardrails already catch", correct: true, reaction: "Exactly. It's a receipt, not a new guardrail. If you want auto mode to allow less, you change auto mode — safety_event only tells you, after the fact, what the existing controls did." },
-            { id: 'newrule', label: "Nothing's off — it is a new enforcement layer that adds restrictions on top of your permission rules", correct: false, reaction: "That's the misread. It enforces nothing. It's pure telemetry — a record of interventions your current guardrails make, with zero effect on what gets through." },
-            { id: 'everycall', label: "Only that it's noisy — it fires on literally every tool call, touched or not", correct: false, reaction: "Not quite — it's actually the opposite of noisy. It fires only on calls a guardrail acted on. The ones that pass clean produce no event at all." },
+            { id: 'warning', label: "A warning worth catching early — the mix is shifting toward serious issues even though the headline total isn't moving", correct: true, reaction: "Right. That's why the severity breakdown matters more than the count. A flat total hides a drift toward the serious band; the stacked bars make that drift visible. You'd want to act on this before the total ever moves." },
+            { id: 'fine', label: "Nothing to worry about — the total is flat, so quality is holding steady", correct: false, reaction: "That's the trap the card exists to defeat. A flat *total* can hide a dangerous shift in the *mix*. Serious findings rising while nits fall is a warning, not a steady state." },
+            { id: 'stricter', label: "It means Code Review automatically got stricter, which is why serious findings went up", correct: false, reaction: "No — the card only reports. It doesn't change how reviews run or raise strictness. The rising serious band is a real change in what's being found, not the tool tightening on its own." },
           ],
         },
-        { kind: 'say', text: "Here's why that matters on an engagement. Before this, your controls worked but worked in the dark. A hook sent a bad command back, the sandbox contained something, auto mode declined a call — all good outcomes, all invisible afterward. You couldn't even answer 'what did our guardrails catch this week?' without rebuilding it by hand. On a client's codebase, where the whole value of the controls is that they're trustworthy, that's the worst place to be blind." },
-        { kind: 'say', text: "Now the catching is a queryable record. Which hooks fire and how often, what the sandbox stops, where auto mode draws its lines in practice. So when a regulated client asks how you keep an autonomous tool from doing something it shouldn't, you don't *describe* the controls — you show the log of them working. For an engagement where the control environment is part of the deliverable, that evidence beats any assurance on a slide." },
-        { kind: 'say', text: "And the same stream lets you tune from data instead of guessing. A permission rule firing on every routine edit is too tight — it's just training people to click through prompts. A sandbox tripping on a legitimate workflow needs a declared exception, not more friction. Watch the event rate and you see which controls do real work and which only nag, then fix the ones that aren't earning the interruption. Take the key — then face Mutewyrm, the warden who's kept every blocked action a secret until now." },
+        { kind: 'say', text: "That exchange is the whole lesson: read the *mix*, not just the height. A rising total that's all style nits is noise. A flat total drifting toward the serious band is the thing to catch. Because each day is stacked by severity, that shift shows up as a change in the *shape* of the bars, not buried in an average." },
+        { kind: 'say', text: "One boundary to hold onto: this card is *observability*. It summarizes findings the reviewer already produced — it does not re-review anything, and it does not crank up strictness because a number climbed. Review depth is a different control. This is the instrument panel, not the engine." },
+        { kind: 'say', text: "Why a consultant leans on it: 'is our code getting better or worse?' is a question every engagement hits, and now you can answer with a line, not a shrug. A total trending down with the serious band shrinking fastest is a story about a team tightening up — and it's the reviewer's own record, not your impression. Glance at it weekly, drop a figure in the status update, show a before-and-after when you introduce a new practice." },
+        { kind: 'say', text: "And the daily granularity earns its keep when a day spikes: line it up against something real — a big merge, a rushed release, a new contributor finding their feet. The card tells you *which* day, not *why* — but which day is where the investigation starts. Claim the key, then face Heapwyrm, the dragon who's kept every finding in one unsorted pile until now." },
       ],
     },
   },
   battle: {
-    name: 'Mutewyrm, the Unlogged Warden',
+    name: 'Heapwyrm, Keeper of the Unsorted Pile',
     spriteKey: 'dragon',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a vast dragon stirs atop a hoard of swallowed deeds, each blocked command and caught overreach glinting briefly before it vanishes into the dark* …I have stopped a thousand reckless calls for you… prompted on a thousand more… sent the dangerous ones back… and never once let you *see* a single one… my catching has always been a secret kept in the dark… you claim a new event now prints a receipt for every one?! …then say true what that event is, before I swallow another deed unseen.",
+    introLine: "*a vast dragon stirs atop a mountain of findings, every one raised by the reviewer and none ever sorted — a typo glittering beside a gaping security hole, all one heap to its slitted eyes* …more findings for the hoard?… I keep them all, operator, every comment the reviewer ever flung, piled where none can tell the grave from the trivial… you say there is now a *card* that sorts my pile by day and by severity?! …then speak true what it shows me, before I bury another week in the dark.",
     tauntLines: [
-      "*coils tighten, smoke curling* you'd call it a new *warden* — a fresh wall that blocks the calls on its own?! no… it enforces nothing — it only *records* what my old wards already catch; the blocking is theirs, the receipt is new…",
-      "*exhales a grey plume* you think it marks your *every* call, touched or not, a deafening roar of them?! never… it fires only when a ward acts — stopped, prompted, sent back — the clean calls pass unrecorded…",
+      "*claws rake the heap* you'd tell me it dumps every comment back as a raw list, one pull request at a time?! no — it *aggregates*: a total, a daily trend, a count per severity, the whole pile made a picture…",
+      "*smoke curls* you think the card reached in and made the reviewer *stricter*, that it changed the reviewing itself?! wrong beast — it only *reports*; it shows what was found, it does not touch what happens next…",
     ],
-    victoryLine: "*Mutewyrm's hoard rises into the daylight, each swallowed deed now a plain, readable line* …a receipt for every intervention… permission rule, auto mode, safety check, hook, sandbox… stopped, prompted, sent back, all of it *seen* at last… no more catching in the dark… take the key, operator, and read the record of your own defenses.",
+    victoryLine: "*Heapwyrm rears back as the hoard sorts itself into neat daily bands before its eyes, serious apart from slight* …so my pile has a *shape* at last… a total, a day-by-day trend, each severity told from the next… and it only shows, never re-reviews… take the key, operator, and read the mix, not the mountain.",
     questions: [
       {
         prompt:
-          "Your team pipes Claude Code's OpenTelemetry data into its observability stack. What does the new `claude_code.safety_event` give you?",
+          "Your client asks whether code quality across the team's pull requests is getting better or worse. You open the new findings-by-severity card on the Code Review analytics page. What does it give you?",
         choices: [
-          { id: 'a', label: "A telemetry event for each tool call a permission rule, auto mode, a safety check, a hook, or the sandbox stopped, prompted on, or sent back — a record of every guardrail intervention, without changing what the guardrails do", correct: true },
-          { id: 'b', label: "A new guardrail that itself blocks risky tool calls, adding a fresh layer of restriction on top of your permission rules", correct: false },
-          { id: 'c', label: "An event on every single tool call Claude makes, whether or not any guardrail ever touched it", correct: false },
-          { id: 'd', label: "A setting that turns off the permission prompts, letting flagged tool calls through silently", correct: false },
+          { id: 'a', label: "The period's total findings, a daily chart of findings stacked by severity, and each severity's own count — so you can read the trend and the mix of serious-versus-minor issues at a glance", correct: true },
+          { id: 'b', label: "A raw, per-pull-request list of every comment Code Review has ever left, with no aggregation and no trend over time", correct: false },
+          { id: 'c', label: "A control that raises Code Review's strictness automatically whenever the finding count climbs", correct: false },
+          { id: 'd', label: "A single combined finding count for the period, with no breakdown by severity", correct: false },
         ],
-        passFeedback: "HIT! `claude_code.safety_event` is a telemetry event — it fires whenever a permission rule, auto mode, a safety check, a hook, or the sandbox stops, prompts on, or sends back a tool call, so you can see every guardrail intervention. It records; it doesn't change what the guardrails do.",
-        failFeedback: "MISS! It's not a new guardrail, not an event on every call, and it turns nothing off. It's an OpenTelemetry record of the interventions your existing guardrails already make. Re-read Book 1.",
+        passFeedback: "HIT! The card aggregates the period's findings three ways — a total, a daily chart stacked by severity, and a per-severity count — so you can see both the trend and the serious-versus-minor mix. It reports; it doesn't change how reviews run.",
+        failFeedback: "MISS! It isn't a raw per-PR list, it isn't a strictness control, and it isn't a single number without the severity split — it's an aggregated, severity-broken, day-by-day view of findings. Re-read Book 1.",
       },
     ],
   },

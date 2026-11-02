@@ -1,138 +1,144 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — review levels in Code Review.
- * Claude's Code Review (the automated reviewer that comments on GitHub pull
- * requests) gained three review levels: Quick, Standard (the default), and Deep.
- * An organization owner sets a default level for the whole org, and individual
- * repositories can be given their own level, so review depth is matched to a
- * repo's stakes instead of one depth applying everywhere. A separate admin
- * option lets Code Review cover every repository in a GitHub organization,
- * including repos added later, without selecting them one at a time.
+ * twic-1 (Feature A) — permissions.blockWritesOutsideWorkingDirectories.
+ * A new Claude Code setting: with it on, the Write, Edit, and NotebookEdit tools
+ * refuse any path outside the session's working directories, in EVERY permission
+ * mode — so even auto mode or bypassPermissions can't edit a file outside the
+ * project. It is the write-side companion to the existing
+ * permissions.blockReadsOutsideWorkingDirectories setting. It governs Claude's
+ * three structured file-editing tools; it does not itself rewrite what shell
+ * commands may do.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.304: "Added review levels to Code Review:
- *     Owners choose Quick, Standard (the default), or Deep for the organization"
- *     and individual repositories can be given their own level.
- *   - Claude Code CHANGELOG 2.1.304: "Added an option in Code Review admin
- *     settings to review every repository in a GitHub organization," including
- *     ones added later, without selecting them one by one.
+ *   - Claude Code CHANGELOG 2.1.314: "Added
+ *     `permissions.blockWritesOutsideWorkingDirectories`: Write, Edit and
+ *     NotebookEdit refuse paths outside the working directories in every
+ *     permission mode."
+ *   - The read-side companion setting
+ *     `permissions.blockReadsOutsideWorkingDirectories` is referenced in the
+ *     2.1.310 and 2.1.311 changelog entries as an existing option.
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room one of this week's rundown, and the Beat Reporter nods at a skeleton clerk who reviews every pull request at exactly the same grinding pace — a one-line typo fix and a rewrite of the payments path both get the same stamp, no more, no less. This week's lead item retires that one-speed habit: as of 2.1.304, Claude's Code Review has three *review levels* — Quick, Standard, and Deep — set as a default for your whole organization and overridable on any single repository. One book covers the mechanic — the three tiers and where you set them; the other, why a consultant tunes review depth to each repo's stakes instead of reviewing everything the same. Answer the door for the key, then face Rote, the auditor who's never once changed his pace for anyone.",
+    "Room one of this week's rundown, and the Beat Reporter tips her head at a skeleton scribe scratching ink onto every wall of the keep — the ledger he was given, sure, but also the neighbour's door, the stairwell, the floor of a room he has no business in. This week's lead item draws the line he never would: as of 2.1.314, `permissions.blockWritesOutsideWorkingDirectories` makes Claude's file-editing tools refuse any path outside your project — in *every* permission mode, not just the cautious ones. One book covers the mechanic — which tools it fences and why \"every mode\" is the whole point; the other, why a consultant pins this on before they ever touch a client's machine. Answer the door for the key, then face Scrawl, the scribe who has never once stayed inside the lines.",
   prompt:
-    "Your client runs Claude's Code Review across a GitHub organization whose repositories range from a throwaway docs site to the core payments service. How do the new review levels let you match review depth to each repo?",
+    "You're setting Claude Code up on a client's laptop and you want a hard guarantee that Claude's file edits stay inside the project folder — even if a teammate later flips the session into bypassPermissions. What does `permissions.blockWritesOutsideWorkingDirectories` do?",
   choices: [
-    { id: 'a', label: "Set an org-wide default — Quick, Standard, or Deep — and give individual high-stakes repos their own level, so each repo is reviewed at the depth its risk warrants", correct: true },
-    { id: 'b', label: "There's a single fixed review depth for the whole org; you can choose whether a review runs, but not how thorough it is", correct: false },
-    { id: 'c', label: "Depth is chosen fresh by the author on every pull request; there's no organization or per-repository setting", correct: false },
-    { id: 'd', label: "Only Deep is assignable; Quick and Standard run automatically and can't be pinned to a specific repo", correct: false },
+    { id: 'a', label: "Makes the Write, Edit, and NotebookEdit tools refuse any path outside the working directories in every permission mode — so even auto or bypassPermissions can't edit a file outside the project", correct: true },
+    { id: 'b', label: "Confines edits to the project only while you're in default mode; switch to Accept Edits or bypassPermissions and the fence drops away", correct: false },
+    { id: 'c', label: "Stops Claude from reading any file outside the working directories, so it can't see a config in your home folder", correct: false },
+    { id: 'd', label: "Automatically deletes any file Claude creates outside the working directories, to keep the project folder clean", correct: false },
   ],
-  passFeedback: "HIT! Code Review now has three levels — Quick, Standard (the default), and Deep — set as an org-wide default and overridable per repository, so review depth matches each repo's stakes.",
-  failFeedback: "MISS! It isn't one fixed depth, a per-PR author choice, or Deep-only. Owners pick an org default and can override it on any single repo. Re-read Book 1.",
+  passFeedback: "HIT! With the setting on, Write, Edit, and NotebookEdit refuse out-of-bounds paths in every permission mode — a boundary that holds even under bypassPermissions, not a mode you can slip past.",
+  failFeedback: "MISS! It isn't mode-dependent, it isn't about reads, and it doesn't delete anything — it refuses out-of-bounds writes from the file-editing tools in every mode. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**Three Speeds for the Reviewer — Quick, Standard, and Deep, Set Where It Counts**
+      text: `**A Fence That Doesn't Come Down When You Change Gears — Writes Stay Inside the Project**
 
-**Code Review used to run at one depth**
+**What "working directories" means here**
 
-Code Review is the automated reviewer that reads your pull requests on GitHub and leaves comments — a second set of eyes on every change before it merges. Until now it ran at a single thoroughness: every PR, in every repository, got the same pass. A one-character config tweak and a reworking of the auth layer were read with identical weight, which meant either over-reviewing the trivial or under-reviewing the dangerous, with no way to tell the two apart.
+When you start Claude Code, it has a set of *working directories* — the project folder you opened plus anything you added with \`--add-dir\`. That set is the yard Claude is meant to play in. Until now, whether Claude's edits could stray outside that yard depended on your permission mode and on you catching it: a cautious mode asked before an odd path, but a looser mode would let a write to \`~/.zshrc\` or a sibling project slide through.
 
-**The three levels**
+**What the setting changes**
 
-As of 2.1.304 the reviewer has three *review levels*. *Quick* is a fast, light pass — the right touch for low-stakes changes where you mainly want a sanity check. *Standard* is the default, the balanced middle you'd reach for on ordinary work. *Deep* is the thorough read, slower and more exhaustive, for the changes where a missed defect is expensive. The level doesn't decide *whether* a review happens; it decides *how hard* the reviewer looks.
+As of 2.1.314, \`permissions.blockWritesOutsideWorkingDirectories\` turns that into a hard rule. With it on, the three tools Claude uses to change files — *Write*, *Edit*, and *NotebookEdit* — refuse outright any path that lands outside the working directories. There's no prompt to approve and no mode that waves it through. The refusal is the whole behaviour: the tool simply won't target a file beyond the fence.
 
-**Where you set it**
+**Why "in every permission mode" is the point**
 
-An organization owner picks one of the three as the default for the whole org, so every repository inherits a sensible baseline without per-repo fiddling. From there, any individual repository can be given its own level, overriding the default where its stakes differ. The org default is the floor everyone stands on; the per-repo override is how you lift the handful of repos that deserve a harder look — or drop the ones that don't need one.
+The phrase that matters is *every permission mode*. Permission modes — default, Accept Edits, auto, bypassPermissions — are a dial for how much Claude does without asking, and bypassPermissions is the setting that normally means "stop asking me anything." This boundary sits *above* that dial. Even in bypassPermissions, even in auto, the file-editing tools still can't write outside the project. It's the write-side twin of \`blockReadsOutsideWorkingDirectories\`, which already fenced *reads* the same way.
 
-> Takeaway: Code Review now has Quick, Standard, and Deep levels — an org-wide default you set once, overridable on any single repository, so the reviewer's thoroughness is a dial, not a constant.`,
+**What it fences, and what it doesn't**
+
+Be precise about scope: it governs Claude's structured file-editing tools. It's the editor's reach that's confined to the project, not a claim that nothing on the machine can ever change.
+
+> Takeaway: \`blockWritesOutsideWorkingDirectories\` makes Claude's file edits refuse any path outside the project in every mode — a boundary that outranks the permission dial instead of riding on it.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Tune Depth to Stakes — and Make Sure No Repo Slips the Net**
+      text: `**Set the Blast Radius Before You Trust the Driver — Why Consultants Pin This On First**
 
-**Not every repo earns the same scrutiny**
+**The client-laptop problem**
 
-On a client's engagement the repositories in front of you are rarely equal. The marketing site, a scratch prototype, an internal tooling repo — a Quick pass is plenty; a Deep review there just burns time and buries the PR in comments nobody needed. The payments service, the auth layer, anything touching customer data or money — that's where you want Deep, where the cost of a slow, exhaustive read is trivial against the cost of a defect reaching production. Review levels let you say exactly that, repo by repo, instead of accepting one depth as a compromise that serves none of them well.
+On an engagement you are often running Claude Code on hardware that isn't yours, beside files that have nothing to do with the job: the client's other repos, their dotfiles, credentials cached in a home folder. The risk isn't that Claude is malicious — it's that one loose instruction, or one teammate who flipped to bypassPermissions for speed, turns "edit the proposal site" into an edit three directories over. A mode-based safeguard only holds as long as everyone stays in the careful mode.
 
-**Set the default low, lift the dangerous**
+**A guarantee you can state out loud**
 
-The move most engagements want is a sensible org default — Standard, or even Quick for a portfolio of mostly low-risk repos — and then a deliberate list of the few repositories bumped to Deep. That keeps the everyday noise down while guaranteeing the changes that actually matter get the thorough treatment. It's the same instinct a good reviewer brings by hand; the levels just make it a setting the whole org inherits rather than a habit that lives in one person's head.
+This setting lets you make a promise that doesn't depend on anyone's discipline. Switch it on at the start and you can tell the client, truthfully, that Claude's edits are confined to the project folder no matter which mode the session is in — including the fast one. That's the difference between "we're being careful" and "the tool can't do otherwise," and it's the second kind that survives a security review. Pair it with the read-side setting when the sensitivity cuts both ways and you've fenced both what Claude can see and what it can change.
 
-**Catch the repos you'd otherwise forget**
+**Where the fence line goes**
 
-There's a companion admin option worth pairing with this: Code Review can be set to cover *every* repository in the GitHub organization, including ones created later, without anyone selecting them one at a time. On a growing client org that closes the gap where a brand-new repo ships for weeks with no automated review simply because nobody remembered to switch it on. Turn on org-wide coverage so nothing escapes the net, then use the levels to decide how hard each one is read.
+The practical move is to open exactly the directories the work needs and no more, then turn the block on. If a later task genuinely needs a neighbouring folder, you add it deliberately with \`--add-dir\` — a conscious widening of the yard, logged in how you launched the session, rather than a silent reach. The narrower you draw the working directories, the more this setting is worth.
 
-> Takeaway: Default the org to a light level, lift only the high-stakes repos to Deep, and turn on org-wide coverage so a new repository is reviewed from day one instead of whenever someone remembers it.`,
+> Takeaway: Decide Claude's blast radius before you trust its driving — open only the directories the job needs, turn the write-block on, and you've turned "be careful" into a boundary the tool enforces for you.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `I'm standing up Claude's Code Review across a client's GitHub org, and the repos aren't equal.
-For the whole organization I set the default level to ____, so every repo inherits a sane baseline.
-On ____, where a missed defect is expensive, I override the default and pin it to ____.
-On the throwaway docs site I'd rather drop it to ____, since all I want there is a quick sanity check.
-Then I turn on ____ so a repo someone spins up next month is reviewed from day one, not whenever we remember it.`,
+    template: `I'm setting Claude Code up on a client's laptop, and their other projects and dotfiles are all over this machine.
+First I open only ____ as the working directory, so the yard is exactly the job and nothing more.
+Then I turn on ____, so Claude's file edits refuse any path outside it — and here's the part I'll tell the client: that holds in ____, not just the cautious modes.
+If a later task genuinely needs the shared assets folder next door, I widen the yard on purpose with ____ rather than letting an edit wander there silently.
+And because their numbers are sensitive to read as well as to change, I pair it with ____.`,
     blanks: [
-      { id: 'default', suggestions: ['Standard', 'Quick', 'a light baseline level'] },
-      { id: 'critical-repo', suggestions: ['the payments service', 'the auth layer', 'anything touching customer data'] },
-      { id: 'deep', suggestions: ['Deep', 'the thorough review level', 'the most exhaustive pass'] },
-      { id: 'quick', suggestions: ['Quick', 'the fast, light pass', 'the lightest level'] },
-      { id: 'org-wide', suggestions: ['org-wide coverage of every repository', 'the review-every-repo admin option', 'automatic coverage of repos added later'] },
+      { id: 'project-dir', suggestions: ['the proposal-site project folder', 'just the repo we were hired to build', 'only the engagement directory'] },
+      { id: 'the-setting', suggestions: ['permissions.blockWritesOutsideWorkingDirectories', 'the write-block setting', 'the out-of-bounds write fence'] },
+      { id: 'every-mode', suggestions: ['every permission mode, including bypassPermissions', 'auto and bypassPermissions too', 'the fast mode as well as the careful ones'] },
+      { id: 'add-dir', suggestions: ['--add-dir', 'a deliberate added directory', 'a logged widening of the working directories'] },
+      { id: 'read-block', suggestions: ['blockReadsOutsideWorkingDirectories', 'the read-side companion setting', 'the fence on what Claude can read'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "Review levels in Code Review (Claude Code 2.1.304): Code Review, the automated reviewer that comments on your GitHub pull requests, used to run at one fixed thoroughness for everything. It now has three levels — Quick (a fast, light pass), Standard (the default, balanced), and Deep (a slow, exhaustive read). An org owner sets a default level for the whole organization, and any individual repository can be given its own level that overrides the default. The level changes how hard the reviewer looks, not whether it runs. For a consultant: not every repo earns the same scrutiny, so default the org to a light level and lift only the high-stakes repos (payments, auth, customer data) to Deep. A companion admin option covers every repository in the org, including ones added later, so no new repo ships unreviewed because someone forgot to enable it.",
+        "permissions.blockWritesOutsideWorkingDirectories (Claude Code 2.1.314): a setting that makes Claude's three file-editing tools — Write, Edit, and NotebookEdit — refuse any path outside the session's working directories (the project folder plus anything added with --add-dir). The headline is 'in every permission mode': even auto and bypassPermissions, the mode that normally stops Claude asking anything, still can't write outside the project. It's the write-side companion to the existing blockReadsOutsideWorkingDirectories. It fences the file-editing tools' reach; it isn't a claim that nothing on the machine can change. For a consultant: on a client's laptop surrounded by their other repos and dotfiles, this turns 'we're being careful' into a boundary the tool enforces regardless of which mode a teammate switched into — open only the directories the job needs, turn the block on, and widen deliberately with --add-dir if a later task truly needs it.",
       beats: [
-        { kind: 'say', text: "Lead item, room one. It's about the automated reviewer — Code Review, the one that reads your pull requests on GitHub and leaves comments before anything merges. As of 2.1.304 it stopped treating every change the same." },
-        { kind: 'say', text: "Here's the old shape of it. The reviewer ran at one depth, full stop. A one-character typo fix and a rewrite of the payments path got read with exactly the same weight. So you were either over-reviewing the trivial stuff or under-reviewing the dangerous stuff — no way to aim the attention where it mattered." },
-        { kind: 'say', text: "Now there are three *review levels*. Quick is a fast, light pass — a sanity check for low-stakes changes. Standard is the default, the balanced middle for ordinary work. Deep is the slow, thorough read for changes where a missed defect gets expensive. Important bit: the level decides how *hard* the reviewer looks, not *whether* it looks at all." },
+        { kind: 'say', text: "Lead item, room one. It's a permissions setting with a mouthful of a name — `blockWritesOutsideWorkingDirectories` — and it landed in 2.1.314. Short version: it decides whether Claude can edit a file that lives outside your project." },
+        { kind: 'say', text: "Start with 'working directories.' When you launch Claude Code it has a yard it's meant to stay in — the folder you opened, plus anything you tacked on with `--add-dir`. The question this setting answers is what happens when an edit points *outside* that yard." },
+        { kind: 'say', text: "Three tools do Claude's actual file-changing: Write, Edit, and NotebookEdit. Turn this setting on, and all three flatly refuse a path outside the working directories. No prompt to approve it, no 'are you sure' — the tool just won't aim there. The refusal is the feature." },
+        { kind: 'say', text: "Now the part that makes it worth teaching. It holds in *every permission mode*. Remember the modes are a dial for how much Claude does without asking, and bypassPermissions is the one that means 'stop asking me things.' This boundary sits above that dial — even in bypassPermissions, even in auto, the edit outside the project still gets refused." },
         {
           kind: 'choice',
-          prompt: "An org owner wants a light default across the org but a harder look on the one repo that handles payments. What do the review levels let them do?",
+          prompt: "A teammate flips the session into bypassPermissions to move faster, then asks Claude to 'tidy up the config.' Claude goes to edit a file two folders up, outside the project. With this setting on, what happens?",
           options: [
-            { id: 'both', label: "Set the org default to a light level, then override just the payments repo to Deep so it alone gets the exhaustive read", correct: true, reaction: "Exactly. The org default is the floor every repo inherits; the per-repo override is how you lift the handful that deserve more. Light everywhere, Deep where it counts." },
-            { id: 'onlyorg', label: "Only set one level for the whole org — there's no way to treat a single repo differently", correct: false, reaction: "Not quite. The org default is just the baseline. Any individual repository can be given its own level that overrides it — that's the whole point of per-repo." },
-            { id: 'perpr', label: "Nothing at the repo level — depth is picked fresh on each pull request by whoever opens it", correct: false, reaction: "No — it's not a per-PR author choice. Owners set an org default and override per repository. The depth is a setting the repo inherits, not something re-decided every PR." },
+            { id: 'refused', label: "The edit is refused — the boundary holds in bypassPermissions just like every other mode", correct: true, reaction: "Right. That's the whole point of 'every permission mode.' bypassPermissions stops the prompts, but it doesn't lower this fence. The out-of-bounds edit is refused regardless." },
+            { id: 'allowed', label: "The edit goes through — bypassPermissions turns every restriction off, including this one", correct: false, reaction: "No — that's the trap. bypassPermissions silences the *prompts*, but this setting sits above the mode dial. The write outside the project is still refused." },
+            { id: 'prompts', label: "Claude stops and asks the teammate to approve the out-of-bounds edit", correct: false, reaction: "Not quite — there's no approval path here. The tool doesn't ask; it refuses outright. That's what makes it a guarantee instead of a reminder." },
           ],
         },
-        { kind: 'say', text: "So mechanically: org owner picks the default — Quick, Standard, or Deep — and every repo inherits it. Then any single repo can be pinned to its own level, overriding that default. The default is the floor; the override is how you raise or lower the exceptions." },
-        { kind: 'say', text: "Why it matters on an engagement: your client's repos aren't equal. The marketing site and a scratch prototype want Quick — a Deep review there just buries the PR in comments nobody asked for. The payments service, the auth layer, anything near customer money — that's Deep, because a slow read is nothing against a defect reaching production. Levels let you say that repo by repo." },
-        { kind: 'say', text: "One more thing to pair with it: there's an admin option to review *every* repository in the org, including ones spun up later, without picking them one by one. On a growing client org that closes the gap where a fresh repo ships unreviewed for weeks because nobody flipped the switch. Turn on org-wide coverage, then use the levels to set how hard each one's read. Grab the key — then face Rote, the auditor who's never once changed his pace for anyone." },
+        { kind: 'say', text: "It's the write-side twin of a setting you may already know — `blockReadsOutsideWorkingDirectories`, which fences what Claude can *read* the same way. Turn both on and you've drawn a box around both what Claude can see and what it can change." },
+        { kind: 'say', text: "Why a consultant reaches for it: you're on the client's laptop, their other repos and dotfiles scattered around the same disk. A mode-based safeguard only holds while everyone stays careful. This one lets you say — truthfully — 'Claude's edits can't leave the project folder, whatever mode we're in.' That sentence survives a security review; 'we're being careful' doesn't." },
+        { kind: 'say', text: "The move is simple: open only the directories the job needs, turn the write-block on, and if a later task genuinely needs the folder next door, widen the yard on purpose with `--add-dir` instead of letting an edit wander there. Grab the key — then face Scrawl, the scribe who's never once stayed inside the lines." },
       ],
     },
   },
   battle: {
-    name: 'Rote, the One-Depth Auditor',
+    name: 'Scrawl, the Boundless Scribe',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a skeleton clerk looks up from an endless ledger, stamping each page at the exact same grinding pace* …a typo, a rewrite of the vault door — all one to me… I read every change at the one speed I have ever had, no faster for the dangerous, no lighter for the trifling… you say there are now *three* speeds, and that I might be told which to use per repository?! …then say true how the levels are set, before I stamp another thousand pages the same.",
+    introLine: "*a skeleton scribe looks up, ink dripping from a dozen quills, the walls behind him black with writing that spills into the stairwell and the next room over* …a page? you'd give me only a *page* to fill?… I write where the quill reaches — your ledger, your neighbour's door, the floor of a room I've never entered… you say there is now a line I cannot cross no matter how freely I'm let run?! …then name it true, before I ink one more wall that was never mine.",
     tauntLines: [
-      "*rattles, ledger snapping shut* you'd tell me a single depth rules the whole org and cannot be changed?! no… an owner sets a *default*, yes — but any one repository may be given its own level over the top of it…",
-      "*bones clatter* you think the author picks the depth fresh on every pull request?! never… it is no per-PR whim — the level is set for the org and overridden per repository, a setting the repo inherits…",
+      "*quills scratch faster* you'd tell me the fence only holds while the operator treads carefully?! no — it holds in *every* mode, the fast one too; bypassPermissions silences the asking, not the boundary…",
+      "*bones rattle, ink flying* you think it blinds me to what lies outside — that it stops my *reading*?! wrong hand — that's the other setting; this one refuses my *writing* beyond the yard…",
     ],
-    victoryLine: "*Rote sets down the stamp at last, sorting the ledger into three neat piles* …Quick for the trifles… Standard for the rest… Deep for the vault door… an org default, and a level per repository over it… I need never read all things the same again… take the key, operator, and aim the attention where it earns its keep.",
+    victoryLine: "*Scrawl sets down every quill at once, the stray writing fading from the far walls* …so the line holds whatever gear you drive in… Write, Edit, Notebook — all three turned back at the fence, in every mode… I shall fill my page and no one else's… take the key, operator, and keep your scribe inside his yard.",
     questions: [
       {
         prompt:
-          "Your client runs Claude's Code Review across a GitHub organization whose repositories range from a throwaway docs site to the core payments service. How do the new review levels let you match review depth to each repo?",
+          "You're setting Claude Code up on a client's laptop and you want a hard guarantee that Claude's file edits stay inside the project folder — even if a teammate later flips the session into bypassPermissions. What does `permissions.blockWritesOutsideWorkingDirectories` do?",
         choices: [
-          { id: 'a', label: "Set an org-wide default — Quick, Standard, or Deep — and give individual high-stakes repos their own level, so each repo is reviewed at the depth its risk warrants", correct: true },
-          { id: 'b', label: "There's a single fixed review depth for the whole org; you can choose whether a review runs, but not how thorough it is", correct: false },
-          { id: 'c', label: "Depth is chosen fresh by the author on every pull request; there's no organization or per-repository setting", correct: false },
-          { id: 'd', label: "Only Deep is assignable; Quick and Standard run automatically and can't be pinned to a specific repo", correct: false },
+          { id: 'a', label: "Makes the Write, Edit, and NotebookEdit tools refuse any path outside the working directories in every permission mode — so even auto or bypassPermissions can't edit a file outside the project", correct: true },
+          { id: 'b', label: "Confines edits to the project only while you're in default mode; switch to Accept Edits or bypassPermissions and the fence drops away", correct: false },
+          { id: 'c', label: "Stops Claude from reading any file outside the working directories, so it can't see a config in your home folder", correct: false },
+          { id: 'd', label: "Automatically deletes any file Claude creates outside the working directories, to keep the project folder clean", correct: false },
         ],
-        passFeedback: "HIT! Code Review now has three levels — Quick, Standard (the default), and Deep — set as an org-wide default and overridable per repository, so review depth matches each repo's stakes.",
-        failFeedback: "MISS! It isn't one fixed depth, a per-PR author choice, or Deep-only. Owners pick an org default and can override it on any single repo. Re-read Book 1.",
+        passFeedback: "HIT! With the setting on, Write, Edit, and NotebookEdit refuse out-of-bounds paths in every permission mode — a boundary that holds even under bypassPermissions, not a mode you can slip past.",
+        failFeedback: "MISS! It isn't mode-dependent, it isn't about reads, and it doesn't delete anything — it refuses out-of-bounds writes from the file-editing tools in every mode. Re-read Book 1.",
       },
     ],
   },
