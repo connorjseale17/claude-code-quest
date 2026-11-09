@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-11-02',
+  publishDate: '2026-11-09',
   framing:
-    "This week in Claude, the throughline is knowing the limits of the work — where it can reach, how hard it should think, and what it's been catching. `permissions.blockWritesOutsideWorkingDirectories` makes Claude's Write, Edit, and NotebookEdit tools refuse any path outside your project in every permission mode, so the fence holds even under bypassPermissions instead of riding on whichever gear you're in. The `ultrathink` keyword now runs a single turn at xhigh effort on the current 5-series models — Claude's deep-reasoning gear, usable mid-turn and confirmed by a rainbow on the word — so you spend the extra thinking on the calls that are costly to get wrong and leave the renames at the normal gear. And a new findings-by-severity card on the Code Review analytics page turns the reviewer's stream of per-PR comments into a period view — a total, a daily chart stacked by severity, and each severity's count — so 'is our code getting better or worse?' finally has a line you can point to.",
+    "This week in Claude, the throughline is work that runs without you watching — and the controls that keep it honest when you're not there to intervene. `permissions.denyInsteadOfPrompting` turns a permission prompt nobody's awake to answer into an instant denial, so an unattended run fails fast on anything you didn't pre-authorize instead of hanging on it forever. `/schedule` now warns you when a new cloud task would carry connectors you never requested, catching an unrequested passenger at creation time so a job that runs on its own can't quietly hold access you didn't mean to grant. And `/claude-api latency-optimize` reads your API-calling code, finds where response time is leaking, and *tests* faster settings — so the speed-up you ship to a client is one you measured, not one you guessed.",
 };
