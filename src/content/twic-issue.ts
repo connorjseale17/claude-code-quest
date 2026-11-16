@@ -16,7 +16,7 @@ export type TwicIssueIntro = {
 };
 
 export const TWIC_ISSUE_INTRO: TwicIssueIntro = {
-  publishDate: '2026-11-09',
+  publishDate: '2026-11-16',
   framing:
-    "This week in Claude, the throughline is work that runs without you watching — and the controls that keep it honest when you're not there to intervene. `permissions.denyInsteadOfPrompting` turns a permission prompt nobody's awake to answer into an instant denial, so an unattended run fails fast on anything you didn't pre-authorize instead of hanging on it forever. `/schedule` now warns you when a new cloud task would carry connectors you never requested, catching an unrequested passenger at creation time so a job that runs on its own can't quietly hold access you didn't mean to grant. And `/claude-api latency-optimize` reads your API-calling code, finds where response time is leaking, and *tests* faster settings — so the speed-up you ship to a client is one you measured, not one you guessed.",
+    "This week in Claude, the throughline is the plumbing of *how* Claude runs — the way it issues its calls, the caution it takes stepping into a repo that isn't yours, and the proof-of-life it sends while a long job grinds on unwatched. The experimental **Code Mode** lets Claude write a short JavaScript program that calls its tools in one run, trading a parade of one-at-a-time round trips for a single composed pass on the grindy multi-step work. **Read-only git now asks first in untrusted repos**, so even a bare `git status` pauses when you've wandered into a checkout that's neither your project nor one you've vouched for. And a new **hook progress heartbeat** pulses every 30 seconds in headless `claude -p` and SDK runs, so a slow hook finally reads as *working* instead of *frozen* to whatever's watching the pipeline.",
 };

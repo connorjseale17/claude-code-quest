@@ -1,138 +1,143 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-1 (Feature A) — permissions.denyInsteadOfPrompting.
- * A new Claude Code setting (CHANGELOG 2.1.319): with it on, any tool call that
- * would otherwise pause and wait on a permission prompt is DENIED outright
- * instead of waiting. The call doesn't hang for an approval that may never
- * come — it's refused, and the session moves on. This is about what happens to
- * a would-be prompt, not about which permission mode you're in or which paths
- * are in bounds.
+ * twic-1 (Feature A) — Code Mode (experimental).
+ * Claude Code CHANGELOG 2.1.323 added Code Mode, an experimental, opt-in mode
+ * in which Claude writes a JavaScript program that calls its tools, instead of
+ * emitting one tool call at a time and waiting for each result. It is off by
+ * default, it is experimental (may change or be removed), and every tool call
+ * the script makes still passes through your permission rules and PreToolUse
+ * hooks. Admins can turn it off org-wide.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.319: "New setting:
- *     `permissions.denyInsteadOfPrompting` denies calls that would wait on a
- *     permission prompt."
+ *   - Claude Code CHANGELOG 2.1.323: "Added Code Mode, an experimental opt-in
+ *     in which Claude writes JavaScript to call its tools."
+ *   - Secondary coverage (dev.to, mindstudio.ai, clauding.de, dev.classmethod.jp,
+ *     automater.ai) corroborating: off by default, experimental/opt-in, batches
+ *     several tool calls in one JavaScript run, per-call permission rules and
+ *     PreToolUse hooks still apply, org-level off switch.
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic1Content: LessonContent = {
   roomId: 'twic-room-1',
   intro:
-    "Room one of this week's rundown. The Beat Reporter nods toward a skeleton doorman rattling in the archway, a figure who was built to do exactly one thing when a visitor he can't place arrives: knock on the inner door and *wait* for someone to answer. The trouble is nobody's home tonight — and this week's lead item is the setting that finally tells him what to do about that. As of 2.1.319, `permissions.denyInsteadOfPrompting` makes any tool call that would otherwise stop and wait on a permission prompt get *denied* instead of hanging there. One book covers the mechanic — what a permission prompt is and what flipping it to a denial changes; the other, why a consultant running work unattended turns this on before they walk away. Answer the door for the key, then face Deadbolt, the doorman who has never once decided a thing for himself.",
+    "Room one of this week's rundown. The Beat Reporter tips her pen at a skeleton scribe hunched over a lectern in the archway, a figure who has spent an eternity copying out errands one line at a time — read a file, stop; run a command, stop; read the next, stop — pausing after every single stroke to see what came back. This week's lead item is the setting that finally hands him a different way to work: Code Mode, an experimental opt-in added in 2.1.323 where Claude writes a short *JavaScript program* that calls its tools, instead of firing them off one at a time. One book covers the mechanic — what changes when tool calls become lines in a script; the other, why a consultant reaches for it on the gnarly, many-step jobs. Read both, win the key, then face Tallybone, the scribe who swears the only honest way to do anything is one call at a time.",
   prompt:
-    "You're kicking off a non-interactive Claude Code run — a scheduled cloud task that will execute with nobody at the keyboard. You want it to never hang waiting on an approval no one will give. What does `permissions.denyInsteadOfPrompting` do?",
+    "You've switched on Claude Code's experimental Code Mode for a long, repetitive data-wrangling job. What does Code Mode actually change about how Claude uses its tools?",
   choices: [
-    { id: 'a', label: "Any tool call that would otherwise pause and wait on a permission prompt is denied outright instead — so the run never blocks on an approval nobody is there to give", correct: true },
-    { id: 'b', label: "It auto-approves any tool call that would have prompted, so the run can proceed without waiting", correct: false },
-    { id: 'c', label: "It switches the session into bypassPermissions so no prompts are ever raised in the first place", correct: false },
-    { id: 'd', label: "It queues the prompts and replays them for you to answer in a batch when the run finishes", correct: false },
+    { id: 'a', label: "Instead of emitting one tool call at a time and waiting for each result, Claude writes a JavaScript program that calls its tools — so it can sequence and batch many calls in a single run", correct: true },
+    { id: 'b', label: "Each tool call made from the script skips your permission rules and PreToolUse hooks, since it's now plain code rather than a tool call", correct: false },
+    { id: 'c', label: "It replaces Claude's built-in tools with JavaScript libraries, so Read, Edit, and Bash are no longer available in the session", correct: false },
+    { id: 'd', label: "It's the new default for every session, compiling your whole conversation into one script before anything runs", correct: false },
   ],
-  passFeedback: "HIT! It turns a would-be prompt into an immediate denial — the call is refused rather than left hanging, so an unattended run fails fast on anything you didn't pre-authorize instead of stalling on it.",
-  failFeedback: "MISS! It doesn't auto-approve, it isn't a mode switch, and it doesn't defer the prompt for later — it *denies* the call that would have waited. Re-read Book 1.",
+  passFeedback: "HIT! Code Mode lets Claude write a JavaScript program that calls its tools, so a long chain of steps runs in one program instead of a stop-and-wait round trip per call. The tools and their permission checks are unchanged — only the way the calls are issued is different.",
+  failFeedback: "MISS! It doesn't bypass permissions, it doesn't remove your tools, and it isn't the default — it's an experimental opt-in where Claude writes JavaScript that calls the same tools. Re-read Book 1.",
   lore: [
     {
       id: 'twic-1-lore-a',
-      text: `**When Nobody's There to Say Yes — Turning the Unanswered Prompt Into a Clean No**
+      text: `**One Program Instead of One Call at a Time — How Code Mode Changes the Hand on the Keyboard**
 
-**What a permission prompt actually is**
+**The normal rhythm: ask, wait, ask again**
 
-Most of what Claude Code does it does without stopping to ask, because an *allow* rule already covers it or your permission mode is permissive. But when a tool call falls outside those — a command that isn't on the allowlist, an edit a cautious mode wants you to sign off on — Claude pauses and raises a *permission prompt*: a little gate that waits for you to approve or reject before the call runs. In an interactive session that's exactly right. You glance at it, you say yes or no, the work continues.
+Out of the box, Claude works a tool loop you can almost hear. It decides on one action — read this file — and emits a single tool call. Then it *stops* and waits for the result to come back before it can decide the next move. Read, wait. Edit, wait. Run, wait. For a quick task that cadence is invisible and fine. For a job that's thirty small steps of the same shape, it's thirty separate round trips, each one a pause where Claude hands control out and waits to get it back.
 
-**What breaks when the session is headless**
+**What Code Mode does differently**
 
-The prompt only works if someone is watching the screen. The moment the session isn't interactive — a scheduled task, a CI job, a headless \`-p\` run, an automation kicked off while you're asleep — there's no one to answer. The call that raised the prompt has nothing to resolve it, so the run stalls on a question no human will ever read.
+Code Mode, added as an experimental opt-in in 2.1.323, swaps that rhythm for a short program. Rather than firing tools one at a time, Claude writes a piece of *JavaScript* that calls its tools as ordinary function calls, and Claude Code runs that script inside your session. A loop over twenty files, a filter, a transform, a call whose output feeds straight into the next — all of it can live in one program that executes in a single run instead of twenty hand-offs.
 
-**What the setting changes**
+**The tools don't change — the way they're issued does**
 
-As of 2.1.319, \`permissions.denyInsteadOfPrompting\` resolves that question for you, and it resolves it the safe way. With it on, any tool call that *would* have waited on a permission prompt is instead **denied** on the spot. There's no pause, no approval to wait for, no gamble on someone noticing. The call is simply refused, and the session carries on past it rather than freezing.
+This is the part worth saying slowly. Code Mode is *not* a new set of powers. The same tools you already have are what the script calls; it is only the *mechanism of calling them* that moves from one-at-a-time messages into lines of code. And critically, every tool call the script makes still travels through your permission rules and your \`PreToolUse\` hooks, exactly as a hand-issued call would. The script is a faster way to drive the car, not a way to take the doors off.
 
-**Deny, not approve — the direction matters**
+**Experimental, opt-in, and off by default**
 
-The easy misread is to assume "don't prompt" means "just let it through." It's the opposite. This setting fails *closed*: the uncovered call is turned away, not waved on. So the only things that run unattended are the things you authorized in advance with explicit allow rules. Everything else meets a locked door.
+It ships behind a switch for a reason: it's labeled experimental and may change or be removed, it's off until you turn it on, and an organization's admins can disable it entirely. So it's a tool you *reach for*, deliberately, when a task's shape rewards it — not something running under you by default.
 
-> Takeaway: \`denyInsteadOfPrompting\` swaps a prompt that would hang forever for an instant denial — anything you didn't pre-authorize is refused, not stalled on and not slipped through.`,
+> Takeaway: Code Mode lets Claude write a JavaScript program that calls its existing tools in one run, instead of a stop-and-wait round trip per call — same tools, same permission checks, different hand on the keyboard.`,
     },
     {
       id: 'twic-1-lore-b',
-      text: `**Automation You Can Walk Away From — Why Consultants Flip This Before They Leave the Room**
+      text: `**When the Job Is Thirty Small Steps — Reaching for Code Mode on the Grindy Work**
 
-**The unattended-run problem**
+**The shape of task that pays for it**
 
-The whole point of a scheduled or headless Claude Code run is that you aren't sitting there. A nightly report regenerates, a cloud task triages a repo, a CI step runs a check — all while you're doing something else. But the default prompt behaviour assumes an audience. Hit one uncovered call and the run doesn't fail and it doesn't finish; it hangs, holding a question open against a room that's empty. You come back to a job that did nothing and burned its window waiting.
+Not every job wants this. A one-file edit, a quick read, a single command — the ordinary loop handles those with no ceremony. Code Mode earns its keep on the *repetitive, many-step* work: rename a field across forty files, pull one number out of every report in a folder, walk a directory and reshape each item the same way. These are the engagements where the one-at-a-time rhythm turns a two-minute idea into a long parade of near-identical round trips, and where expressing the whole pass as a small loop is simply the more honest description of the work.
 
-**A run with a predictable floor**
+**What you actually gain**
 
-Turning on \`denyInsteadOfPrompting\` gives that unattended run a hard, predictable shape. Instead of an open-ended stall, an unauthorized call produces a clean refusal the run can react to immediately — log it, skip it, or stop. The job either does the work you allowed or it fails fast and tells you why, which is a far better outcome than a silent hang you discover hours later. You've traded "might wait forever" for "will decide instantly."
+The win is twofold. First, fewer hand-offs: a chain of steps that would have been a dozen separate calls becomes one program that runs through, so the task spends less of its life waiting between calls. Second, and often more valuable, is *composition* — because the steps live in code, an intermediate result can flow straight into the next step, be filtered, be counted, be transformed, without a human-readable detour for every link in the chain. The logic of the task gets to look like the logic of the task.
 
-**Pair it with a tight allowlist**
+**Spend the control you still have**
 
-The setting is only half the pattern; the allowlist is the other half. Before you schedule the task, pin down exactly the tools and commands its job needs and grant those explicitly. Then flip this on. Now the automation *can only* do the allowed set — anything outside it is denied automatically, so a stray or injected instruction can't quietly escalate into an action you never sanctioned while your back is turned. That's a guarantee you can put in front of a client: the scheduled job is boxed to its brief.
+Because this is experimental and opt-in, treat it as a deliberate gear, not a default. Turn it on for the grindy batch pass; leave it off for exploratory or high-stakes single edits where you want to eyeball each move. And lean on the fact that your guardrails still hold: the script's calls run through the same deny and ask rules and the same \`PreToolUse\` hooks, so a client's \"what's keeping this in bounds?\" has the same answer it always did. You get the speed of a batch without surrendering the checks.
 
-> Takeaway: Scope the allowlist to the job, turn \`denyInsteadOfPrompting\` on, and an unattended run becomes something you can trust to either stay in bounds or fail loudly — never to hang, never to overreach.`,
+> Takeaway: Use Code Mode when the work is a repetitive multi-step pass — you trade a parade of round trips for one composed program, while the permission rules that keep a client comfortable stay exactly where they were.`,
     },
   ],
   practice: {
     id: 'twic-1-practice',
-    template: `I'm setting up a scheduled Claude Code task to run overnight with nobody watching.
-First I pin the allowlist to exactly ____, so the only things it can do without a prompt are the ones the job actually needs.
-Then I turn on ____, so any call that falls outside that list is ____ instead of ____.
-That way the overnight run either finishes the work I sanctioned or ____, and it never stalls on a gate no one is awake to open.`,
+    template: `I've got a grindy batch job: walk every file in the reports folder and pull one figure out of each.
+Because it's ____ of the same shape, the one-call-at-a-time loop would be a long parade of round trips.
+So I turn on ____ — the experimental opt-in — and let Claude write a ____ that calls its tools in one run.
+I remind myself this doesn't ____; every call the script makes still goes through my permission rules and hooks.
+And I keep it a deliberate gear: on for ____, off for the exploratory single edits I want to eyeball.`,
     blanks: [
-      { id: 'allowlist', suggestions: ['the handful of read and build commands the report needs', 'the specific tools this job touches and nothing else', 'the minimal set of calls the task requires'] },
-      { id: 'the-setting', suggestions: ['permissions.denyInsteadOfPrompting', 'the deny-instead-of-prompting setting', 'the no-hang denial setting'] },
-      { id: 'denied', suggestions: ['denied outright', 'refused on the spot', 'turned away'] },
-      { id: 'waiting', suggestions: ['left hanging on a prompt', 'waiting for an approval nobody will give', 'stalling the whole run'] },
-      { id: 'fails-fast', suggestions: ['fails fast with a logged denial', 'stops cleanly and tells me why', 'skips the unauthorized step and moves on'] },
+      { id: 'many-steps', suggestions: ['dozens of near-identical steps', 'the same move repeated across many files', 'a long repetitive multi-step pass'] },
+      { id: 'the-mode', suggestions: ['Code Mode', 'the experimental Code Mode', 'the JavaScript tool-calling mode'] },
+      { id: 'the-script', suggestions: ['short JavaScript program', 'single script that loops over the folder', 'bit of code'] },
+      { id: 'no-bypass', suggestions: ['remove any of my tools', 'skip my permission checks', 'take the guardrails off'] },
+      { id: 'the-batch', suggestions: ['the repetitive batch pass', 'this many-step grind', 'the big folder-wide job'] },
     ],
     prize: { id: 'twic-1-prize', label: 'TWIC · WEEK STARTER' },
   },
   conversations: {
     'twic-npc-1': {
       summary:
-        "permissions.denyInsteadOfPrompting (Claude Code 2.1.319): a setting that changes what happens to a tool call that would otherwise raise a permission prompt. Normally Claude pauses and waits for you to approve or reject an uncovered call. With this on, that call is DENIED outright instead of waiting — no pause, no approval to chase. It fails closed: the uncovered call is refused, not auto-approved, so only pre-authorized (allowlisted) calls run. The headline use is unattended runs — scheduled cloud tasks, CI, headless -p — where no human is there to answer a prompt, so the default behaviour would hang the whole job on a question nobody reads. For a consultant: pin the allowlist to exactly what the job needs, turn this on, and the unattended run can only do the allowed set — it either completes in bounds or fails fast with a clean denial, never hanging and never overreaching. It's about the prompt's fate, not about which permission mode you're in.",
+        "Code Mode (Claude Code 2.1.323, experimental opt-in, off by default): normally Claude issues one tool call, waits for the result, then issues the next — a stop-and-wait round trip per call. In Code Mode, Claude instead writes a JavaScript program that calls its tools as function calls, and Claude Code runs it in the session, so many steps execute in one run. It is NOT new powers: the same tools are called, and every call the script makes still passes through your permission rules and PreToolUse hooks. It is experimental (may change/be removed), opt-in, off by default, and admins can disable it org-wide. The sweet spot is repetitive multi-step work — loop over many files, filter, transform, chain outputs — where composition in code beats a parade of hand-offs. For exploratory or high-stakes single edits, leave it off and eyeball each move.",
       beats: [
-        { kind: 'say', text: "Lead item, room one. New setting in 2.1.319 with a plain-spoken name: `denyInsteadOfPrompting`. It decides one thing — what happens when Claude hits a call it would normally stop and *ask* you to approve." },
-        { kind: 'say', text: "Back up to what a permission prompt is. When Claude wants to run something that isn't already allowed — a command off the allowlist, an edit a cautious mode wants signed off — it doesn't just do it. It pauses and raises a little gate: approve or reject. You answer, work continues. Fine when you're watching." },
-        { kind: 'say', text: "Now picture nobody watching. A scheduled task at 3am. A CI job. A headless run you kicked off and walked away from. That same gate goes up — and there's no one to answer it. The call can't resolve, so the whole run just… hangs there, holding a question against an empty room." },
-        { kind: 'say', text: "Here's the fix. Turn `denyInsteadOfPrompting` on and that would-be prompt stops being a wait. The call gets *denied* instead — right away, no pause. The session doesn't freeze; it moves on past the refused call." },
+        { kind: 'say', text: "Lead item, room one. There's a new word in 2.1.323 — Code Mode. To get why it matters, watch how I normally work a tool loop. I pick one action, I call one tool, and then I *stop* and wait for the result before I decide the next thing. Read, wait. Edit, wait. Run, wait." },
+        { kind: 'say', text: "For a quick job that cadence is invisible. But picture a grindy one — pull a number out of forty reports, or rename a field across every file in a folder. Now it's forty separate round trips, each one a little hand-off where I give control out and wait to get it back. Same small move, over and over." },
+        { kind: 'say', text: "Code Mode changes the rhythm. Instead of firing tools one at a time, I write a short *JavaScript program* that calls my tools — and Claude Code runs that script right here in the session. A loop over all forty reports, a filter, the transform, all in one run instead of forty hand-offs." },
+        { kind: 'say', text: "Now — the thing people get wrong, so pin it down. It's not a new set of powers. The script calls the *same* tools you've always had. What moved is only *how* the calls get issued — from one-at-a-time messages into lines of code." },
         {
           kind: 'choice',
-          prompt: "So — does 'deny instead of prompting' mean the uncovered call gets quietly let through so the run doesn't stall, or does it mean the call is refused?",
+          prompt: "Quick check, because this is the trap. When the script runs a tool call, does it skip past your permission rules and PreToolUse hooks — since it's 'just code' now — or does each call still go through them?",
           options: [
-            { id: 'denied', label: "Refused — it fails closed; the uncovered call is turned away, not run", correct: true, reaction: "Exactly. That's the safe direction. 'Don't prompt' here means 'deny,' not 'allow.' Only the calls you authorized up front get to run; everything else meets a locked door." },
-            { id: 'allowed', label: "Let through — not prompting means the call just proceeds", correct: false, reaction: "That's the trap, and it'd be dangerous. It fails *closed*, not open. The uncovered call is denied, not waved on. Otherwise you'd have built a setting that silently green-lights anything unattended." },
-            { id: 'deferred', label: "Deferred — it saves the prompt for you to answer later", correct: false, reaction: "No — there's no later queue. The decision is made now, and it's a no. That immediacy is the point: the run never carries an unanswered question." },
+            { id: 'still-checked', label: "Still checked — every call the script makes runs through the same permission rules and hooks", correct: true, reaction: "Right, and that's the whole reason it's safe to reach for. Code Mode is a faster way to drive the car, not a way to take the doors off. A client's 'what keeps this in bounds?' has the same answer it always did." },
+            { id: 'bypasses', label: "Bypasses them — once it's inside a script, the calls run unchecked", correct: false, reaction: "No — and that'd be the dangerous version. Each tool call from the script still passes through your deny and ask rules and your PreToolUse hooks. The guardrails don't care whether the call came from a message or a line of code." },
+            { id: 'depends-mode', label: "Depends on your permission mode — in auto it skips them", correct: false, reaction: "Not that either. The checks aren't a function of Code Mode; the script's calls are gated exactly like hand-issued ones. Code Mode changes the mechanism of calling, not what the calls are allowed to do." },
           ],
         },
-        { kind: 'say', text: "So the setting is only half of it. The other half is your allowlist. Before you schedule anything, pin down the exact tools and commands the job needs and grant *those*. Then flip the switch." },
-        { kind: 'say', text: "Put together, the unattended run can only do the allowed set. Anything outside it is denied automatically — so a stray instruction, or one slipped in from somewhere it shouldn't be, can't quietly escalate while you're gone. The job either does its brief or fails fast and says why." },
-        { kind: 'say', text: "That's the sentence you hand a client: the scheduled task is boxed to what we sanctioned, and it can't hang and can't wander. Grab the key — then meet Deadbolt, the doorman who was only ever told to knock and wait, and never what to do when no one comes." },
+        { kind: 'say', text: "So why bother? Two things. Fewer hand-offs, so the task stops spending its life waiting between calls. And composition — because the steps live in code, one step's output can flow straight into the next, get filtered, get counted, without a detour every link in the chain. The task gets to *look* like the task." },
+        { kind: 'say', text: "Keep it a deliberate gear, though. It's experimental — may change, may be removed — it's off by default, and an org's admins can switch it off entirely. Turn it on for the repetitive batch grind; leave it off for the exploratory single edit you want to watch move by move." },
+        { kind: 'say', text: "That's the lead. Grab the key — then meet Tallybone, the scribe at the lectern who's convinced the only honest way to do anything is one call at a time. Show him a loop isn't a cheat." },
       ],
     },
   },
   battle: {
-    name: 'Deadbolt, the Doorman Who Only Knocks',
+    name: 'Tallybone, the One-at-a-Time Scribe',
     spriteKey: 'skeleton',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a skeleton doorman straightens in the archway, knuckles poised against the inner door* …my orders are simple… a caller I can't place, I knock, and I WAIT for the master to answer… *the bones go still* …but the master never comes, and so I wait, and the hall fills behind me with callers I've frozen in place… you say there's a word now that lets me stop waiting and simply turn them away?… then say it true, before I knock on a door no one will ever open.",
+    introLine: "*a skeleton scribe looks up from a lectern stacked with single-line errands, quill trembling* …one call… then I wait… then the next… it is the ONLY honest way, I have copied it ten thousand nights… *the quill stills* …now they whisper of a 'mode' where you pen all the errands into one running script and call it the same work?… prove it to me, before I dip this quill again.",
     tauntLines: [
-      "*raps the door and holds, trembling* you'd have me fling the door WIDE because no one answers?! that's not what it does — not-prompting means I DENY the caller, not usher them in…",
-      "*bones rattle against the frame* you think the word changes which gear the house runs in?! no — I knock the same in every mode; what changes is that the knock becomes a refusal instead of a wait…",
+      "*scratches another single line, hand shaking* a script that calls the tools must be a CHEAT — it slips past the gates, doesn't it?! …no?… each line still faces the same locks I do?…",
+      "*rattles the stack of errands* you'd tell me my tools are GONE, replaced by some library?! the script calls the very same tools — you only changed the hand that writes them…",
+      "*bones clatter* and it's the law of the land now, every session a compiled scroll?! no — it's an opt-in, off till you reach for it, experimental, the masters can lock it away entire…",
     ],
-    victoryLine: "*Deadbolt lowers his fist, and the frozen callers behind him file out one by one, unblocked* …so that's it… the caller I can't vouch for, I turn away at once — no endless knocking, no empty hall… only the names on my list get through… take the key, operator. no one waits on me now.",
+    victoryLine: "*Tallybone sets down the quill and, for the first time, writes a loop* …one program… the same tools… the same locks on every line… and the night's work done in a single run… take the key, operator. I've a great many errands to batch.",
     questions: [
       {
         prompt:
-          "You're kicking off a non-interactive Claude Code run — a scheduled cloud task that will execute with nobody at the keyboard. You want it to never hang waiting on an approval no one will give. What does `permissions.denyInsteadOfPrompting` do?",
+          "You've switched on Claude Code's experimental Code Mode for a long, repetitive data-wrangling job. What does Code Mode actually change about how Claude uses its tools?",
         choices: [
-          { id: 'a', label: "Any tool call that would otherwise pause and wait on a permission prompt is denied outright instead — so the run never blocks on an approval nobody is there to give", correct: true },
-          { id: 'b', label: "It auto-approves any tool call that would have prompted, so the run can proceed without waiting", correct: false },
-          { id: 'c', label: "It switches the session into bypassPermissions so no prompts are ever raised in the first place", correct: false },
-          { id: 'd', label: "It queues the prompts and replays them for you to answer in a batch when the run finishes", correct: false },
+          { id: 'a', label: "Instead of emitting one tool call at a time and waiting for each result, Claude writes a JavaScript program that calls its tools — so it can sequence and batch many calls in a single run", correct: true },
+          { id: 'b', label: "Each tool call made from the script skips your permission rules and PreToolUse hooks, since it's now plain code rather than a tool call", correct: false },
+          { id: 'c', label: "It replaces Claude's built-in tools with JavaScript libraries, so Read, Edit, and Bash are no longer available in the session", correct: false },
+          { id: 'd', label: "It's the new default for every session, compiling your whole conversation into one script before anything runs", correct: false },
         ],
-        passFeedback: "HIT! It turns a would-be prompt into an immediate denial — the call is refused rather than left hanging, so an unattended run fails fast on anything you didn't pre-authorize instead of stalling on it.",
-        failFeedback: "MISS! It doesn't auto-approve, it isn't a mode switch, and it doesn't defer the prompt for later — it *denies* the call that would have waited. Re-read Book 1.",
+        passFeedback: "HIT! Code Mode lets Claude write a JavaScript program that calls its tools, so a long chain of steps runs in one program instead of a stop-and-wait round trip per call. The tools and their permission checks are unchanged — only the way the calls are issued is different.",
+        failFeedback: "MISS! It doesn't bypass permissions, it doesn't remove your tools, and it isn't the default — it's an experimental opt-in where Claude writes JavaScript that calls the same tools. Re-read Book 1.",
       },
     ],
   },

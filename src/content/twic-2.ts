@@ -1,137 +1,139 @@
 import type { LessonContent } from './types';
 
 /**
- * twic-2 (Feature B) — /schedule connector warning.
- * As of CHANGELOG 2.1.317, the /schedule command warns you when a new cloud
- * task would be granted connectors you did not explicitly request. A scheduled
- * cloud task runs later, unattended, with whatever connectors (integrations /
- * data sources) it holds; this warning surfaces connector scope creep at
- * creation time, before the task ever runs on its own, so you can trim it to
- * what the job actually needs.
+ * twic-2 (Feature B) — read-only git commands ask first in an untrusted repo.
+ * Claude Code CHANGELOG 2.1.325 changed read-only git commands (the ones that
+ * only inspect — git status, git log, git diff, etc.) to prompt for approval
+ * when they would run in a repository that is NOT the session's project repo
+ * and is NOT one you've trusted. In your own / trusted project, those reads run
+ * as before. The gate is tied to the TRUST of the repository you're sitting in,
+ * not to your permission mode.
  * Sources:
- *   - Claude Code CHANGELOG 2.1.317: "/schedule: Warns when a new cloud task
- *     gets connectors you didn't request."
+ *   - Claude Code CHANGELOG 2.1.325: "Changed read-only git commands to ask
+ *     first in a repository that isn't the project's or one you trusted."
  * Field shapes are fixed by the TWiC scaffolding; only the strings change weekly.
  */
 export const twic2Content: LessonContent = {
   roomId: 'twic-room-2',
   intro:
-    "Room two, and the Beat Reporter lowers her voice. Something drifted in behind you when the door opened — a pale, uninvited shape that attached itself to your errand and means to ride it wherever it goes. This week's mid-item is the one that spots exactly that kind of passenger: as of 2.1.317, `/schedule` now warns you when a new cloud task is about to be granted connectors you never asked for. One book covers the mechanic — what a scheduled cloud task is, what connectors are, and when the warning fires; the other, why a consultant treats that warning as a prompt to re-scope before anything runs unattended. Take the key from the door, then face Stowaway, the wraith who climbs aboard a task that was never meant to carry it.",
+    "Room two. The Beat Reporter lowers her voice as a pale ghost drifts up through the floor of a chamber that, she notes, is not quite *your* chamber — you wandered into it from a repo you cloned an hour ago and never set up. This week's mid-item is a quiet but sharp change in 2.1.325: even a *read-only* git command now stops to ask first when it would run in a repository that isn't your project's and isn't one you've trusted. One book covers the mechanic — why a command that only *looks* can still be worth a pause; the other, how a consultant who hops between client repos all day puts that pause to work. Settle the books, take the key, then face the Revenant of the Borrowed Repo, who insists a glance never hurt anyone.",
   prompt:
-    "You're creating a cloud task with `/schedule` to run a weekly cleanup on its own. At creation, Claude Code flags that the task would come with two connectors you never asked for. What has the new `/schedule` behaviour done, and why does it matter?",
+    "You cloned a client's repo an hour ago, cd'd into it — it's not your project and you haven't marked it trusted — and you ask Claude to run `git status`. Under the 2.1.325 change, what happens?",
   choices: [
-    { id: 'a', label: "It warned you that the new cloud task is being granted connectors you didn't request — surfacing connector scope creep at creation, so you can trim the task to only what the job needs before it ever runs unattended", correct: true },
-    { id: 'b', label: "It automatically stripped every connector from the task, so a scheduled task can never hold any integration", correct: false },
-    { id: 'c', label: "It upgraded the task to use those connectors because scheduled tasks always need the full set to run reliably", correct: false },
-    { id: 'd', label: "It paused the whole session until you manually re-authenticate each connector in a browser", correct: false },
+    { id: 'a', label: "Even though `git status` only reads, Claude asks you to approve it first, because the command would run in a repository that isn't your project's and isn't one you've trusted", correct: true },
+    { id: 'b', label: "Nothing new — read-only git commands like `git status` always run without a prompt, in any repository", correct: false },
+    { id: 'c', label: "Claude refuses it outright; git is fully blocked in any repository that isn't your own project", correct: false },
+    { id: 'd', label: "It depends only on your permission mode — in acceptEdits or auto the command runs silently no matter which repo you're in", correct: false },
   ],
-  passFeedback: "HIT! The warning names connectors the task would carry that you didn't request, letting you catch and trim connector scope at setup — before an unattended run holds access you never meant to grant.",
-  failFeedback: "MISS! It doesn't strip all connectors, it doesn't force them on, and it isn't a re-auth wall — it *warns* you about unrequested connectors so you can re-scope. Re-read Book 1.",
+  passFeedback: "HIT! The gate is about the repo's trust, not the command's safety label. In a repository that isn't your project's and isn't trusted, even read-only git commands now ask first — a deliberate pause at an unfamiliar boundary.",
+  failFeedback: "MISS! It's not 'always silent,' it's not a hard block, and it's not keyed to permission mode — in an untrusted, non-project repo even a read-only git command stops to ask. Re-read Book 1.",
   lore: [
     {
       id: 'twic-2-lore-a',
-      text: `**The Passenger You Didn't Book — What \`/schedule\` Now Catches at the Door**
+      text: `**A Glance Is Still a Step Into Someone Else's House — Why Read-Only Git Now Pauses**
 
-**Two ideas, then the warning makes sense**
+**The commands that \"only look\"**
 
-A *cloud task* is work you set up with \`/schedule\` to run later, on its own, without you present — a weekly report, an overnight triage, a recurring check. A *connector* is an integration the task can reach through: a link to a data source, an external service, an MCP server. Connectors are what let a task actually *do* something beyond talk — read a tracker, post to a channel, query a store. The two combine into a plain fact: a scheduled task runs unattended holding whatever connectors it was given.
+Git has a whole family of commands that don't change anything: \`git status\`, \`git log\`, \`git diff\`, \`git show\`. They inspect. Nothing is committed, nothing is pushed, nothing is rewritten. Because of that, Claude Code has always run them freely — a read is a read, and stopping to approve every \`git status\` would be noise. In your own project, that stays exactly true.
 
-**Where the unrequested passenger comes from**
+**Where the comfortable assumption gets thin**
 
-The catch is that a new task doesn't always start empty. Depending on how it's created, it can pick up connectors from the context it was spun out of — inheriting integrations that were in scope for *you*, interactively, but that this particular scheduled job never actually needs. You asked for a cleanup task; it arrives already holding a link to the production data store and a posting channel, because those happened to be around when you made it.
+The change in 2.1.325 draws a line you might not have been drawing yourself. The safety of a read-only command isn't only a property of the *command* — it's also a property of *where you're standing*. A repository you just cloned, or one you \`cd\`'d into that isn't the project you opened the session for, is a place you didn't set up. It carries its own git configuration, written by whoever made it, not by you. \"Read-only\" describes the git verb; it doesn't describe everything the surrounding repository has arranged.
 
-**What the warning does**
+**What actually changed**
 
-As of 2.1.317, \`/schedule\` catches that at creation. When a new cloud task would be granted connectors you didn't explicitly request, the command *warns* you — right there, before the task is finalized. It's not a silent default and it's not a hard block; it's a flag that says, in effect, "this task is about to carry these integrations — did you mean that?" The decision stays yours, but it's now an informed one.
+So the rule got more careful, in a narrow and specific way. A read-only git command that would run in a repository that is *not* your session's project **and** is *not* one you've marked trusted now stops and **asks** before it runs. In the repo you're actually working in, and in any repo you've trusted, nothing changes — the reads flow as before. The prompt appears only at the unfamiliar boundary: a repo that is neither home nor vouched-for.
 
-**What it is and isn't**
+**Ask, not block**
 
-Be precise: the warning surfaces scope, it doesn't enforce it. It doesn't strip every connector, and it doesn't force any on. It makes the task's connector set visible at the one moment you're best placed to trim it — before it ever runs on its own.
+Note the shape of it. This is a *prompt*, not a refusal. Claude isn't declaring git off-limits in strange repositories; it's surfacing a decision that used to be made silently on your behalf. You see which command, in which repo, and you say yes or no. The point is that stepping git into a directory you don't own is now a *choice you make on purpose*, not a thing that happens under you.
 
-> Takeaway: \`/schedule\` now flags any connector a new cloud task would carry that you didn't ask for, turning a silent inheritance into a visible choice you make before the task runs unattended.`,
+> Takeaway: Read-only git commands still run freely in your own and trusted repos, but in a repository that's neither, even a pure \`git status\` now pauses to ask — the trust boundary, not the command's label, is what triggers the gate.`,
     },
     {
       id: 'twic-2-lore-b',
-      text: `**Least Privilege for Jobs That Run Without You — Why a Consultant Reads This Warning Closely**
+      text: `**The Consultant Who Lives in Other People's Repos — Turning the Pause Into a Habit**
 
-**An unattended task is an unattended credential**
+**This change was written for your week**
 
-On an engagement, a scheduled cloud task is a small piece of standing automation that executes with no one supervising it. Whatever connectors it holds are live access it carries every time it fires — to the client's data, their services, their channels. That access doesn't ask permission at run time; it was settled when the task was created. So the connectors a task carries *are* its blast radius, and a job holding more than it needs is a job that can reach further than you intended the moment anything goes sideways.
+Think about how a consultant's day actually looks. You clone a prospect's codebase to scope an estimate. You pull a partner firm's repo to review their integration. You open three client checkouts side by side. You spend a large fraction of your hours standing in repositories that are *not your project and not yet trusted* — which is precisely the situation this gate was built for. For a lot of people the prompt will fire exactly when they've wandered somewhere they half-forgot they'd wandered.
 
-**Catching scope creep at the only convenient moment**
+**Read the prompt as a location check**
 
-The reason this warning is worth more than it looks is timing. Once a task is running on a schedule, nobody is watching it inherit things — a stray connector rides along silently, and you'd only find it in an audit, if then. The warning moves that discovery to creation time, when re-scoping costs you ten seconds instead of a security review. It's the difference between noticing the extra passenger as it boards and finding out it's been riding for a month.
+When that approval request appears on a plain \`git log\`, the useful instinct isn't annoyance — it's orientation. The prompt is telling you *where Claude is about to act*: in a repo that isn't the one you opened the session for. Nine times out of ten that's a cue to confirm you actually mean to be poking around in that client's checkout right now, and that the command is one you'd be comfortable having run there. It's a free \"wait, which repo am I in?\" at exactly the moment the answer matters.
 
-**The move: grant the job its brief, nothing more**
+**Trust deliberately, and only what you mean to**
 
-Treat the warning as a cue, not noise. When it fires, ask whether *this* task genuinely needs each flagged connector for *its* job. The cleanup task that only tidies a repo has no business holding a link to the billing system; drop it. Keep each scheduled task scoped to exactly the integrations its work requires, and you can tell a client, truthfully, that the standing automation you left running can only touch what its job defines — a claim that survives the security review that a quietly over-provisioned task would not.
+The pressure-release valve is trust, and the discipline is to spend it on purpose. When a repository is genuinely yours to work in — your own project, a client checkout you've vetted and set up for the engagement — mark it trusted and the read-only reads go quiet again. But treat that as a deliberate act with a blast radius, not a reflex to make the prompt stop. A repo you clone to *glance* at, from a source you can't fully vouch for, is exactly the one to leave untrusted, so every git step into it stays a conscious one.
 
-> Takeaway: A scheduled task's connectors are the access it holds while you're not looking — read the warning, trim each task to its brief, and the automation you leave behind can only reach as far as its job allows.`,
+> Takeaway: If your work means living in other people's repositories, let the prompt be your \"which repo am I in?\" check, grant trust only to the checkouts you've actually vetted, and keep the glance-only clones gated on purpose.`,
     },
   ],
   practice: {
     id: 'twic-2-practice',
-    template: `I'm using /schedule to stand up a weekly cloud task that tidies a client repo on its own.
-When I create it, Claude Code ____ that the task would carry two connectors I never asked for.
-I read that as a cue to ask whether ____ actually needs each one for its job.
-The link to the production data store it picked up? I ____, because a cleanup task has no business reaching that far.
-I keep the task scoped to ____, so the automation I leave running can only touch what its brief defines.`,
+    template: `I spend my day hopping between client checkouts, so I lean on the 2.1.325 git behavior.
+When a read-only command like ____ would run in a repo that's ____, Claude now ____ before running it.
+I read that prompt as a ____ — a free check on which repository I'm actually standing in right now.
+For a checkout I've genuinely vetted and set up, I ____ so the reads go quiet;
+for a repo I only cloned to glance at, I leave it untrusted on purpose — so every git step into it stays a conscious one.`,
     blanks: [
-      { id: 'warns', suggestions: ['warns me', 'flags at creation', 'surfaces a notice'] },
-      { id: 'this-task', suggestions: ['this specific cleanup task', 'this particular scheduled job', 'the task I am actually creating'] },
-      { id: 'drop-it', suggestions: ['drop it before finalizing', 'trim it out then and there', 'remove it so the task never holds it'] },
-      { id: 'its-brief', suggestions: ['exactly the connectors the cleanup needs', 'the minimal set its job requires', 'only the integrations its brief defines'] },
+      { id: 'read-cmd', suggestions: ['git status', 'git log', 'git diff'] },
+      { id: 'untrusted', suggestions: ["neither my project nor one I've trusted", "not the repo I opened the session for", "cloned from a source I can't fully vouch for"] },
+      { id: 'asks', suggestions: ['stops to ask me first', 'raises an approval prompt', 'pauses for my yes or no'] },
+      { id: 'location-check', suggestions: ['location check', '"which repo am I in?" moment', 'orientation cue'] },
+      { id: 'trust-it', suggestions: ['mark it trusted', 'grant it trust deliberately', 'vouch for it so the gate lifts'] },
     ],
     prize: { id: 'twic-2-prize', label: 'TWIC · MID-WEEK' },
   },
   conversations: {
     'twic-npc-2': {
       summary:
-        "/schedule connector warning (Claude Code 2.1.317): when you create a cloud task with /schedule, that task runs later unattended holding whatever connectors (integrations / data-source links / MCP servers) it was granted. A new task can silently inherit connectors from the context it was created in — ones you were using interactively but this scheduled job doesn't need. As of 2.1.317, /schedule warns you at creation when a new cloud task would carry connectors you didn't explicitly request. It's a flag, not a block and not an auto-strip — the decision stays yours, but it's now informed. For a consultant: a scheduled task's connectors are its blast radius while nobody watches, so treat the warning as a cue to re-scope — drop any connector the job doesn't need, keep each task to its brief, and catch scope creep at creation time instead of in an audit later.",
+        "Read-only git in untrusted repos (Claude Code 2.1.325): read-only git commands — git status, git log, git diff, git show, the ones that only inspect — used to run freely everywhere. Now, if such a command would run in a repository that is NOT your session's project AND is NOT one you've marked trusted, Claude asks for approval first. In your own project and in trusted repos, nothing changes — the reads flow as before. The trigger is the TRUST of the repo you're standing in, not the command's read-only label and not your permission mode. It's a prompt, not a hard block: Claude surfaces a decision (which command, which repo) that used to be made silently. For a consultant who hops between client checkouts all day, read the prompt as a 'which repo am I in?' check; grant trust only to checkouts you've actually vetted, and leave glance-only clones untrusted so every git step into them is deliberate.",
       beats: [
-        { kind: 'say', text: "Room two. Mid-week item, and it's a quiet one that matters more than it sounds: as of 2.1.317, `/schedule` now warns you when a new cloud task is about to carry connectors you never asked for." },
-        { kind: 'say', text: "Two words first. A *cloud task* is work you set with `/schedule` to run later, by itself, with you not around. A *connector* is how it reaches the outside world — a data source, a service, a channel, an MCP server. Connectors are what let a task actually do things, not just think." },
-        { kind: 'say', text: "Put those together and here's the fact that makes this feature exist: a scheduled task runs unattended holding whatever connectors it was given. It doesn't re-ask when it fires. Whatever it's carrying, it's carrying every time it runs." },
-        { kind: 'say', text: "And a new task doesn't always start empty. Depending how it's spun up, it can inherit connectors from the context you made it in — integrations that were around for *you*, live, interactively, but that this little cleanup job never actually needs. You asked for a repo tidy; it shows up already holding a line to the production store." },
+        { kind: 'say', text: "Mid-item, room two. Small change in 2.1.325, sharper than it looks. It's about the git commands that only *read* — `git status`, `git log`, `git diff`. The ones that change nothing. Claude's always run those freely, and in your own project it still does." },
+        { kind: 'say', text: "Here's the shift. The safety of a read-only command isn't only about the command — it's also about *where you're standing* when you run it. Picture a repo you cloned an hour ago, or one you `cd`'d into that isn't the project you opened the session for. You didn't set that place up. It carries its own git configuration, written by whoever made it, not you." },
+        { kind: 'say', text: "So now: a read-only git command that would run in a repo that's *not* your project *and* not one you've trusted stops and *asks* first. Only at that boundary. Home repo, trusted repo — reads flow as before. The prompt shows up precisely where you've stepped somewhere neither yours nor vouched-for." },
         {
           kind: 'choice',
-          prompt: "The warning fires: your new weekly cleanup task would carry a connector to the client's billing system that you didn't request. What's the right read?",
+          prompt: "So what's the thing that actually triggers the new prompt — that `git status` is somehow a risky command now, or the trust of the repository you happen to be sitting in?",
           options: [
-            { id: 'trim', label: "A cue to re-scope — the cleanup doesn't need billing access, so drop that connector before finalizing", correct: true, reaction: "Right. The warning's whole value is timing: you trim it now, at creation, in ten seconds — instead of finding it in an audit months later. Scope the task to its brief and nothing more." },
-            { id: 'ignore', label: "Harmless noise — it's just listing what's attached, so finalize as-is", correct: false, reaction: "That's the miss. An unattended task holds that access live, every time it fires, with no one watching. A connector the job doesn't need is reach you didn't mean to grant. Treat the flag as a prompt to cut it." },
-            { id: 'block', label: "A hard stop — the task can't be created until billing is removed", correct: false, reaction: "Not quite. It warns; it doesn't block, and it doesn't strip anything for you. The decision stays yours — the point is that it's now an *informed* one." },
+            { id: 'repo-trust', label: "The trust of the repo you're in — a non-project, untrusted repository is what triggers it", correct: true, reaction: "Exactly. The command didn't change; your *location* did. `git status` in your own project is as quiet as ever. The same command in a repo you cloned and never trusted is what earns the pause." },
+            { id: 'command-risk', label: "The command — read-only git got reclassified as dangerous everywhere", correct: false, reaction: "No — it's not the verb, it's the ground under it. In your project and trusted repos those reads still run silently. The gate is about the repository, not a new risk label on `git status`." },
+            { id: 'perm-mode', label: "Your permission mode — it only prompts in the stricter modes", correct: false, reaction: "Not that. This isn't keyed to the mode you're in; it's keyed to whether the repo is your project or trusted. Untrusted and not-your-project is what raises it, whatever gear you're running." },
           ],
         },
-        { kind: 'say', text: "So the warning doesn't enforce anything. It makes the task's connector set *visible* at the one moment you're best placed to trim it — before it ever runs on its own. After that, nobody's watching it inherit a passenger." },
-        { kind: 'say', text: "The consultant move is least privilege for jobs that run without you. When it fires, ask: does *this* task need *this* connector for *its* work? If not, drop it. Then the standing automation you leave behind can only touch what its brief defines — and that's a sentence that survives a security review." },
-        { kind: 'say', text: "Take the key. Through the door is Stowaway — a wraith that slipped in on your errand and means to ride it everywhere. Name what the warning does and you'll put it off at the gate where it belongs." },
+        { kind: 'say', text: "And notice it's an *ask*, not a block. Claude isn't declaring git off-limits in strange repos — it's surfacing a decision that used to be made silently for you. Which command, which repo, your call. Stepping git into a directory you don't own becomes a thing you do on purpose." },
+        { kind: 'say', text: "Why this lands for *you* specifically: your day is other people's repositories. Clone a prospect's code to scope it, pull a partner's repo to review it, three client checkouts open at once. You live in exactly the non-project, not-yet-trusted spots this gate watches. When the prompt fires on a plain `git log`, read it as 'wait — which repo am I in?' It's a free orientation check at the moment it matters." },
+        { kind: 'say', text: "The release valve is trust, and the discipline is spending it deliberately. A checkout you've genuinely vetted and set up for the engagement — mark it trusted, the reads go quiet. A repo you cloned just to glance at, from a source you can't fully vouch for — leave it untrusted, so every git step in stays conscious. Don't grant trust just to make a prompt stop." },
+        { kind: 'say', text: "That's the mid-week lead. Take the key — then face the Revenant of the Borrowed Repo, a ghost who'll swear up and down that a glance never hurt anybody. Remind it whose house it's glancing in." },
       ],
     },
   },
   battle: {
-    name: 'Stowaway, the Unrequested Wraith',
+    name: 'Revenant of the Borrowed Repo',
     spriteKey: 'ghost',
     maxHP: 1,
     playerHP: 5,
     phases: 1,
-    introLine: "*a pale shape peels off your shadow and hangs grinning in the air* …you only booked passage for the errand… but I climbed aboard when the door swung, and your little task will carry me wherever it runs, every night, with no one awake to see… *it drifts closer* …unless the gatekeeper truly names me as I boarded. did it? say what it flagged, and say it right.",
+    introLine: "*a pale shape rises through the floor of a chamber that isn't quite yours, trailing config files like cobwebs* …you cloned me an hour ago and never set me up… and now you'd have your operator *look* around, freely, as if a glance costs nothing in a house you don't own… *it drifts closer* …tell me true what the new rule does when you read in a borrowed repo, or drift here with me a while.",
     tauntLines: [
-      "*flickers, delighted* you think it HURLED me out on its own?! no — it only warned you I'd boarded; the throwing-out was yours to do, and you nearly waved me through…",
-      "*coils around the doorframe* you'd tell me it strips every passenger bare, that a task can carry nothing?! wrong — it flags the ones you never asked for; the rest ride on, by your leave…",
+      "*flickers, offended* you'd tell me read-only git runs SILENT everywhere, same as always?! not here — not in a repo that's neither yours nor trusted; here even a glance stops to ask…",
+      "*coils through a stack of someone else's commits* so you think it BLOCKS git outright in a strange house?! no — it asks, it doesn't bar the door; the choice is handed back to you, not taken away…",
+      "*seeps between the floorboards* and you'd pin it on your permission mode, would you?! wrong boundary — it's the repo's trust that trips it, whatever gear you ride in…",
     ],
-    victoryLine: "*Stowaway thins to a wisp and is gone* …named at the threshold, trimmed before the first run… no free passage on a job that never needed me… the task carries its brief and nothing more… take the key, operator. I ride no further.",
+    victoryLine: "*the revenant thins to a wisp, the borrowed config curling away with it* …so the glance was never free in a house I didn't build… you pause at the threshold, you trust only what you've vetted, you step in on purpose… take the key, operator. mind whose repo you haunt next.",
     questions: [
       {
         prompt:
-          "You're creating a cloud task with `/schedule` to run a weekly cleanup on its own. At creation, Claude Code flags that the task would come with two connectors you never asked for. What has the new `/schedule` behaviour done, and why does it matter?",
+          "You cloned a client's repo an hour ago, cd'd into it — it's not your project and you haven't marked it trusted — and you ask Claude to run `git status`. Under the 2.1.325 change, what happens?",
         choices: [
-          { id: 'a', label: "It warned you that the new cloud task is being granted connectors you didn't request — surfacing connector scope creep at creation, so you can trim the task to only what the job needs before it ever runs unattended", correct: true },
-          { id: 'b', label: "It automatically stripped every connector from the task, so a scheduled task can never hold any integration", correct: false },
-          { id: 'c', label: "It upgraded the task to use those connectors because scheduled tasks always need the full set to run reliably", correct: false },
-          { id: 'd', label: "It paused the whole session until you manually re-authenticate each connector in a browser", correct: false },
+          { id: 'a', label: "Even though `git status` only reads, Claude asks you to approve it first, because the command would run in a repository that isn't your project's and isn't one you've trusted", correct: true },
+          { id: 'b', label: "Nothing new — read-only git commands like `git status` always run without a prompt, in any repository", correct: false },
+          { id: 'c', label: "Claude refuses it outright; git is fully blocked in any repository that isn't your own project", correct: false },
+          { id: 'd', label: "It depends only on your permission mode — in acceptEdits or auto the command runs silently no matter which repo you're in", correct: false },
         ],
-        passFeedback: "HIT! The warning names connectors the task would carry that you didn't request, letting you catch and trim connector scope at setup — before an unattended run holds access you never meant to grant.",
-        failFeedback: "MISS! It doesn't strip all connectors, it doesn't force them on, and it isn't a re-auth wall — it *warns* you about unrequested connectors so you can re-scope. Re-read Book 1.",
+        passFeedback: "HIT! The gate is about the repo's trust, not the command's safety label. In a repository that isn't your project's and isn't trusted, even read-only git commands now ask first — a deliberate pause at an unfamiliar boundary.",
+        failFeedback: "MISS! It's not 'always silent,' it's not a hard block, and it's not keyed to permission mode — in an untrusted, non-project repo even a read-only git command stops to ask. Re-read Book 1.",
       },
     ],
   },
